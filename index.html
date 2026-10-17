@@ -441,140 +441,130 @@
       background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.3), transparent);
     }
 
-    /* HERO ÇEKİRDEK HUD (mFk Core HUD) */
+    /* ELİT SİBER KOKPİT ÇUBUĞU (Streamlined Cyber HUD) */
     .core-hud {
-      padding: 32px 38px;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 36px;
-      align-items: center;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
       margin-bottom: 24px;
-      border-color: rgba(245, 158, 11, 0.18);
-      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(6, 182, 212, 0.22);
+      background: linear-gradient(180deg, rgba(10, 16, 32, 0.85) 0%, rgba(5, 8, 18, 0.92) 100%);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
     }
 
-    .core-reactor {
-      width: 144px;
-      height: 144px;
-      position: relative;
-      display: grid;
-      place-items: center;
+    .core-hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
     }
 
-    .core-reactor svg.ring { width: 100%; height: 100%; transform: rotate(-90deg); }
-    .core-bg { fill: none; stroke: rgba(255, 255, 255, 0.04); stroke-width: 6; }
-    .core-prog {
-      fill: none;
-      stroke: var(--state-color);
-      stroke-width: 6;
-      stroke-linecap: round;
-      stroke-dasharray: 389;
-      stroke-dashoffset: 0;
-      transition: stroke 0.4s ease;
-      filter: drop-shadow(0 0 14px var(--state-color));
+    .core-hud-status {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
 
-    .core-center-badge {
-      position: absolute;
-      width: 62px;
-      height: 62px;
+    .status-orb {
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      background: #090e1b;
-      border: 1px solid var(--border-gold);
-      display: grid;
-      place-items: center;
-      box-shadow: 0 0 28px var(--state-glow);
+      background: var(--state-color);
+      box-shadow: 0 0 16px var(--state-color), 0 0 30px var(--state-glow);
+      animation: statusPulse 2s infinite ease-in-out;
+      flex-shrink: 0;
     }
 
-    .core-center-badge svg { width: 30px; height: 30px; }
+    @keyframes statusPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.75; }
+    }
 
     body.is-online { --state-color: var(--mfk-emerald); --state-glow: var(--mfk-emerald-glow); }
     body.is-offline { --state-color: var(--mfk-rose); --state-glow: var(--mfk-rose-glow); }
     body.is-working { --state-color: var(--mfk-gold); --state-glow: var(--mfk-gold-glow); }
-    body.is-working .core-prog {
-      stroke-dasharray: 100 289;
-      animation: reactorSpin 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    }
-    @keyframes reactorSpin { 100% { transform: rotate(360deg); } }
 
-    .core-info h2 {
+    .core-hud-text h2 {
       font-family: var(--font-display);
-      font-size: clamp(26px, 3.2vw, 36px);
+      font-size: 20px;
       font-weight: 800;
       letter-spacing: -0.01em;
-      line-height: 1.15;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .core-status-pill {
+    .core-hud-text .sub {
       font-family: var(--font-mono);
       font-size: 11.5px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      color: var(--state-color);
-      display: inline-flex;
+      color: #64748b;
+      margin-top: 2px;
+      display: flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
+      gap: 8px;
     }
 
-    .core-status-pill .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--state-color);
-      box-shadow: 0 0 10px var(--state-color);
+    .core-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
-    .core-telemetry {
+    .core-actions .btn {
+      padding: 11px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      border-radius: 10px;
+    }
+
+    .core-telemetry-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 12px;
-      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .telem-box {
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 12px;
+    .telem-cell {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
       padding: 10px 14px;
       display: flex;
       flex-direction: column;
+      gap: 3px;
       transition: all 0.2s ease;
     }
-    .telem-box:hover {
+
+    .telem-cell:hover {
       background: rgba(255, 255, 255, 0.04);
       border-color: rgba(6, 182, 212, 0.3);
-      transform: translateY(-1px);
     }
-    .telem-lbl {
+
+    .telem-cell-lbl {
       font-size: 10.5px;
-      color: #94a3b8;
+      color: #64748b;
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       font-family: var(--font-mono);
       display: flex;
       align-items: center;
+      gap: 5px;
     }
-    .telem-val {
-      font-size: 15px;
+
+    .telem-cell-val {
+      font-size: 13.5px;
       font-weight: 700;
-      color: #f8fafc;
+      color: #f1f5f9;
       font-family: var(--font-mono);
-      margin-top: 4px;
     }
-
-    .core-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      min-width: 300px;
-    }
-
-    .core-actions .btn { padding: 15px 16px; font-size: 14px; }
 
     /* TAKTİK SAYAÇ ÇUBUĞU */
     .tactical-strip {
@@ -967,81 +957,82 @@
     </div>
   </header>
 
-  <!-- REAKTÖR HUD: CANLI DURUM VE KOMUTA MERKEZİ -->
+  <!-- ELİT SİBER KOKPİT ÇUBUĞU (Yenilikçi & Sade Tasarım) -->
   <div class="panel core-hud">
-    <div class="core-reactor">
-      <svg class="ring" viewBox="0 0 134 134">
-        <circle class="core-bg" cx="67" cy="67" r="62"/>
-        <circle class="core-prog" cx="67" cy="67" r="62"/>
-      </svg>
-      <div class="core-center-badge" style="padding:0;width:104px;height:104px;border-radius:50%;background:#05070e;border:1.5px solid rgba(6,182,212,0.45);display:flex;align-items:center;justify-content:center;box-shadow:0 0 35px rgba(6,182,212,0.4);">
-        <img src="mFk_icon.png" alt="mFkVpN" style="width:96px;height:96px;object-fit:contain;">
+    <div class="core-hud-top">
+      <div class="core-hud-status">
+        <div class="status-orb" id="statusOrb"></div>
+        <div class="core-hud-text">
+          <h2 id="hudTitle">VPN Tüneli Çalışıyor</h2>
+          <div class="sub">
+            <span id="pillText" style="color:#34d399;font-weight:700;">SAVUNMA KALKANI AKTİF</span>
+            <span>•</span>
+            <span style="color:#94a3b8;">Hetzner Korumalı Tünel</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="core-actions">
+        <button class="btn btn-emerald" data-action="start">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Başlat
+        </button>
+        <button class="btn btn-rose" data-action="stop">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          Durdur
+        </button>
+        <button class="btn btn-gold" data-action="restart">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Yeniden Başlat
+        </button>
+        <button class="btn btn-cyan" data-action="status">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Tara
+        </button>
       </div>
     </div>
 
-    <div class="core-info">
-      <div class="core-status-pill">
-        <span class="dot"></span>
-        <span id="pillText">SAVUNMA KALKANI AKTİF</span>
+    <!-- ENTEGRE İNCE TELEMETRİ HATTI -->
+    <div class="core-telemetry-row">
+      <div class="telem-cell">
+        <span class="telem-cell-lbl">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Çalışma Süresi
+        </span>
+        <span class="telem-cell-val" id="valUptime">—</span>
       </div>
-      <h2 id="hudTitle">VPN Tüneli Çalışıyor</h2>
-      
-      <div class="core-telemetry">
-        <div class="telem-box">
-          <span class="telem-lbl">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Çalışma Süresi
-          </span>
-          <span class="telem-val" id="valUptime">—</span>
-        </div>
-        <div class="telem-box">
-          <span class="telem-lbl">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            Bağlı Cihazlar
-          </span>
-          <span class="telem-val" id="valPeers">0 Aktif Tünel</span>
-        </div>
-        <div class="telem-box">
-          <span class="telem-lbl">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            Son Sinyal
-          </span>
-          <span class="telem-val" id="valLastAction">—</span>
-        </div>
-        <div class="telem-box">
-          <span class="telem-lbl">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Toplam Trafik
-          </span>
-          <span class="telem-val" id="valTraffic" style="color:#38bdf8;">↓ 0 B / ↑ 0 B</span>
-        </div>
-        <div class="telem-box">
-          <span class="telem-lbl">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Saldırı Yüzeyi
-          </span>
-          <span class="telem-val" style="color:#34d399">0 Port (Kapalı)</span>
-        </div>
-      </div>
-    </div>
 
-    <div class="core-actions">
-      <button class="btn btn-emerald" data-action="start">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Başlat
-      </button>
-      <button class="btn btn-rose" data-action="stop">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-        Durdur
-      </button>
-      <button class="btn btn-gold" data-action="restart">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-        Yeniden Başlat
-      </button>
-      <button class="btn btn-cyan" data-action="status">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        Durumu Tara
-      </button>
+      <div class="telem-cell">
+        <span class="telem-cell-lbl">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          Bağlı Cihazlar
+        </span>
+        <span class="telem-cell-val" id="valPeers">0 Aktif Tünel</span>
+      </div>
+
+      <div class="telem-cell">
+        <span class="telem-cell-lbl">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Son Sinyal
+        </span>
+        <span class="telem-cell-val" id="valLastAction">—</span>
+      </div>
+
+      <div class="telem-cell">
+        <span class="telem-cell-lbl">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Canlı Trafik
+        </span>
+        <span class="telem-cell-val" id="valTraffic" style="color:#38bdf8;">↓ 0 B / ↑ 0 B</span>
+      </div>
+
+      <div class="telem-cell">
+        <span class="telem-cell-lbl">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Saldırı Yüzeyi
+        </span>
+        <span class="telem-cell-val" style="color:#34d399;">0 Port (Sıfır İzin)</span>
+      </div>
     </div>
   </div>
 
@@ -1121,19 +1112,17 @@
 
   </div>
 
-  <!-- ALT BİLGİ (FOOTER) -->
-  <footer style="margin-top:40px;padding:24px 0 32px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;font-size:12.5px;color:#64748b;font-family:var(--font-mono);">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#06b6d4;box-shadow:0 0 8px #06b6d4;"></span>
-      <span>© 2026 <strong style="color:#e2e8f0;font-weight:700;">mFkGames</strong>. Tüm hakları saklıdır.</span>
+  <!-- SABİT ALT BİLGİ (FOOTER) -->
+  <footer style="position:fixed;bottom:0;left:0;right:0;z-index:90;padding:calc(10px + env(safe-area-inset-bottom, 0px)) 24px 10px;background:rgba(4, 7, 16, 0.88);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#64748b;font-family:var(--font-mono);">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#06b6d4;box-shadow:0 0 8px #06b6d4;"></span>
+      <span>© 2026 <strong style="color:#e2e8f0;font-weight:700;">mFkGames</strong></span>
     </div>
-    <div style="display:flex;gap:18px;align-items:center;">
+    <div>
       <a href="#" id="btnOpenPrivacy" style="color:#38bdf8;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Gizlilik Politikası & Güvenlik Bildirgesi
       </a>
-      <span style="color:rgba(255,255,255,0.15)">•</span>
-      <span style="color:#475569;">v2.6 Stealth Core</span>
     </div>
   </footer>
 
