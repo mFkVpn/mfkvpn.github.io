@@ -63,16 +63,14 @@ flowchart LR
 
 ```
 mfkvpn/
-├── index.html                   # mFk // CYBERSHIELD Özel Siber Komuta Kokpiti
+├── index.html                   # mFkVpN Siber Komuta Kokpiti
+├── manifest.json                # PWA Mobil Uygulama Tanımı
 ├── LICENSE                      # mFk Games Özel Mülkiyet Lisansı
 ├── README.md                    # Sistem Dokümantasyonu
-├── .github/
-│   └── workflows/
-│       └── vpn-control.yml      # Otomatik GitOps Orkestrasyonu
-└── server/
-    ├── vpnctl                   # Sunucu yetkili yönetim betiği
-    ├── vpnctl-ssh               # Regex doğrulamalı SSH forced-command filtresi
-    └── sudoers-vpnctl           # Kısıtlı sudo izin kuralı
+└── .github/
+    └── workflows/
+        ├── vpn-control.yml      # GitOps Güvenli Kontrol
+        └── vpn-healthcheck.yml  # Otomatik Sağlık Taraması
 ```
 
 ---
