@@ -102,17 +102,35 @@
     }
 
     /* KİLİT EKRANI (Bespoke mFk Access Gate) */
+    /* KİLİT EKRANI (Bespoke mFk Access Gate - Gizemli & Siber Kasa) */
     #lockGate {
       position: fixed;
       inset: 0;
       z-index: 99999;
-      background: rgba(3, 5, 12, 0.96);
-      backdrop-filter: blur(28px);
+      background: radial-gradient(circle at 50% 40%, #060c1d 0%, #020408 80%);
+      backdrop-filter: blur(40px);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
-      transition: opacity 0.45s ease, visibility 0.45s ease;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
+    }
+
+    #lockGate::before {
+      content: "";
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 70%);
+      filter: blur(50px);
+      animation: gatePulse 4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes gatePulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      100% { transform: scale(1.15); opacity: 1; }
     }
 
     #lockGate.cleared {
@@ -122,69 +140,113 @@
     }
 
     .gate-card {
-      background: linear-gradient(180deg, rgba(14, 20, 36, 0.95) 0%, rgba(6, 9, 19, 0.98) 100%);
-      border: 1px solid rgba(6, 182, 212, 0.35);
-      border-radius: 24px;
-      padding: 44px 36px;
-      max-width: 440px;
+      background: rgba(8, 13, 26, 0.75);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 32px;
+      padding: 50px 40px 44px;
+      max-width: 420px;
       width: 100%;
-      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.95), 0 0 60px rgba(6, 182, 212, 0.15), 0 0 30px rgba(168, 85, 247, 0.12);
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.95), 0 0 50px rgba(6, 182, 212, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(30px);
       text-align: center;
       position: relative;
+      overflow: hidden;
+    }
+
+    .gate-card::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent 45%, rgba(6, 182, 212, 0.04) 50%, transparent 55%);
+      transform: rotate(-30deg);
+      pointer-events: none;
     }
 
     .gate-crest {
-      width: 130px;
-      height: 130px;
-      margin: 0 auto 16px;
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      filter: drop-shadow(0 0 24px rgba(6, 182, 212, 0.45));
+      position: relative;
+    }
+
+    .gate-crest::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, rgba(168, 85, 247, 0.2) 60%, transparent 75%);
+      filter: blur(14px);
+      z-index: 0;
+      animation: crestGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes crestGlow {
+      0% { transform: scale(0.92); opacity: 0.7; }
+      100% { transform: scale(1.08); opacity: 1; }
     }
 
     .gate-crest img {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 0 25px rgba(6, 182, 212, 0.6));
     }
 
-    .gate-card h2 {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      background: linear-gradient(135deg, #ffffff 20%, #38bdf8 60%, #c084fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 6px;
+    .gate-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: #38bdf8;
+      background: rgba(6, 182, 212, 0.08);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 22px;
+      text-transform: uppercase;
     }
 
-    .gate-card p {
-      font-size: 13px;
-      color: var(--ink-dim);
-      margin-bottom: 24px;
+    .gate-tag::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
     }
 
     .gate-input {
       width: 100%;
-      background: #03060d;
-      border: 1px solid rgba(6, 182, 212, 0.3);
-      border-radius: var(--radius-sm);
-      padding: 14px;
+      background: rgba(3, 6, 14, 0.85);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      border-radius: 14px;
+      padding: 16px;
       color: #38bdf8;
       font-family: var(--font-mono);
-      font-size: 20px;
-      letter-spacing: 0.25em;
+      font-size: 22px;
+      letter-spacing: 0.3em;
       text-align: center;
-      margin-bottom: 16px;
-      transition: var(--transition);
+      margin-bottom: 18px;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
     }
 
     .gate-input:focus {
       outline: none;
-      border-color: var(--mfk-cyan);
-      box-shadow: 0 0 25px rgba(6, 182, 212, 0.35);
+      border-color: #06b6d4;
+      background: rgba(3, 6, 14, 0.95);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.4), inset 0 2px 6px rgba(0, 0, 0, 0.8);
     }
 
     .gate-card.error-shake {
@@ -772,19 +834,19 @@
 </head>
 <body class="is-online">
 
-<!-- mFk SİBER KİLİT EKRANI -->
+<!-- mFk SİBER KİLİT EKRANI (GİZEMLİ GİRİŞ PORTALI) -->
 <div id="lockGate">
   <div class="gate-card" id="gateCard">
     <div class="gate-crest">
-      <img src="mFk_icon.png" alt="mFkVpN">
+      <img src="mFk_icon.png" alt="mFk System">
     </div>
-    <h2>mFkVpN</h2>
-    <p>Yetkili mFk Games Ağı. Başlatmak için Master PIN girin.</p>
     
-    <input type="password" id="gatePin" class="gate-input" maxlength="24" placeholder="••••••••" autocomplete="current-password" autofocus>
+    <div class="gate-tag">GÜVENLİ ERİŞİM KASASI</div>
     
-    <button class="btn btn-gold" id="btnGateUnlock" style="width:100%;padding:14px;font-size:15px;background:linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);color:#fff;box-shadow:0 0 25px rgba(6,182,212,0.45);">
-      Sistemi Başlat
+    <input type="password" id="gatePin" class="gate-input" maxlength="24" placeholder="ŞİFREYİ GİRİN" autocomplete="current-password" autofocus>
+    
+    <button class="btn btn-gold" id="btnGateUnlock" style="width:100%;padding:15px;font-size:14px;letter-spacing:0.12em;font-weight:800;background:linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);color:#fff;border-radius:14px;box-shadow:0 0 35px rgba(6,182,212,0.45);text-transform:uppercase;">
+      Sistemi Doğrula
     </button>
   </div>
 </div>
