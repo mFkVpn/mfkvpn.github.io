@@ -700,11 +700,45 @@
     }
     .qr-box svg { width: 100%; height: auto; display: block; }
 
+    body.is-offline {
+      --state-color: var(--mfk-rose);
+      --state-glow: var(--mfk-rose-glow);
+    }
+    body.is-offline::before {
+      background: radial-gradient(circle at 50% 30%, rgba(244, 63, 94, 0.18) 0%, transparent 60%) !important;
+    }
+    body.is-offline .core-reactor svg.ring {
+      animation: alertPulse 1.8s infinite alternate ease-in-out;
+    }
+    @keyframes alertPulse {
+      0% { filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.3)); }
+      100% { filter: drop-shadow(0 0 26px rgba(244, 63, 94, 0.8)); }
+    }
+
     @media (max-width: 992px) {
       .core-hud { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 26px 20px; }
-      .core-telemetry { justify-content: center; }
-      .core-actions { width: 100%; }
+      .core-telemetry { justify-content: center; gap: 20px 24px; }
+      .core-actions { width: 100%; min-width: 0; }
       .cockpit-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .core-actions {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .core-actions .btn {
+        padding: 12px 10px;
+        font-size: 13px;
+        justify-content: center;
+      }
+      .core-telemetry {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        width: 100%;
+        text-align: left;
+      }
     }
   </style>
 </head>
@@ -801,6 +835,13 @@
             Son Sinyal
           </span>
           <span class="telem-val" id="valLastAction">—</span>
+        </div>
+        <div class="telem-box">
+          <span class="telem-lbl">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Toplam Trafik
+          </span>
+          <span class="telem-val" id="valTraffic" style="color:#38bdf8;">↓ 0 B / ↑ 0 B</span>
         </div>
         <div class="telem-box">
           <span class="telem-lbl">
@@ -1061,7 +1102,7 @@
   const $$ = s => document.querySelectorAll(s);
   const ls = localStorage;
   const GITHUB_API = 'https://api.github.com';
-  const REPO = 'mFkGames/mfkvpn.github.io';
+  const REPO = 'mFkVpn/mfkvpn.github.io';
   const WORKFLOW = 'vpn-control.yml';
 
   const _VAULT_KEY = '554d6454716a601fe69bdaaec5e28999475d2a66566434f79987acf9868fbb563c151b540a7ad5b5';
@@ -1347,11 +1388,18 @@
   function renderPeers(list) {
     const box = $('#peerContainer');
     $('#countLabel').textContent = `${list.length} Kayıtlı`;
+
+    // Toplam Trafik Hesaplama
+    let totRx = 0, totTx = 0;
+    list.forEach(p => { totRx += (p.rx || 0); totTx += (p.tx || 0); });
+    const trafEl = $('#valTraffic');
+    if (trafEl) trafEl.textContent = `↓ ${formatBytes(totRx)} / ↑ ${formatBytes(totTx)}`;
+
     if (!list.length) {
       box.innerHTML = `<div style="text-align:center;padding:30px;color:var(--ink-dim)">Yetkili cihaz yok.</div>`;
       return;
     }
-    box.innerHTML = list.map(p => {
+    box.innerHTML = list.map((p, idx) => {
       const live = p.hs && (Date.now() / 1000 - p.hs < 180);
       const isPc = p.name.startsWith('PC-') || /mac|rig|titan|pc|desktop|laptop/i.test(p.name);
       const isTab = p.name.startsWith('TAB-') || /ipad|tablet/i.test(p.name);
@@ -1376,11 +1424,35 @@
             </div>
           </div>
           <div style="display:flex;gap:6px;">
+            <button class="btn btn-sm btnQrView" data-idx="${idx}" title="QR Kodu ve Ayarları Gör" style="background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.3);color:#38bdf8;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </button>
             <button class="btn btn-sm btnDel" data-name="${p.name}" title="Erişimi İptal Et">Sil</button>
           </div>
         </div>
       `;
     }).join('');
+
+    $$('.btnQrView').forEach(b => {
+      b.onclick = () => {
+        const p = list[parseInt(b.dataset.idx, 10)];
+        if (!p) return;
+        sfx('click');
+        const ep = `${activeNode.ip}:51820`;
+        currentConf = `[Interface]\n# Not: Güvenlik gereği özel istemci anahtarı cihazın kendi tarayıcısında üretilir.\nAddress = ${p.ip || '10.13.13.x'}/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = ${p.pub || 'ServerPublicKey'}\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+        currentConfName = p.name;
+        if (window.qrcode) {
+          const q = qrcode(0, 'M');
+          q.addData(currentConf);
+          q.make();
+          $('#qrTarget').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+        }
+        $('#resTitle').textContent = `"${p.name}" Bağlantı Bilgisi`;
+        $('#stepForm').hidden = true;
+        $('#stepResult').hidden = false;
+        $('#diagPeer').showModal();
+      };
+    });
 
     $$('.btnDel').forEach(b => {
       b.onclick = () => {
