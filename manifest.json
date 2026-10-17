@@ -1,0 +1,18 @@
+{
+  "name": "mFkVpN",
+  "short_name": "mFkVpN",
+  "description": "mFk Games Özel GitOps WireGuard Savunma Ağı ve Komuta Kokpiti",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#05070e",
+  "theme_color": "#05070e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "mFk_icon.png",
+      "sizes": "340x340",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

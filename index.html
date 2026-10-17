@@ -7,9 +7,14 @@
   <meta name="description" content="mFk Games Özel GitOps WireGuard Savunma Ağı ve Komuta Kokpiti.">
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   
-  <!-- mFk Logo Favicon -->
+  <!-- mFk Logo Favicon & PWA App Kısayolu -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="mFk_icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="mFkVpN">
+  <meta name="theme-color" content="#05070e">
   
   <!-- Fontlar -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -972,6 +977,19 @@
 
   <div id="nodeList" style="display:flex;flex-direction:column;gap:8px;margin:14px 0;max-height:260px;overflow-y:auto;"></div>
 
+  <!-- DİNAMİK IP & DDNS ROTASYON GÜVENLİK KARTI -->
+  <div style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.22);border-radius:12px;padding:12px 14px;margin:12px 0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <b style="font-size:12.5px;color:#38bdf8;">🔄 Dinamik IP & Stealth Rotasyon</b>
+        <p style="font-size:11.5px;color:#94a3b8;margin:2px 0 0;">İz bırakmamak ve engelleri aşmak için periyodik IP/Port rotasyonu.</p>
+      </div>
+      <button class="btn btn-sm" id="btnRotateIp" style="background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.35);color:#38bdf8;font-size:11px;">
+        🎲 IP Tazele
+      </button>
+    </div>
+  </div>
+
   <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;">
     <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;font-family:var(--font-mono);font-weight:600;">+ Yeni Sunucu / Konum Ekle</p>
     <div style="display:grid;grid-template-columns:120px 1fr 1fr 70px;gap:8px;">
@@ -987,7 +1005,7 @@
         </select>
       </div>
       <div><label for="inpNodeName">Takma Ad</label><input id="inpNodeName" placeholder="HEL-02" maxlength="20"></div>
-      <div><label for="inpNodeIp">IP Adresi</label><input id="inpNodeIp" placeholder="46.224.x.x"></div>
+      <div><label for="inpNodeIp">IP veya DDNS</label><input id="inpNodeIp" placeholder="46.224.x.x / node.duckdns.org"></div>
       <div><label for="inpNodePort">Port</label><input id="inpNodePort" placeholder="22" value="22"></div>
     </div>
   </div>
@@ -1146,6 +1164,23 @@
     selectNode(bestIdx);
     logStream(`⚡ Otomatik önerilen en iyi sunucu: ${nodes[bestIdx].name} (${minPing} ms)`, 'cmd');
     alert(`En hızlı sunucu seçildi: ${nodes[bestIdx].country || ''} ${nodes[bestIdx].name} (${minPing} ms)`);
+  }
+
+  // Dinamik IP & Stealth Rotasyon
+  async function rotateServerIp() {
+    sfx('click');
+    confirmAction('Dinamik IP Tazelensin mi?', 'Mevcut sunucu IP/bağlantı rotasyonu tetiklenir. WireGuard tüneli yeni gizlilik parametresiyle tazelenir.', async () => {
+      setLock(true);
+      try {
+        logStream('🔄 [STEALTH] Dinamik IP rotasyonu tetikleniyor...', 'cmd');
+        await runWorkflowAction({ action: 'restart' }, 'IP Rotasyonu & Tünel Tazeleme');
+        logStream('✓ [STEALTH] IP Rotasyonu tamamlandı. Tünel güvenli ve aktif.', 'ok');
+        alert('IP Rotasyonu başarıyla uygulandı! Tünel yeni parametrelerle taze.');
+      } catch(e) {
+        logStream(`[HATA] Rotasyon başarısız: ${e.message}`, 'err');
+      }
+      setLock(false);
+    });
   }
 
   function unpackToken(hex, pin) {
@@ -1318,20 +1353,31 @@
     }
     box.innerHTML = list.map(p => {
       const live = p.hs && (Date.now() / 1000 - p.hs < 180);
+      const isPc = p.name.startsWith('PC-') || /mac|rig|titan|pc|desktop|laptop/i.test(p.name);
+      const isTab = p.name.startsWith('TAB-') || /ipad|tablet/i.test(p.name);
+      
+      const iconSvg = isPc 
+        ? `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
+        : (isTab 
+          ? `<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>`
+          : `<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`);
+
       return `
         <div class="device-card ${live ? 'online' : ''}">
           <div class="device-crest">
-            <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            <span class="status-light"></span>
+            ${iconSvg}
+            <span class="status-light" title="${live ? 'Aktif Tünel' : 'Bağlantı Yok'}"></span>
           </div>
           <div class="device-info">
-            <b>${p.name} <span class="ip-tag">${p.ip || '10.66.66.x'}</span></b>
+            <b>${p.name} <span class="ip-tag">${p.ip || '10.13.13.x'}</span></b>
             <div class="device-sub">
               <span>${p.hs ? formatRel(p.hs * 1000) : 'Bağlantı yok'}</span>
               <span>↓ ${formatBytes(p.rx||0)}  ↑ ${formatBytes(p.tx||0)}</span>
             </div>
           </div>
-          <button class="btn btn-sm btnDel" data-name="${p.name}">Sil</button>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-sm btnDel" data-name="${p.name}" title="Erişimi İptal Et">Sil</button>
+          </div>
         </div>
       `;
     }).join('');
@@ -1527,6 +1573,7 @@
     });
     $('#btnCloseNodes').onclick = () => $('#diagNodes').close();
     if ($('#btnAutoBestServer')) $('#btnAutoBestServer').onclick = recommendBestServer;
+    if ($('#btnRotateIp')) $('#btnRotateIp').onclick = rotateServerIp;
 
     $('#btnAddNode').onclick = () => {
       const country = ($('#inpNodeCountry') ? $('#inpNodeCountry').value : '🌐 Özel Düğüm').trim();
