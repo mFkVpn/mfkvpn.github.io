@@ -1,1 +1,0 @@
-vpnctl ALL=(root) NOPASSWD: /usr/local/bin/vpnctl start, /usr/local/bin/vpnctl stop, /usr/local/bin/vpnctl restart, /usr/local/bin/vpnctl status, /usr/local/bin/vpnctl list-peers, /usr/local/bin/vpnctl add-peer *, /usr/local/bin/vpnctl remove-peer *
