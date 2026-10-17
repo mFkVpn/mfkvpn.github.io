@@ -962,15 +962,20 @@
 
       .core-actions {
         width: 100% !important;
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px !important;
+        padding-bottom: 4px !important;
       }
 
       .core-actions .btn {
-        width: 100% !important;
-        padding: 10px 8px !important;
-        font-size: 12px !important;
+        flex: 1 0 auto !important;
+        padding: 8px 10px !important;
+        font-size: 11.5px !important;
+        white-space: nowrap !important;
         justify-content: center !important;
       }
 
@@ -1008,14 +1013,36 @@
         font-size: 11px !important;
       }
 
-      /* Cihaz Kartları */
+      /* Cihaz Kartları & Başlık Butonları */
       .panel-head {
-        padding: 14px 14px !important;
+        padding: 12px 14px !important;
         gap: 8px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
       }
 
       .panel-head .panel-label {
         font-size: 14.5px !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+      }
+
+      .panel-head > div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px !important;
+        padding-bottom: 2px !important;
+      }
+
+      .panel-head > div:last-child .btn {
+        flex: 0 0 auto !important;
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+        white-space: nowrap !important;
       }
 
       .device-grid {
@@ -1105,8 +1132,8 @@
   <div style="flex:1;min-height:20px;"></div>
 
   <!-- KİLİT EKRANI ALT BİLGİ & LİSANS -->
-  <footer style="z-index:2;position:relative;width:100%;max-width:540px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px;font-size:12px;color:#64748b;font-family:var(--font-mono);text-align:center;padding:12px 10px;">
-    <span>© 2026 <strong style="color:#e2e8f0;font-weight:700;">mFkGames</strong>. Tüm hakları saklıdır.</span>
+  <footer style="z-index:2;position:relative;width:100%;max-width:540px;display:flex;justify-content:center;align-items:center;gap:10px;font-size:12px;color:#64748b;font-family:var(--font-mono);text-align:center;padding:12px 10px;white-space:nowrap;">
+    <span>© 2026 <strong style="color:#e2e8f0;font-weight:700;">mFkGames</strong></span>
     <span style="color:rgba(255,255,255,0.2)">•</span>
     <a href="#" id="btnOpenPrivacyGate" style="color:#38bdf8;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:5px;">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
