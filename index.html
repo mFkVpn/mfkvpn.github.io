@@ -107,25 +107,36 @@
       position: fixed;
       inset: 0;
       z-index: 99999;
-      background: radial-gradient(circle at 50% 40%, #060c1d 0%, #020408 80%);
+      background: #020408;
       backdrop-filter: blur(40px);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: calc(24px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) calc(20px + env(safe-area-inset-left, 0px));
       transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
+      overflow: hidden;
+    }
+
+    #gateCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
     }
 
     #lockGate::before {
       content: "";
       position: absolute;
-      width: 450px;
-      height: 450px;
+      width: 550px;
+      height: 550px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 70%);
-      filter: blur(50px);
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.16) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 70%);
+      filter: blur(60px);
       animation: gatePulse 4s ease-in-out infinite alternate;
       pointer-events: none;
+      z-index: 1;
     }
 
     @keyframes gatePulse {
@@ -166,8 +177,8 @@
     }
 
     .gate-crest {
-      width: 180px;
-      height: 180px;
+      width: 270px;
+      height: 270px;
       margin: 0 auto 24px;
       display: flex;
       align-items: center;
@@ -879,8 +890,8 @@
         border-radius: 26px;
       }
       .gate-crest {
-        width: 140px;
-        height: 140px;
+        width: 210px;
+        height: 210px;
       }
     }
   </style>
@@ -889,17 +900,18 @@
 
 <!-- mFk SİBER KİLİT EKRANI (GİZEMLİ GİRİŞ PORTALI) -->
 <div id="lockGate">
-  <div class="gate-card" id="gateCard">
+  <canvas id="gateCanvas"></canvas>
+  <div class="gate-card" id="gateCard" style="z-index:2;position:relative;">
     <div class="gate-crest">
       <img src="mFk_icon.png" alt="mFk System">
     </div>
     
-    <div class="gate-tag">GÜVENLİ ERİŞİM KASASI</div>
+    <div class="gate-tag">KİMLİK DOĞRULAMA // MFK-SHIELD</div>
     
-    <input type="password" id="gatePin" class="gate-input" maxlength="24" placeholder="ŞİFREYİ GİRİN" autocomplete="current-password" autofocus>
+    <input type="password" id="gatePin" class="gate-input" maxlength="24" placeholder="" autocomplete="current-password" autofocus>
     
-    <button class="btn btn-gold" id="btnGateUnlock" style="width:100%;padding:15px;font-size:14px;letter-spacing:0.12em;font-weight:800;background:linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);color:#fff;border-radius:14px;box-shadow:0 0 35px rgba(6,182,212,0.45);text-transform:uppercase;">
-      Sistemi Doğrula
+    <button class="btn btn-gold" id="btnGateUnlock" style="width:100%;padding:15px;font-size:15px;letter-spacing:0.15em;font-weight:800;background:linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);color:#fff;border-radius:14px;box-shadow:0 0 35px rgba(6,182,212,0.45);text-transform:uppercase;">
+      Giriş
     </button>
   </div>
 </div>
@@ -1092,7 +1104,67 @@
 
   </div>
 
+  <!-- ALT BİLGİ (FOOTER) -->
+  <footer style="margin-top:40px;padding:24px 0 32px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;font-size:12.5px;color:#64748b;font-family:var(--font-mono);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#06b6d4;box-shadow:0 0 8px #06b6d4;"></span>
+      <span>© 2026 <strong style="color:#e2e8f0;font-weight:700;">mFkGames</strong>. Tüm hakları saklıdır.</span>
+    </div>
+    <div style="display:flex;gap:18px;align-items:center;">
+      <a href="#" id="btnOpenPrivacy" style="color:#38bdf8;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Gizlilik Politikası & Güvenlik Bildirgesi
+      </a>
+      <span style="color:rgba(255,255,255,0.15)">•</span>
+      <span style="color:#475569;">v2.6 Stealth Core</span>
+    </div>
+  </footer>
+
 </div>
+
+<!-- GİZLİLİK POLİTİKASI & GÜVENLİK DİYALOĞU -->
+<dialog id="diagPrivacy" style="max-width:620px;padding:32px;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+    <div style="width:40px;height:40px;border-radius:12px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);display:flex;align-items:center;justify-content:center;color:#38bdf8;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div>
+      <h3 style="margin:0;font-size:19px;color:#fff;">Gizlilik Politikası & Güvenlik Bildirgesi</h3>
+      <p style="margin:2px 0 0;font-size:12px;color:#64748b;">mFkGames Sıfır Günlük (Zero-Logs) & Şifreleme İlkeleri</p>
+    </div>
+  </div>
+
+  <div style="max-height:360px;overflow-y:auto;padding-right:8px;font-size:13px;line-height:1.65;color:#cbd5e1;display:flex;flex-direction:column;gap:14px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);padding-top:14px;padding-bottom:14px;">
+    <div>
+      <h4 style="color:#38bdf8;font-size:13.5px;margin:0 0 4px;">1. Sıfır Günlük (Zero-Logs) Taahhüdü</h4>
+      <p style="margin:0;color:#94a3b8;font-size:12.5px;">mFkVpN altyapısı hiçbir kullanıcı etkinliğini, ziyaret edilen web sitelerini, DNS sorgularını, IP adreslerini veya iletilen veri içeriklerini diske kaydetmez. Bağlantılar doğrudan RAM üzerinden işlenir ve oturum sonlandığında bellek temizlenir.</p>
+    </div>
+
+    <div>
+      <h4 style="color:#38bdf8;font-size:13.5px;margin:0 0 4px;">2. Uçtan Uca Asimetrik Kriptografi (X25519)</h4>
+      <p style="margin:0;color:#94a3b8;font-size:12.5px;">Cihaz yetkilendirmesi sırasında kullanılan WireGuard özel anahtarları (Private Key) tamamen istemci tarafında (tarayıcınızda) yerel olarak oluşturulur. Özel anahtarınız asla sunucuya, üçüncü taraflara veya ağ ortamına gönderilmez.</p>
+    </div>
+
+    <div>
+      <h4 style="color:#38bdf8;font-size:13.5px;margin:0 0 4px;">3. Çerez ve İzleme Engelleme</h4>
+      <p style="margin:0;color:#94a3b8;font-size:12.5px;">Panelimizde üçüncü taraf analiz araçları (Google Analytics, reklam izleyicileri vb.) bulunmaz. Tercihler yalnızca yerel tarayıcınızda (Local / Session Storage) saklanır.</p>
+    </div>
+
+    <div>
+      <h4 style="color:#38bdf8;font-size:13.5px;margin:0 0 4px;">4. Güvenli API ve Şifrelenmiş İletişim</h4>
+      <p style="margin:0;color:#94a3b8;font-size:12.5px;">Sunucu yönetim çağrıları GitHub REST API v3 ve SSH tüneli üzerinden 256-bit TLS şifreleme ve dinamik oturum belirteçleri ile korunmaktadır.</p>
+    </div>
+
+    <div>
+      <h4 style="color:#38bdf8;font-size:13.5px;margin:0 0 4px;">5. Telif & Mülkiyet</h4>
+      <p style="margin:0;color:#94a3b8;font-size:12.5px;">Tüm mFkVpN arayüzü, siber güvenlik algoritmaları ve mFk tescilli tasarımları <strong>mFkGames</strong>'e aittir. İzinsiz kopyalanamaz ve dağıtılamaz.</p>
+    </div>
+  </div>
+
+  <div class="dialog-foot" style="margin-top:20px;display:flex;justify-content:flex-end;">
+    <button class="btn btn-gold" id="btnClosePrivacy" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;padding:10px 24px;">Anladım</button>
+  </div>
+</dialog>
 
 <!-- CİHAZ EKLEME MODALI -->
 <dialog id="diagPeer">
@@ -1807,6 +1879,66 @@
       updateNodeBadge();
       sfx('unlock');
     };
+
+    // Gizlilik Politikası Modalı
+    $('#btnOpenPrivacy').onclick = e => {
+      e.preventDefault();
+      sfx('click');
+      $('#diagPrivacy').showModal();
+    };
+    $('#btnClosePrivacy').onclick = () => $('#diagPrivacy').close();
+
+    // Kozmik Bağımsız Yıldızlar / Siber Parçacıklar (Lock Gate)
+    (function initGateStars() {
+      const cvs = document.getElementById('gateCanvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      let w = (cvs.width = window.innerWidth);
+      let h = (cvs.height = window.innerHeight);
+
+      window.addEventListener('resize', () => {
+        w = cvs.width = window.innerWidth;
+        h = cvs.height = window.innerHeight;
+      });
+
+      const stars = Array.from({ length: 85 }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 1.8 + 0.4,
+        alpha: Math.random() * 0.8 + 0.2,
+        dx: (Math.random() - 0.5) * 0.45,
+        dy: (Math.random() - 0.5) * 0.45,
+        pulseSpeed: 0.01 + Math.random() * 0.02,
+        color: Math.random() > 0.4 ? 'rgba(56, 189, 248, ' : (Math.random() > 0.5 ? 'rgba(168, 85, 247, ' : 'rgba(255, 255, 255, ')
+      }));
+
+      function renderStars() {
+        if ($('#lockGate').classList.contains('cleared')) return;
+        ctx.clearRect(0, 0, w, h);
+
+        stars.forEach(s => {
+          s.x += s.dx;
+          s.y += s.dy;
+          if (s.x < 0) s.x = w;
+          if (s.x > w) s.x = 0;
+          if (s.y < 0) s.y = h;
+          if (s.y > h) s.y = 0;
+
+          s.alpha += Math.sin(Date.now() * 0.002 * s.pulseSpeed) * 0.008;
+          const a = Math.max(0.15, Math.min(0.95, s.alpha));
+
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = s.color + a + ')';
+          ctx.shadowBlur = s.r > 1.2 ? 10 : 0;
+          ctx.shadowColor = '#38bdf8';
+          ctx.fill();
+        });
+
+        requestAnimationFrame(renderStars);
+      }
+      requestAnimationFrame(renderStars);
+    })();
 
     updateNodeBadge();
     renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
