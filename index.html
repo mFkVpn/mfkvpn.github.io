@@ -889,70 +889,117 @@
       100% { filter: drop-shadow(0 0 26px rgba(244, 63, 94, 0.8)); }
     }
 
+    .lbl-short { display: none; }
+    .lbl-full { display: inline; }
+
+    .cockpit-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 90;
+      padding: calc(10px + env(safe-area-inset-bottom, 0px)) 24px 10px;
+      background: rgba(4, 7, 16, 0.88);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: #64748b;
+      font-family: var(--font-mono);
+    }
+
     @media (max-width: 992px) {
       .cockpit-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 680px) {
+      .lbl-short { display: inline !important; }
+      .lbl-full { display: none !important; }
+
       .cockpit {
         padding-left: calc(12px + env(safe-area-inset-left, 0px));
         padding-right: calc(12px + env(safe-area-inset-right, 0px));
-        padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: 20px !important;
       }
 
-      /* Header Hizalama & Büyütülmüş Logo */
+      /* Header Hizalama & Büyütülmüş Logo (Tek Satır, Asla Sarmayan Flex) */
       header {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        padding: 6px 0 16px;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 6px 0 14px !important;
       }
 
       .brand-identity {
-        gap: 12px;
-        min-width: 0;
-        display: flex;
-        align-items: center;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
       }
 
       .brand-crest-box {
-        width: 72px !important;
-        height: 72px !important;
+        width: 64px !important;
+        height: 64px !important;
         flex-shrink: 0 !important;
       }
 
+      .brand-titles {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+        overflow: hidden !important;
+      }
+
       .brand-titles h1 {
-        font-size: 24px !important;
-        margin-bottom: 3px;
+        font-size: 22px !important;
+        margin-bottom: 2px !important;
         line-height: 1 !important;
+        white-space: nowrap !important;
       }
 
       #activeNodeBadge {
         font-size: 10px !important;
-        padding: 3px 6px !important;
-        max-width: 140px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        padding: 2px 6px !important;
+        max-width: 100% !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
       }
 
-      /* Mobilde Düğüm ve Çıkış Butonları: Sadece Şık İkon Buton Şeklinde */
+      #activeNodeLabel {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        max-width: 130px !important;
+        display: inline-block !important;
+      }
+
+      /* Mobilde Düğüm ve Çıkış Butonları: Yan Yana İkon Buton (Asla alt satıra düşmez) */
       header > div:last-child {
         display: flex !important;
-        gap: 8px !important;
+        gap: 6px !important;
         flex-shrink: 0 !important;
       }
 
       header .btn {
-        width: 40px !important;
-        height: 40px !important;
+        width: 38px !important;
+        height: 38px !important;
         padding: 0 !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
+        flex-shrink: 0 !important;
       }
 
       header .btn .btn-text {
@@ -982,23 +1029,29 @@
         font-size: 17px !important;
       }
 
+      /* 4 Ana Buton: Mobilde Tam Yan Yana (Taşmasız Grid) */
       .core-actions {
         width: 100% !important;
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        gap: 6px !important;
-        padding-bottom: 4px !important;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 5px !important;
+        padding-bottom: 0 !important;
+        overflow-x: visible !important;
       }
 
       .core-actions .btn {
-        flex: 1 0 auto !important;
-        padding: 8px 10px !important;
-        font-size: 11.5px !important;
+        width: 100% !important;
+        padding: 8px 2px !important;
+        font-size: 11px !important;
         white-space: nowrap !important;
         justify-content: center !important;
+        gap: 3px !important;
+      }
+
+      .core-actions .btn svg {
+        width: 13px !important;
+        height: 13px !important;
+        flex-shrink: 0;
       }
 
       /* Telemetri Grid (Mobilde 2 sütun tertemiz) */
@@ -1038,7 +1091,7 @@
       /* Cihaz Kartları & Başlık Butonları */
       .panel-head {
         padding: 12px 14px !important;
-        gap: 8px !important;
+        gap: 10px !important;
         flex-direction: column !important;
         align-items: flex-start !important;
       }
@@ -1049,22 +1102,23 @@
         justify-content: space-between !important;
       }
 
-      .panel-head > div:last-child {
+      /* 4 Cihaz Aksiyon Butonu: Mobilde Tam Yan Yana (Taşmasız Grid) */
+      .panel-head .panel-action-group {
         width: 100% !important;
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        gap: 6px !important;
-        padding-bottom: 2px !important;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 5px !important;
+        padding-bottom: 0 !important;
+        overflow-x: visible !important;
       }
 
-      .panel-head > div:last-child .btn {
-        flex: 0 0 auto !important;
-        padding: 6px 10px !important;
+      .panel-head .panel-action-group .btn {
+        width: 100% !important;
+        padding: 7px 2px !important;
         font-size: 11px !important;
         white-space: nowrap !important;
+        justify-content: center !important;
+        gap: 3px !important;
       }
 
       .device-grid {
@@ -1103,6 +1157,42 @@
         font-size: 10px !important;
         gap: 8px !important;
         flex-wrap: wrap;
+      }
+
+      .pagination-bar {
+        padding: 10px 12px !important;
+        font-size: 11px !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        justify-content: center !important;
+      }
+
+      /* Mobilde Doğal Akan (Static) Footer - İçeriğin Üzerini Kapatmaz */
+      .cockpit-footer {
+        position: static !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+        margin-top: 24px !important;
+        padding: 16px 8px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 8px !important;
+      }
+
+      /* Dialoglar Mobilde Tam Otursun */
+      dialog {
+        width: calc(100% - 24px) !important;
+        max-width: calc(100% - 24px) !important;
+        padding: 20px 16px !important;
+        border-radius: 18px !important;
+      }
+
+      .node-add-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
       }
 
       /* Kilit Ekranı */
@@ -1215,20 +1305,21 @@
 
       <div class="core-actions">
         <button class="btn btn-emerald" data-action="start">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Başlat
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Başlat</span>
         </button>
         <button class="btn btn-rose" data-action="stop">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-          Durdur
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          <span>Durdur</span>
         </button>
         <button class="btn btn-gold" data-action="restart">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-          Yeniden Başlat
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <span class="lbl-full">Yeniden Başlat</span>
+          <span class="lbl-short">Yeniden</span>
         </button>
         <button class="btn btn-cyan" data-action="status">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          Tara
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span>Tara</span>
         </button>
       </div>
     </div>
@@ -1305,12 +1396,12 @@
             Yetkili mFk Cihazları
             <small id="countLabel" style="color:var(--ink-dim);font-weight:400;font-size:12px;margin-left:6px;">0 Kayıtlı</small>
           </div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <button class="btn btn-sm" id="btnExportBackup" title="Cihaz Listesini İndir (Yedek)">💾 Yedekle</button>
-            <button class="btn btn-sm" id="btnImportBackup" title="Yedekten Cihaz Yükle">📥 Yükle</button>
+          <div class="panel-action-group" style="display:flex;gap:6px;align-items:center;">
+            <button class="btn btn-sm" id="btnExportBackup" title="Cihaz Listesini İndir (Yedek)">💾 <span class="lbl-full">Yedekle</span><span class="lbl-short">Yedek</span></button>
+            <button class="btn btn-sm" id="btnImportBackup" title="Yedekten Cihaz Yükle">📥 <span class="lbl-full">Yükle</span><span class="lbl-short">Yükle</span></button>
             <input type="file" id="fileImportBackup" accept=".json" style="display:none;">
-            <button class="btn btn-sm" id="btnRefreshPeers">Yenile</button>
-            <button class="btn btn-gold btn-sm" id="btnAddPeer">+ Yeni Cihaz</button>
+            <button class="btn btn-sm" id="btnRefreshPeers"><span class="lbl-full">Yenile</span><span class="lbl-short">Yenile</span></button>
+            <button class="btn btn-gold btn-sm" id="btnAddPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;">＋ <span class="lbl-full">Yeni Cihaz</span><span class="lbl-short">Cihaz</span></button>
           </div>
         </div>
         <div class="device-grid" id="peerContainer"></div>
@@ -1355,8 +1446,8 @@
 
   </div>
 
-  <!-- SABİT ALT BİLGİ (FOOTER) -->
-  <footer style="position:fixed;bottom:0;left:0;right:0;z-index:90;padding:calc(10px + env(safe-area-inset-bottom, 0px)) 24px 10px;background:rgba(4, 7, 16, 0.88);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#64748b;font-family:var(--font-mono);">
+  <!-- SABİT / AKAN ALT BİLGİ (FOOTER) -->
+  <footer class="cockpit-footer">
     <div style="display:flex;align-items:center;gap:8px;">
       <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#06b6d4;box-shadow:0 0 8px #06b6d4;"></span>
       <span>© 2026 <strong style="color:#e2e8f0;font-weight:700;">mFkGames</strong></span>
@@ -1498,7 +1589,7 @@
 
   <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;">
     <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;font-family:var(--font-mono);font-weight:600;">+ Yeni Sunucu / Konum Ekle</p>
-    <div style="display:grid;grid-template-columns:120px 1fr 1fr 70px;gap:8px;">
+    <div class="node-add-grid" style="display:grid;grid-template-columns:120px 1fr 1fr 70px;gap:8px;">
       <div>
         <label for="inpNodeCountry">Ülke</label>
         <select id="inpNodeCountry" style="padding:10px 8px;font-size:12px;">
