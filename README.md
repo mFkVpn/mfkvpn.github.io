@@ -1,8 +1,10 @@
 <div align="center">
 
-# 🛡️ mFk // CYBERSHIELD
+<img src="mFk_icon.png" width="120" alt="mFkVpN Logo" style="border-radius:24px; box-shadow:0 0 30px rgba(6,182,212,0.4);">
 
-### Sıfır Saldırı Yüzeyli, Açık Portsuz Kişisel GitOps WireGuard Komuta Merkezi
+# 🌐 mFkVpN
+
+### Sıfır Saldırı Yüzeyli, Küresel Düğümlü Kişisel GitOps WireGuard Komuta Merkezi
 
 **mFk Games** için özel olarak geliştirilmiş askeri düzeyde kişisel VPN savunma hattı.  
 İnternete açık web paneli yok, dinleyen admin portu yok, yetkisiz shell erişimi yok.

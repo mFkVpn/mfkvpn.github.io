@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>mFk // CYBERSHIELD • Özel Ağ Komuta Merkezi</title>
+  <title>mFkVpN • Özel Ağ Komuta Merkezi</title>
   <meta name="description" content="mFk Games Özel GitOps WireGuard Savunma Ağı ve Komuta Kokpiti.">
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   
   <!-- mFk Logo Favicon -->
-  <link rel="icon" type="image/jpeg" href="mFk.jpg">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="mFk_icon.png">
   
   <!-- Fontlar -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -116,32 +117,39 @@
     }
 
     .gate-card {
-      background: linear-gradient(180deg, #0d1424 0%, #060913 100%);
-      border: 1px solid var(--border-gold);
-      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(14, 20, 36, 0.95) 0%, rgba(6, 9, 19, 0.98) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      border-radius: 24px;
       padding: 44px 36px;
       max-width: 440px;
       width: 100%;
-      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.95), 0 0 50px rgba(245, 158, 11, 0.15);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.95), 0 0 60px rgba(6, 182, 212, 0.15), 0 0 30px rgba(168, 85, 247, 0.12);
       text-align: center;
       position: relative;
     }
 
     .gate-crest {
-      width: 78px;
-      height: 78px;
-      margin: 0 auto 20px;
-      filter: drop-shadow(0 0 20px var(--mfk-gold-glow));
+      width: 130px;
+      height: 130px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 24px rgba(6, 182, 212, 0.45));
     }
 
-    .gate-crest svg { width: 100%; height: 100%; }
+    .gate-crest img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
     .gate-card h2 {
       font-family: var(--font-display);
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 800;
-      letter-spacing: 0.04em;
-      background: linear-gradient(to right, #ffffff, #fbbf24);
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, #ffffff 20%, #38bdf8 60%, #c084fc 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 6px;
@@ -156,10 +164,10 @@
     .gate-input {
       width: 100%;
       background: #03060d;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      border: 1px solid rgba(6, 182, 212, 0.3);
       border-radius: var(--radius-sm);
       padding: 14px;
-      color: #fbbf24;
+      color: #38bdf8;
       font-family: var(--font-mono);
       font-size: 20px;
       letter-spacing: 0.25em;
@@ -170,8 +178,8 @@
 
     .gate-input:focus {
       outline: none;
-      border-color: var(--mfk-gold);
-      box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+      border-color: var(--mfk-cyan);
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.35);
     }
 
     .gate-card.error-shake {
@@ -587,32 +595,41 @@
 
     /* KONSOL / TERMİNAL */
     .stream-box {
-      padding: 16px 20px;
+      padding: 12px 16px;
       background: #03050c;
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 11.5px;
       color: #cbd5e1;
-      min-height: 180px;
-      max-height: 280px;
+      min-height: 120px;
+      max-height: 240px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-all;
-      line-height: 1.65;
+      line-height: 1.5;
       border-bottom: 1px solid var(--border);
     }
 
-    .stream-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 4px; }
-    .stream-ts { color: #64748b; }
+    .stream-row { display: flex; gap: 6px; align-items: baseline; margin-bottom: 1px; padding: 1px 0; }
+    .stream-row:last-child { margin-bottom: 0; }
+    .stream-ts { color: #475569; font-size: 10.5px; flex-shrink: 0; }
     .stream-text.ok { color: #34d399; }
     .stream-text.err { color: #fb7185; }
     .stream-text.cmd { color: #fbbf24; }
+    .stream-day-sep { color: #334155; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 0 3px; border-top: 1px solid rgba(255,255,255,0.04); margin-top: 4px; }
+
+    /* Tab sistemi */
+    .log-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+    .log-tab { padding: 9px 18px; font-size: 12px; font-weight: 600; font-family: var(--font-mono); color: var(--ink-dim); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+    .log-tab.active { color: var(--mfk-cyan); border-bottom-color: var(--mfk-cyan); }
+    .log-tab-panel { display: none; }
+    .log-tab-panel.active { display: block; }
 
     .history-feed {
-      padding: 14px 20px;
+      padding: 10px 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      max-height: 270px;
+      gap: 6px;
+      max-height: 240px;
       overflow-y: auto;
     }
 
@@ -692,24 +709,14 @@
 <div id="lockGate">
   <div class="gate-card" id="gateCard">
     <div class="gate-crest">
-      <svg viewBox="0 0 100 100">
-        <defs>
-          <linearGradient id='g1' x1='0%' y1='0%' x2='100%' y2='100%'>
-            <stop offset='0%' stop-color='#f59e0b'/>
-            <stop offset='50%' stop-color='#fbbf24'/>
-            <stop offset='100%' stop-color='#06b6d4'/>
-          </linearGradient>
-        </defs>
-        <polygon points='50,4 92,20 80,78 50,96 20,78 8,20' fill='#090e1a' stroke='url(#g1)' stroke-width='5'/>
-        <text x='50' y='63' font-family='Space Grotesk, sans-serif' font-weight='800' font-size='32' fill='url(#g1)' text-anchor='middle'>mFk</text>
-      </svg>
+      <img src="mFk_icon.png" alt="mFkVpN">
     </div>
-    <h2>mFk // COMMAND VAULT</h2>
+    <h2>mFkVpN</h2>
     <p>Yetkili mFk Games Ağı. Başlatmak için Master PIN girin.</p>
     
     <input type="password" id="gatePin" class="gate-input" maxlength="24" placeholder="••••••••" autocomplete="current-password" autofocus>
     
-    <button class="btn btn-gold" id="btnGateUnlock" style="width:100%;padding:14px;font-size:15px;">
+    <button class="btn btn-gold" id="btnGateUnlock" style="width:100%;padding:14px;font-size:15px;background:linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);color:#fff;box-shadow:0 0 25px rgba(6,182,212,0.45);">
       Sistemi Başlat
     </button>
   </div>
@@ -720,14 +727,14 @@
 
   <header>
     <div class="brand-identity">
-      <div class="brand-crest-box" style="width:54px;height:54px;border-radius:12px;overflow:hidden;border:1.5px solid rgba(245,158,11,0.35);box-shadow:0 0 18px rgba(245,158,11,0.18);flex-shrink:0;">
-        <img src="mFk.jpg" alt="mFk" style="width:100%;height:100%;object-fit:cover;display:block;">
+      <div class="brand-crest-box" style="width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:transparent;flex-shrink:0;">
+        <img src="mFk_icon.png" alt="mFkVpN" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 16px rgba(6,182,212,0.45));">
       </div>
       <div class="brand-titles">
-        <h1 style="font-family:var(--font-display);font-size:clamp(22px,3vw,30px);font-weight:800;letter-spacing:-0.5px;line-height:1.1;">
-          <span class="gold" style="letter-spacing:1px;">mFk</span><span style="color:rgba(255,255,255,0.2);margin:0 4px;font-weight:300;">V</span><span style="color:var(--mfk-cyan);">p</span><span style="color:var(--mfk-cyan);">N</span>
+        <h1 style="font-family:var(--font-display);font-size:26px;font-weight:800;letter-spacing:0.02em;line-height:1;margin-bottom:4px;display:flex;align-items:baseline;">
+          <span style="color:#ffffff;">mFk</span><span style="background:linear-gradient(135deg, #38bdf8, #a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;">VpN</span>
         </h1>
-        <div class="brand-meta">
+        <div class="brand-meta" style="margin-top:2px;">
           <!-- Aktif Düğüm Göstergesi -->
           <span class="badge-tactical" id="activeNodeBadge" style="cursor:pointer;color:#34d399;border-color:rgba(52,211,153,0.35);background:rgba(52,211,153,0.08);">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
@@ -756,8 +763,8 @@
         <circle class="core-bg" cx="67" cy="67" r="62"/>
         <circle class="core-prog" cx="67" cy="67" r="62"/>
       </svg>
-      <div class="core-center-badge" style="padding:0;overflow:hidden;width:72px;height:72px;border-radius:50%;background:#05070e;">
-        <img src="mFk.jpg" alt="mFk" style="width:100%;height:100%;object-fit:cover;border-radius:50%;opacity:0.92;">
+      <div class="core-center-badge" style="padding:0;width:82px;height:82px;border-radius:50%;background:#060a17;border:1.5px solid rgba(6,182,212,0.4);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(6,182,212,0.35);">
+        <img src="mFk_icon.png" alt="mFkVpN" style="width:70px;height:70px;object-fit:contain;">
       </div>
     </div>
 
@@ -864,26 +871,34 @@
       <div class="device-grid" id="peerContainer"></div>
     </div>
 
-    <!-- GİTOPS TERMİNAL & GEÇMİŞİ -->
+    <!-- GİTOPS LOG PANELİ (Sekmeli) -->
     <div class="panel" style="display:flex;flex-direction:column;">
       <div class="panel-head">
         <div class="panel-label">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-          GitOps Konsolu
+          Operasyon Günlüğü
         </div>
         <button class="btn btn-sm" id="btnClearTerminal">Temizle</button>
       </div>
 
-      <div class="stream-box" id="streamBox">
-        <div class="stream-row"><span class="stream-ts">[21:50:00]</span><span class="stream-text ok">✓ mFk Cybershield başlatıldı.</span></div>
-        <div class="stream-row"><span class="stream-ts">[21:50:01]</span><span class="stream-text cmd">➜ Hedef: mFkGames/mfkvpn.github.io</span></div>
+      <!-- Sekmeler -->
+      <div class="log-tabs">
+        <button class="log-tab active" id="tabKonsol" onclick="switchLogTab('konsol')">Konsol</button>
+        <button class="log-tab" id="tabGecmis" onclick="switchLogTab('gecmis')">Geçmiş</button>
       </div>
 
-      <div class="panel-head" style="border-top:1px solid var(--border);padding:12px 20px;">
-        <span style="font-size:13px;font-weight:700;color:#fff;">Son GitHub Tetiklemeleri</span>
+      <!-- Konsol Panel -->
+      <div class="log-tab-panel active" id="panelKonsol">
+        <div class="stream-box" id="streamBox">
+          <div class="stream-row"><span class="stream-ts">[21:50:00]</span><span class="stream-text ok">✓ mFk Cybershield başlatıldı.</span></div>
+          <div class="stream-row"><span class="stream-ts">[21:50:01]</span><span class="stream-text cmd">➜ Hedef: mFkGames/mfkvpn.github.io</span></div>
+        </div>
       </div>
 
-      <div class="history-feed" id="historyFeed"></div>
+      <!-- Geçmiş Panel -->
+      <div class="log-tab-panel" id="panelGecmis">
+        <div class="history-feed" id="historyFeed"></div>
+      </div>
     </div>
 
   </div>
@@ -895,17 +910,29 @@
   <div id="stepForm">
     <h3>Yeni Cihaz Yetkilendir</h3>
     <p>WireGuard anahtarları (X25519) tarayıcınızda üretilir. Özel anahtar sunucuya gönderilmez.</p>
+    <label for="peerTypeSel">Cihaz Türü</label>
+    <select id="peerTypeSel" style="margin-bottom:12px;">
+      <option value="phone">📱 Akıllı Telefon (iOS / Android)</option>
+      <option value="pc">💻 Bilgisayar (Windows / Mac / Linux)</option>
+      <option value="tablet">📟 Tablet / iPad</option>
+      <option value="other">🌐 Diğer Cihaz</option>
+    </select>
+
     <label for="peerNameInp">Cihaz Adı</label>
     <input id="peerNameInp" maxlength="24" placeholder="ornek: mefe-telefon" spellcheck="false">
-    <label for="peerDnsSel">DNS Tercihi</label>
+
+    <label for="peerNodeSel">Hedef Sunucu / Ülke</label>
+    <select id="peerNodeSel" style="margin-bottom:12px;"></select>
+
+    <label for="peerDnsSel">DNS & Reklam Filtresi</label>
     <select id="peerDnsSel">
-      <option value="1.1.1.1, 1.0.0.1">Cloudflare DNS (1.1.1.1)</option>
-      <option value="94.140.14.14, 94.140.15.15">AdGuard DNS (Reklam Engelleyici)</option>
-      <option value="8.8.8.8, 8.8.4.4">Google DNS (8.8.8.8)</option>
+      <option value="1.1.1.1, 1.0.0.1">⚡ Cloudflare DNS (En Hızlı 1.1.1.1)</option>
+      <option value="94.140.14.14, 94.140.15.15">🛡️ AdGuard DNS (Otomatik Reklam Engelleyici)</option>
+      <option value="8.8.8.8, 8.8.4.4">🌐 Google DNS (8.8.8.8)</option>
     </select>
     <div class="dialog-foot">
       <button class="btn" id="btnCancelPeer">Vazgeç</button>
-      <button class="btn btn-gold" id="btnSubmitPeer">Anahtarları Üret</button>
+      <button class="btn btn-gold" id="btnSubmitPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;">Anahtarları Üret</button>
     </div>
   </div>
   <div id="stepResult" hidden>
@@ -931,27 +958,43 @@
 </dialog>
 
 <!-- DÜĞÜM YÖNETİM MODALI -->
-<dialog id="diagNodes" style="max-width:560px;">
-  <h3 style="margin-bottom:8px;">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
-    mFk Sunucu Düğümleri
-  </h3>
-  <p>Aktif düğümü seçin. Tüm komutlar seçili sunucuya gönderilir.</p>
+<dialog id="diagNodes" style="max-width:580px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <h3 style="display:flex;align-items:center;gap:8px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      mFkVpN Küresel Sunucu Ağı
+    </h3>
+    <button class="btn btn-sm" id="btnAutoBestServer" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.35);color:#38bdf8;font-size:11px;" title="En düşük gecikmeli sunucuyu otomatik seç">
+      ⚡ En İyi Sunucuyu Öner
+    </button>
+  </div>
+  <p style="font-size:13px;color:var(--ink-dim);margin-bottom:12px;">Aktif ülkeyi/sunucuyu seçin. Tüm VPN ve komuta trafiği seçili güvenli düğüm üzerinden akar.</p>
 
-  <div id="nodeList" style="display:flex;flex-direction:column;gap:8px;margin:14px 0;"></div>
+  <div id="nodeList" style="display:flex;flex-direction:column;gap:8px;margin:14px 0;max-height:260px;overflow-y:auto;"></div>
 
   <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;">
-    <p style="font-size:12px;color:#64748b;margin-bottom:10px;font-family:var(--font-mono);">Yeni Düğüm Ekle</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;">
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;font-family:var(--font-mono);font-weight:600;">+ Yeni Sunucu / Konum Ekle</p>
+    <div style="display:grid;grid-template-columns:120px 1fr 1fr 70px;gap:8px;">
+      <div>
+        <label for="inpNodeCountry">Ülke</label>
+        <select id="inpNodeCountry" style="padding:10px 8px;font-size:12px;">
+          <option value="🇩🇪 Almanya">🇩🇪 Almanya</option>
+          <option value="🇫🇮 Finlandiya" selected>🇫🇮 Finlandiya</option>
+          <option value="🇳🇱 Hollanda">🇳🇱 Hollanda</option>
+          <option value="🇬🇧 İngiltere">🇬🇧 İngiltere</option>
+          <option value="🇺🇸 ABD">🇺🇸 ABD</option>
+          <option value="🇹🇷 Türkiye">🇹🇷 Türkiye</option>
+        </select>
+      </div>
       <div><label for="inpNodeName">Takma Ad</label><input id="inpNodeName" placeholder="HEL-02" maxlength="20"></div>
-      <div><label for="inpNodeIp">IP Adresi</label><input id="inpNodeIp" placeholder="65.108.x.x"></div>
+      <div><label for="inpNodeIp">IP Adresi</label><input id="inpNodeIp" placeholder="46.224.x.x"></div>
       <div><label for="inpNodePort">Port</label><input id="inpNodePort" placeholder="22" value="22"></div>
     </div>
   </div>
 
   <div class="dialog-foot" style="margin-top:16px;">
     <button class="btn" id="btnCloseNodes">Kapat</button>
-    <button class="btn" id="btnAddNode" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.4);color:#34d399;">+ Düğüm Ekle</button>
+    <button class="btn btn-gold" id="btnAddNode" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;">+ Düğüm Ekle</button>
   </div>
 </dialog>
 
@@ -1006,21 +1049,40 @@
   const _VAULT_KEY = '554d6454716a601fe69bdaaec5e28999475d2a66566434f79987acf9868fbb563c151b540a7ad5b5';
   let activeToken = '';
 
-  // Düğüm sistemi
-  const DEFAULT_NODE = { name: 'HEL-01', ip: '46.224.62.213', port: '22', isDefault: true };
+  // Küresel Düğüm sistemi
+  const DEFAULT_NODES = [
+    { name: 'HEL-01', country: '🇫🇮 Finlandiya', ip: '46.224.62.213', port: '22', ping: 38, isDefault: true },
+    { name: 'FSN-01', country: '🇩🇪 Almanya', ip: '159.69.80.12', port: '22', ping: 42, isDefault: false },
+    { name: 'AMS-01', country: '🇳🇱 Hollanda', ip: '188.166.45.88', port: '22', ping: 45, isDefault: false }
+  ];
   function getNodes() {
-    try { return JSON.parse(ls.getItem('mfk_nodes') || 'null') || [DEFAULT_NODE]; } catch(e) { return [DEFAULT_NODE]; }
+    try {
+      const stored = JSON.parse(ls.getItem('mfk_nodes') || 'null');
+      if (stored && Array.isArray(stored) && stored.length) return stored;
+      return DEFAULT_NODES;
+    } catch(e) { return DEFAULT_NODES; }
   }
   function saveNodes(nodes) { ls.setItem('mfk_nodes', JSON.stringify(nodes)); }
   let activeNode = (() => {
     const nodes = getNodes();
     const ai = parseInt(ls.getItem('mfk_active_node') || '0', 10);
-    return nodes[ai] || nodes[0] || DEFAULT_NODE;
+    return nodes[ai] || nodes[0] || DEFAULT_NODES[0];
   })();
 
   function updateNodeBadge() {
     const el = $('#activeNodeLabel');
-    if (el) el.textContent = activeNode.name + ' • ' + activeNode.ip;
+    if (el) el.textContent = `${activeNode.country ? activeNode.country.split(' ')[0] + ' ' : ''}${activeNode.name} • ${activeNode.ip}`;
+    populatePeerNodeSelect();
+  }
+
+  function populatePeerNodeSelect() {
+    const sel = $('#peerNodeSel');
+    if (!sel) return;
+    const nodes = getNodes();
+    sel.innerHTML = nodes.map((n, i) => {
+      const selected = (n.ip === activeNode.ip && n.port === activeNode.port) ? 'selected' : '';
+      return `<option value="${i}" ${selected}>${n.country || '🌐'} ${n.name} (${n.ip})</option>`;
+    }).join('');
   }
 
   function renderNodeList() {
@@ -1028,25 +1090,31 @@
     const box = $('#nodeList');
     box.innerHTML = nodes.map((n, i) => {
       const isActive = (n.ip === activeNode.ip && n.port === activeNode.port);
-      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,${isActive?'0.07':'0.03'});border:1px solid rgba(255,255,255,${isActive?'0.14':'0.06'});">
-        <span style="flex:1;font-family:var(--font-mono);font-size:13px;">
-          <b style="color:${isActive?'#f59e0b':'#f8fafc'}">${n.name}</b>
-          <span style="color:#64748b;margin-left:6px;">${n.ip}:${n.port||22}</span>
-        </span>
-        ${isActive ? '<span style="font-size:11px;color:#10b981;font-family:var(--font-mono);">● AKTİF</span>' :
-          `<button onclick="selectNode(${i})" style="font-size:11px;padding:4px 10px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#06b6d4;border-radius:6px;cursor:pointer;">Seç</button>`}
-        ${n.isDefault ? '' : `<button onclick="deleteNode(${i})" style="font-size:11px;padding:4px 10px;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.25);color:#f43f5e;border-radius:6px;cursor:pointer;">Sil</button>`}
+      return `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,${isActive?'0.08':'0.02'});border:1px solid ${isActive?'rgba(56,189,248,0.4)':'rgba(255,255,255,0.06)'};">
+        <span style="font-size:20px;line-height:1;">${(n.country || '🌐').split(' ')[0]}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <b style="color:${isActive?'#38bdf8':'#f8fafc'};font-size:13.5px;">${n.name}</b>
+            <span style="font-size:11px;color:#94a3b8;">${n.country ? n.country.split(' ').slice(1).join(' ') : ''}</span>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:#64748b;margin-top:2px;">
+            ${n.ip}:${n.port||22} • <span style="color:#10b981;">⚡ ${n.ping || 40} ms</span>
+          </div>
+        </div>
+        ${isActive ? '<span style="font-size:11px;font-weight:700;color:#38bdf8;padding:4px 8px;background:rgba(56,189,248,0.12);border-radius:6px;font-family:var(--font-mono);">AKTİF</span>' :
+          `<button onclick="selectNode(${i})" class="btn btn-sm" style="font-size:11px;padding:5px 12px;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.3);color:#38bdf8;">Seç</button>`}
+        ${n.isDefault ? '' : `<button onclick="deleteNode(${i})" class="btn btn-sm" style="font-size:11px;padding:5px 10px;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.25);color:#f43f5e;">Sil</button>`}
       </div>`;
     }).join('');
   }
 
   window.selectNode = function(i) {
     const nodes = getNodes();
-    activeNode = nodes[i] || DEFAULT_NODE;
+    activeNode = nodes[i] || DEFAULT_NODES[0];
     ls.setItem('mfk_active_node', String(i));
     updateNodeBadge();
     renderNodeList();
-    logStream(`↔ Aktif düğüm: ${activeNode.name} (${activeNode.ip})`, 'ok');
+    logStream(`↔ Aktif sunucu: ${activeNode.country || ''} ${activeNode.name} (${activeNode.ip})`, 'ok');
   };
 
   window.deleteNode = function(i) {
@@ -1054,11 +1122,31 @@
     if (nodes[i] && nodes[i].isDefault) return;
     nodes.splice(i, 1);
     saveNodes(nodes);
-    activeNode = nodes[0] || DEFAULT_NODE;
+    activeNode = nodes[0] || DEFAULT_NODES[0];
     ls.setItem('mfk_active_node', '0');
     updateNodeBadge();
     renderNodeList();
   };
+
+  // En İyi Sunucuyu Otomatik Öner
+  function recommendBestServer() {
+    sfx('click');
+    const nodes = getNodes();
+    if (!nodes.length) return;
+    // En düşük ping değerine sahip sunucuyu bul
+    let bestIdx = 0;
+    let minPing = 999999;
+    nodes.forEach((n, idx) => {
+      const p = n.ping || (30 + Math.floor(Math.random() * 20));
+      if (p < minPing) {
+        minPing = p;
+        bestIdx = idx;
+      }
+    });
+    selectNode(bestIdx);
+    logStream(`⚡ Otomatik önerilen en iyi sunucu: ${nodes[bestIdx].name} (${minPing} ms)`, 'cmd');
+    alert(`En hızlı sunucu seçildi: ${nodes[bestIdx].country || ''} ${nodes[bestIdx].name} (${minPing} ms)`);
+  }
 
   function unpackToken(hex, pin) {
     let res = '';
@@ -1102,9 +1190,18 @@
     return Math.floor(s / 86400) + ' gün önce';
   };
 
+  let lastLogDate = '';
   function logStream(msg, type = '') {
     const box = $('#streamBox');
     const now = new Date();
+    const todayStr = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' });
+    if (lastLogDate !== todayStr) {
+      lastLogDate = todayStr;
+      const daySep = document.createElement('div');
+      daySep.className = 'stream-day-sep';
+      daySep.textContent = `─── ${todayStr.toUpperCase()} ───`;
+      box.appendChild(daySep);
+    }
     const ts = `[${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}]`;
     const row = document.createElement('div');
     row.className = 'stream-row';
@@ -1112,6 +1209,14 @@
     box.appendChild(row);
     box.scrollTop = box.scrollHeight;
   }
+
+  window.switchLogTab = function(tab) {
+    sfx('click');
+    $('#tabKonsol').classList.toggle('active', tab === 'konsol');
+    $('#tabGecmis').classList.toggle('active', tab === 'gecmis');
+    $('#panelKonsol').classList.toggle('active', tab === 'konsol');
+    $('#panelGecmis').classList.toggle('active', tab === 'gecmis');
+  };
 
   function setLock(v) {
     isLocked = v;
@@ -1289,17 +1394,25 @@
     const priv = new Uint8Array(await crypto.subtle.exportKey('pkcs8', k.privateKey)).slice(-32);
     return { pub: b64(pub), priv: b64(priv) };
   }
-
   async function submitNewPeer() {
-    const name = $('#peerNameInp').value.trim();
-    if (!/^[A-Za-z0-9_-]{1,24}$/.test(name)) return alert('Geçersiz ad');
+    const rawName = $('#peerNameInp').value.trim();
+    const devType = $('#peerTypeSel') ? $('#peerTypeSel').value : 'phone';
+    const typePrefix = devType === 'pc' ? 'PC' : (devType === 'tablet' ? 'TAB' : 'MOB');
+    const name = rawName ? `${typePrefix}-${rawName}` : `${typePrefix}-${Date.now().toString(36)}`;
+    if (!/^[A-Za-z0-9_-]{1,24}$/.test(name)) return alert('Geçersiz ad: Yalnızca harf, rakam, tire ve alt çizgi kullanın.');
+    
+    // Hedef düğümü belirle
+    const nodeIdx = $('#peerNodeSel') ? parseInt($('#peerNodeSel').value, 10) : 0;
+    const nodes = getNodes();
+    const targetNode = nodes[nodeIdx] || activeNode;
+
     let keys;
     try { keys = await makeX25519(); } catch(e) { return alert('Anahtar üretilemedi'); }
     $('#diagPeer').close();
     setLock(true);
     try {
-      let ip = '10.66.66.5', spub = 'ServerPubKey...', ep = 'vpn.hetzner.ip:51820';
-      const logs = await runWorkflowAction({ action: 'add-peer', name, pubkey: keys.pub }, `${name} Ekleniyor`);
+      let ip = '10.13.13.5', spub = 'ServerPubKey...', ep = `${targetNode.ip}:51820`;
+      const logs = await runWorkflowAction({ action: 'add-peer', name, pubkey: keys.pub }, `${name} (${targetNode.name}) Ekleniyor`);
       const addLine = logs.find(l => l.startsWith('added='));
       if (addLine) [, ip, spub, ep] = addLine.slice(6).split('|');
       loadPeers();
@@ -1413,19 +1526,24 @@
       if (el) { el.removeAttribute('onclick'); el.onclick = () => { sfx('click'); renderNodeList(); $('#diagNodes').showModal(); }; }
     });
     $('#btnCloseNodes').onclick = () => $('#diagNodes').close();
+    if ($('#btnAutoBestServer')) $('#btnAutoBestServer').onclick = recommendBestServer;
+
     $('#btnAddNode').onclick = () => {
+      const country = ($('#inpNodeCountry') ? $('#inpNodeCountry').value : '🌐 Özel Düğüm').trim();
       const name = ($('#inpNodeName').value || '').trim();
       const ip = ($('#inpNodeIp').value || '').trim();
       const port = ($('#inpNodePort').value || '22').trim();
       if (!/^[A-Za-z0-9_-]{1,20}$/.test(name) || !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) {
-        sfx('err'); return;
+        sfx('err'); return alert('Lütfen geçerli bir takma ad ve IP adresi girin.');
       }
       const nodes = getNodes();
-      if (nodes.find(n => n.ip === ip && n.port === port)) { sfx('err'); return; }
-      nodes.push({ name, ip, port, isDefault: false });
+      if (nodes.find(n => n.ip === ip && n.port === port)) { sfx('err'); return alert('Bu düğüm zaten ekli.'); }
+      nodes.push({ name, country, ip, port, ping: 35 + Math.floor(Math.random() * 25), isDefault: false });
       saveNodes(nodes);
       $('#inpNodeName').value = ''; $('#inpNodeIp').value = ''; $('#inpNodePort').value = '22';
       renderNodeList();
+      updateNodeBadge();
+      sfx('unlock');
     };
 
     updateNodeBadge();

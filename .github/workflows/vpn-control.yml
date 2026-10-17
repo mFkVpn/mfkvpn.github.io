@@ -26,6 +26,16 @@ on:
         type: string
         required: false
         default: ""
+      host:
+        description: "Hedef Düğüm IP (boşsa varsayılan HOST kullanılır)"
+        type: string
+        required: false
+        default: ""
+      port:
+        description: "Hedef Düğüm SSH Portu"
+        type: string
+        required: false
+        default: ""
 
 permissions: {}
 
@@ -40,10 +50,10 @@ jobs:
     steps:
       - name: Run VPN action over SSH
         env:
-          HOST: ${{ secrets.HOST }}
+          HOST: ${{ inputs.host != '' && inputs.host || secrets.HOST }}
           USERNAME: ${{ secrets.USERNAME }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
-          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+          SSH_PORT: ${{ inputs.port != '' && inputs.port || secrets.SSH_PORT || 22 }}
           ACTION: ${{ inputs.action }}
           PEER_NAME: ${{ inputs.name }}
           PEER_PUBKEY: ${{ inputs.pubkey }}
