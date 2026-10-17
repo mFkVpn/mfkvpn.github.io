@@ -451,15 +451,43 @@
     }
 
     .core-telemetry {
-      display: flex;
-      gap: 28px;
-      flex-wrap: wrap;
-      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
     }
 
-    .telem-box { display: flex; flex-direction: column; }
-    .telem-lbl { font-size: 11.5px; color: var(--ink-dim); font-weight: 600; text-transform: uppercase; font-family: var(--font-mono); }
-    .telem-val { font-size: 17px; font-weight: 700; color: #fff; font-family: var(--font-mono); margin-top: 2px; }
+    .telem-box {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s ease;
+    }
+    .telem-box:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(6, 182, 212, 0.3);
+      transform: translateY(-1px);
+    }
+    .telem-lbl {
+      font-size: 10.5px;
+      color: #94a3b8;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+    }
+    .telem-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f8fafc;
+      font-family: var(--font-mono);
+      margin-top: 4px;
+    }
 
     .core-actions {
       display: grid;
@@ -766,11 +794,11 @@
 
   <header>
     <div class="brand-identity">
-      <div class="brand-crest-box" style="width:74px;height:74px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:transparent;flex-shrink:0;">
-        <img src="mFk_icon.png" alt="mFkVpN" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(6,182,212,0.55));">
+      <div class="brand-crest-box" style="width:84px;height:84px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:transparent;flex-shrink:0;">
+        <img src="mFk_icon.png" alt="mFkVpN" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 24px rgba(6,182,212,0.65));">
       </div>
       <div class="brand-titles">
-        <h1 style="font-family:var(--font-display);font-size:30px;font-weight:900;letter-spacing:-0.01em;line-height:1;margin-bottom:6px;display:inline-flex;align-items:baseline;">
+        <h1 style="font-family:var(--font-display);font-size:32px;font-weight:900;letter-spacing:-0.02em;line-height:1;margin-bottom:6px;display:inline-flex;align-items:baseline;">
           <span style="color:#ffffff;">mFk</span><span style="background:linear-gradient(135deg, #38bdf8, #a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;margin-left:0;">VpN</span>
         </h1>
         <div class="brand-meta" style="margin-top:2px;">
@@ -802,8 +830,8 @@
         <circle class="core-bg" cx="67" cy="67" r="62"/>
         <circle class="core-prog" cx="67" cy="67" r="62"/>
       </svg>
-      <div class="core-center-badge" style="padding:0;width:82px;height:82px;border-radius:50%;background:#060a17;border:1.5px solid rgba(6,182,212,0.4);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(6,182,212,0.35);">
-        <img src="mFk_icon.png" alt="mFkVpN" style="width:70px;height:70px;object-fit:contain;">
+      <div class="core-center-badge" style="padding:0;width:104px;height:104px;border-radius:50%;background:#05070e;border:1.5px solid rgba(6,182,212,0.45);display:flex;align-items:center;justify-content:center;box-shadow:0 0 35px rgba(6,182,212,0.4);">
+        <img src="mFk_icon.png" alt="mFkVpN" style="width:96px;height:96px;object-fit:contain;">
       </div>
     </div>
 
