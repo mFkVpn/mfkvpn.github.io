@@ -112,7 +112,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: calc(24px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) calc(20px + env(safe-area-inset-left, 0px));
       transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
     }
 
@@ -260,11 +260,14 @@
       40%, 60% { transform: translate3d(6px, 0, 0); }
     }
 
-    /* ANA KOKPİT KONTEYNERİ */
+    /* ANA KOKPİT KONTEYNERİ (Safe Area Uyumlu) */
     .cockpit {
       max-width: 1220px;
       margin: 0 auto;
-      padding: 24px 20px 80px;
+      padding-top: calc(20px + env(safe-area-inset-top, 0px));
+      padding-left: calc(18px + env(safe-area-inset-left, 0px));
+      padding-right: calc(18px + env(safe-area-inset-right, 0px));
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
 
     /* Üst Bar */
@@ -272,7 +275,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0 28px;
+      padding: 10px 0 24px;
       flex-wrap: wrap;
       gap: 16px;
     }
@@ -813,21 +816,71 @@
     }
 
     @media (max-width: 600px) {
+      header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand-crest-box {
+        width: 64px !important;
+        height: 64px !important;
+      }
+      .brand-titles h1 {
+        font-size: 26px !important;
+      }
+      #activeNodeBadge {
+        font-size: 10px;
+        padding: 3px 8px;
+      }
+      .core-hud {
+        padding: 22px 14px !important;
+        border-radius: 18px !important;
+      }
+      .core-reactor {
+        width: 126px !important;
+        height: 126px !important;
+      }
+      .core-center-badge {
+        width: 86px !important;
+        height: 86px !important;
+      }
+      .core-center-badge img {
+        width: 78px !important;
+        height: 78px !important;
+      }
+      .core-info h2 {
+        font-size: 22px !important;
+      }
       .core-actions {
         grid-template-columns: 1fr 1fr;
         gap: 8px;
       }
       .core-actions .btn {
-        padding: 12px 10px;
+        padding: 13px 8px;
         font-size: 13px;
         justify-content: center;
       }
       .core-telemetry {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 14px;
+        gap: 8px;
         width: 100%;
         text-align: left;
+      }
+      .telem-box {
+        padding: 8px 10px;
+      }
+      .telem-val {
+        font-size: 13.5px;
+      }
+      .gate-card {
+        padding: 38px 24px 32px;
+        border-radius: 26px;
+      }
+      .gate-crest {
+        width: 140px;
+        height: 140px;
       }
     }
   </style>
