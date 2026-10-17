@@ -535,10 +535,13 @@
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 10px;
-      padding: 10px 14px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 4px;
       transition: all 0.2s ease;
     }
 
@@ -556,47 +559,122 @@
       font-family: var(--font-mono);
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 5px;
     }
 
     .telem-cell-val {
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 700;
       color: #f1f5f9;
       font-family: var(--font-mono);
+      text-align: center;
     }
 
-    /* TAKTİK SAYAÇ ÇUBUĞU */
+    /* MODERN TAKTİK MİNİ PİLLERİ (Sayfayı boğmayan kompakt rozetler) */
     .tactical-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .strip-box {
-      padding: 18px 20px;
       display: flex;
-      gap: 14px;
-      align-items: flex-start;
-      background: rgba(10, 15, 29, 0.55);
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 22px;
     }
 
-    .strip-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius-sm);
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      color: #fbbf24;
+    .strip-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: rgba(10, 16, 32, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 30px;
+      font-size: 12px;
+      color: #94a3b8;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
     }
 
-    .strip-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
-    .strip-content h3 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 2px; }
-    .strip-content p { font-size: 12px; color: var(--ink-dim); line-height: 1.45; }
+    .strip-pill:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(6, 182, 212, 0.35);
+      color: #e2e8f0;
+    }
+
+    .strip-pill b {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .strip-pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #06b6d4;
+      box-shadow: 0 0 8px #06b6d4;
+    }
+
+    /* SİNYAL DALGASI (Pulsing Signal Animasyonu) */
+    .device-crest .status-light.pulsing {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: signalPulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+
+    @keyframes signalPulse {
+      to { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    }
+
+    /* SAYFALAMA (PAGINATION) BARI */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .page-btn {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      color: #cbd5e1;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #38bdf8;
+    }
+
+    .page-btn.active {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      border-color: #06b6d4;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+    }
+
+    .page-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
 
     /* İKİLİ ÇALIŞMA ALANI */
     .cockpit-grid {
@@ -1036,28 +1114,19 @@
     </div>
   </div>
 
-  <!-- BİLGİ ŞERİDİ -->
+  <!-- HIZLI MİMARİ BİLGİ ŞERİDİ (Kompakt Taktik Piller) -->
   <div class="tactical-strip">
-    <div class="panel strip-box">
-      <div class="strip-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-      <div class="strip-content">
-        <h3>Sıfır Açık Port</h3>
-        <p>İnternete açık panel yok. Yalnızca kısıtlanmış SSH anahtarı ile GitHub üzerinden tetiklenir.</p>
-      </div>
+    <div class="strip-pill">
+      <span class="strip-pill-dot" style="background:#fbbf24;box-shadow:0 0 8px #fbbf24;"></span>
+      <span><b>Sıfır Açık Port:</b> Web admin portu yok, sadece SSH kısıtlı tünel</span>
     </div>
-    <div class="panel strip-box">
-      <div class="strip-icon" style="color:#06b6d4;border-color:rgba(6,182,212,0.3)"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
-      <div class="strip-content">
-        <h3>Sıfır Bilgi X25519</h3>
-        <p>WireGuard anahtarları bu tarayıcıda oluşturulur. Özel anahtar sunucuya veya dışarıya gitmez.</p>
-      </div>
+    <div class="strip-pill">
+      <span class="strip-pill-dot" style="background:#06b6d4;box-shadow:0 0 8px #06b6d4;"></span>
+      <span><b>Sıfır Bilgi X25519:</b> Anahtarlar tarayıcıda yerel üretilir</span>
     </div>
-    <div class="panel strip-box">
-      <div class="strip-icon" style="color:#34d399;border-color:rgba(16,185,129,0.3)"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-      <div class="strip-content">
-        <h3>Hetzner WireGuard</h3>
-        <p>Kernel düzeyinde ChaCha20-Poly1305 şifreleme ile tam gigabit bant genişliği.</p>
-      </div>
+    <div class="strip-pill">
+      <span class="strip-pill-dot" style="background:#34d399;box-shadow:0 0 8px #34d399;"></span>
+      <span><b>Hetzner Stealth:</b> Kernel ChaCha20-Poly1305 tam gigabit</span>
     </div>
   </div>
 
@@ -1065,19 +1134,27 @@
   <div class="cockpit-grid">
     
     <!-- CİHAZ YÖNETİMİ -->
-    <div class="panel">
-      <div class="panel-head">
-        <div class="panel-label">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          Yetkili mFk Cihazları
-          <small id="countLabel" style="color:var(--ink-dim);font-weight:400;font-size:12px;margin-left:6px;">3 Kayıtlı</small>
+    <div class="panel" style="display:flex;flex-direction:column;justify-content:space-between;">
+      <div>
+        <div class="panel-head">
+          <div class="panel-label">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            Yetkili mFk Cihazları
+            <small id="countLabel" style="color:var(--ink-dim);font-weight:400;font-size:12px;margin-left:6px;">0 Kayıtlı</small>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" id="btnRefreshPeers">Yenile</button>
+            <button class="btn btn-gold btn-sm" id="btnAddPeer">+ Yeni Cihaz</button>
+          </div>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-sm" id="btnRefreshPeers">Yenile</button>
-          <button class="btn btn-gold btn-sm" id="btnAddPeer">+ Yeni Cihaz</button>
-        </div>
+        <div class="device-grid" id="peerContainer"></div>
       </div>
-      <div class="device-grid" id="peerContainer"></div>
+      
+      <!-- CİHAZ SAYFALAMA BARI -->
+      <div class="pagination-bar" id="peerPaginationBar" style="display:none;">
+        <span id="pageInfoText">Sayfa 1 / 1</span>
+        <div class="pagination-controls" id="pageBtnContainer"></div>
+      </div>
     </div>
 
     <!-- GİTOPS LOG PANELİ (Sekmeli) -->
@@ -1606,21 +1683,45 @@
     loadRuns();
   }
 
+  let currentPeerPage = 1;
+  const PEERS_PER_PAGE = 10;
+  let cachedPeerList = [];
+
   function renderPeers(list) {
+    if (list) cachedPeerList = list;
+    const allPeers = cachedPeerList || [];
     const box = $('#peerContainer');
-    $('#countLabel').textContent = `${list.length} Kayıtlı`;
+    $('#countLabel').textContent = `${allPeers.length} Kayıtlı`;
 
     // Toplam Trafik Hesaplama
     let totRx = 0, totTx = 0;
-    list.forEach(p => { totRx += (p.rx || 0); totTx += (p.tx || 0); });
+    allPeers.forEach(p => { totRx += (p.rx || 0); totTx += (p.tx || 0); });
     const trafEl = $('#valTraffic');
     if (trafEl) trafEl.textContent = `↓ ${formatBytes(totRx)} / ↑ ${formatBytes(totTx)}`;
 
-    if (!list.length) {
+    if (!allPeers.length) {
       box.innerHTML = `<div style="text-align:center;padding:30px;color:var(--ink-dim)">Yetkili cihaz yok.</div>`;
+      if ($('#peerPaginationBar')) $('#peerPaginationBar').style.display = 'none';
       return;
     }
-    box.innerHTML = list.map((p, idx) => {
+
+    // Sıralama: Aktif tüneller en başta, sonra ada göre
+    const sorted = [...allPeers].sort((a, b) => {
+      const liveA = a.hs && (Date.now() / 1000 - a.hs < 180) ? 1 : 0;
+      const liveB = b.hs && (Date.now() / 1000 - b.hs < 180) ? 1 : 0;
+      if (liveB !== liveA) return liveB - liveA;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+
+    const totalPages = Math.ceil(sorted.length / PEERS_PER_PAGE);
+    if (currentPeerPage > totalPages) currentPeerPage = totalPages;
+    if (currentPeerPage < 1) currentPeerPage = 1;
+
+    const startIdx = (currentPeerPage - 1) * PEERS_PER_PAGE;
+    const pagePeers = sorted.slice(startIdx, startIdx + PEERS_PER_PAGE);
+
+    box.innerHTML = pagePeers.map((p, pageSubIdx) => {
+      const globalIdx = startIdx + pageSubIdx;
       const live = p.hs && (Date.now() / 1000 - p.hs < 180);
       const isPc = p.name.startsWith('PC-') || /mac|rig|titan|pc|desktop|laptop/i.test(p.name);
       const isTab = p.name.startsWith('TAB-') || /ipad|tablet/i.test(p.name);
@@ -1635,17 +1736,17 @@
         <div class="device-card ${live ? 'online' : ''}">
           <div class="device-crest">
             ${iconSvg}
-            <span class="status-light" title="${live ? 'Aktif Tünel' : 'Bağlantı Yok'}"></span>
+            <span class="status-light ${live ? 'pulsing' : ''}" title="${live ? 'Aktif Tünel (Sinyal Alınıyor)' : 'Bağlantı Yok'}"></span>
           </div>
           <div class="device-info">
             <b>${p.name} <span class="ip-tag">${p.ip || '10.13.13.x'}</span></b>
             <div class="device-sub">
-              <span>${p.hs ? formatRel(p.hs * 1000) : 'Bağlantı yok'}</span>
+              <span>${p.hs ? '⚡ ' + formatRel(p.hs * 1000) : 'Bağlantı yok'}</span>
               <span>↓ ${formatBytes(p.rx||0)}  ↑ ${formatBytes(p.tx||0)}</span>
             </div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-sm btnQrView" data-idx="${idx}" title="QR Kodu ve Ayarları Gör" style="background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.3);color:#38bdf8;">
+            <button class="btn btn-sm btnQrView" data-name="${p.name}" data-ip="${p.ip||''}" data-pub="${p.pub||''}" title="QR Kodu ve Ayarları Gör" style="background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.3);color:#38bdf8;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             </button>
             <button class="btn btn-sm btnDel" data-name="${p.name}" title="Erişimi İptal Et">Sil</button>
@@ -1654,21 +1755,54 @@
       `;
     }).join('');
 
+    // Sayfalama Çubuğu Kontrolü
+    const pagBar = $('#peerPaginationBar');
+    if (pagBar) {
+      if (totalPages > 1) {
+        pagBar.style.display = 'flex';
+        $('#pageInfoText').textContent = `${sorted.length} Cihaz • Sayfa ${currentPeerPage} / ${totalPages}`;
+        
+        let btnsHtml = `
+          <button class="page-btn" id="btnPagePrev" ${currentPeerPage <= 1 ? 'disabled' : ''}>◀</button>
+        `;
+        for (let i = 1; i <= totalPages; i++) {
+          btnsHtml += `<button class="page-btn ${i === currentPeerPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+        }
+        btnsHtml += `
+          <button class="page-btn" id="btnPageNext" ${currentPeerPage >= totalPages ? 'disabled' : ''}>▶</button>
+        `;
+        $('#pageBtnContainer').innerHTML = btnsHtml;
+
+        if ($('#btnPagePrev')) $('#btnPagePrev').onclick = () => { currentPeerPage--; renderPeers(); };
+        if ($('#btnPageNext')) $('#btnPageNext').onclick = () => { currentPeerPage++; renderPeers(); };
+        $$('.page-btn[data-page]').forEach(b => {
+          b.onclick = () => {
+            currentPeerPage = parseInt(b.dataset.page, 10);
+            renderPeers();
+          };
+        });
+      } else {
+        pagBar.style.display = 'none';
+      }
+    }
+
     $$('.btnQrView').forEach(b => {
       b.onclick = () => {
-        const p = list[parseInt(b.dataset.idx, 10)];
-        if (!p) return;
+        const name = b.dataset.name;
+        const ip = b.dataset.ip || '10.13.13.x';
+        const pub = b.dataset.pub || 'ServerPublicKey';
         sfx('click');
         const ep = `${activeNode.ip}:51820`;
-        currentConf = `[Interface]\n# Not: Güvenlik gereği özel istemci anahtarı cihazın kendi tarayıcısında üretilir.\nAddress = ${p.ip || '10.13.13.x'}/32\nDNS = 1.1.1.1\n\n[Peer]\nPublicKey = ${p.pub || 'ServerPublicKey'}\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
-        currentConfName = p.name;
+        // Kill-Switch & Leak Protection Direktifleri
+        currentConf = `[Interface]\n# mFk Cybershield Kill-Switch & Stealth Tunnel\nAddress = ${ip}/32\nDNS = 1.1.1.1, 1.0.0.1\n\n[Peer]\nPublicKey = ${pub}\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+        currentConfName = name;
         if (window.qrcode) {
           const q = qrcode(0, 'M');
           q.addData(currentConf);
           q.make();
           $('#qrTarget').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
         }
-        $('#resTitle').textContent = `"${p.name}" Bağlantı Bilgisi`;
+        $('#resTitle').textContent = `"${name}" Bağlantı Bilgisi`;
         $('#stepForm').hidden = true;
         $('#stepResult').hidden = false;
         $('#diagPeer').showModal();
@@ -1949,6 +2083,27 @@
         requestAnimationFrame(renderStars);
       }
       requestAnimationFrame(renderStars);
+    })();
+
+    // Otomatik Oturum Kapatma (15 Dakika Hareketsizlik Güvenliği)
+    (function initAutoLogout() {
+      let idleTimer = null;
+      const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+      function resetIdle() {
+        if (idleTimer) clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          if (!$('#lockGate').classList.contains('cleared')) return;
+          sessionStorage.removeItem('mfk_pin_session');
+          activeToken = '';
+          $('#lockGate').classList.remove('cleared');
+          $('#gatePin').value = '';
+          logStream('⚠️ Hareketsizlik nedeniyle oturum güvenliğe alındı.', 'cmd');
+        }, IDLE_TIMEOUT_MS);
+      }
+      ['mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, resetIdle, { passive: true });
+      });
+      resetIdle();
     })();
 
     updateNodeBadge();
