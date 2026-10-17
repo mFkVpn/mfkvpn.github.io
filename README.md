@@ -47,7 +47,7 @@ flowchart LR
 ## 🚀 Komuta Kokpiti Kullanımı
 
 1. **Giriş:** `index.html` sayfasını tarayıcınızda açın.
-2. **Kimlik Doğrulama:** Master PIN ekranına parolanızı (`mfk2026`) girin.
+2. **Kimlik Doğrulama:** Master PIN ekranına özel parolanızı girin.
 3. **Yönetim:**
    * **[Başlat]:** WireGuard konteynerini ayağa kaldırır ve kayıtlı cihazları tünele bağlar.
    * **[Durdur]:** Acil durum tünel kesicidir (Kill-Switch). Tüm cihazların bağlantısını anında keser.
