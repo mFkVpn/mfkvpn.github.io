@@ -1,0 +1,53 @@
+name: VPN Health Check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # Her 15 dakikada otomatik kontrol
+  workflow_dispatch:           # Manuel de tetiklenebilir
+
+permissions: {}
+
+concurrency:
+  group: vpn-health
+  cancel-in-progress: false
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Health Check & Auto-Restart
+        env:
+          HOST: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_vpn
+          chmod 600 ~/.ssh/id_vpn
+          ssh-keyscan -p "$SSH_PORT" -H "$HOST" > ~/.ssh/known_hosts 2>/dev/null
+
+          RESULT=$(ssh -i ~/.ssh/id_vpn \
+              -p "$SSH_PORT" \
+              -o BatchMode=yes \
+              -o ConnectTimeout=8 \
+              -o StrictHostKeyChecking=yes \
+              "$USERNAME@$HOST" "status")
+
+          echo "=== HEALTH RESULT ==="
+          echo "$RESULT"
+
+          if echo "$RESULT" | grep -q "state=running"; then
+            echo "✅ VPN sağlıklı - state=running"
+          else
+            echo "⚠️  VPN durdu! Otomatik restart başlatılıyor..."
+            ssh -i ~/.ssh/id_vpn \
+                -p "$SSH_PORT" \
+                -o BatchMode=yes \
+                -o ConnectTimeout=8 \
+                -o StrictHostKeyChecking=yes \
+                "$USERNAME@$HOST" "restart"
+            echo "🔄 Restart gönderildi."
+          fi

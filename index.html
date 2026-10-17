@@ -737,12 +737,20 @@
         <div class="brand-meta">
           <span class="badge-tactical">ÖZEL GİTOPS AĞI</span>
           <span class="badge-secure">SIFIR AÇIK PORT</span>
-          <span class="badge-tactical" style="color:#94a3b8;border-color:rgba(255,255,255,0.1)">v2.4 PERSONAL</span>
+          <!-- Aktif Düğüm Göstergesi -->
+          <span class="badge-tactical" id="activeNodeBadge" style="cursor:pointer;color:#34d399;border-color:rgba(52,211,153,0.35);background:rgba(52,211,153,0.08);" onclick="document.getElementById('diagNodes').showModal()">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            <span id="activeNodeLabel">HEL-01 • 46.224.62.213</span>
+          </span>
         </div>
       </div>
     </div>
 
     <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn btn-sm" id="btnNodes" onclick="document.getElementById('diagNodes').showModal()" title="Sunucu Düğümlerini Yönet" style="border-color:rgba(52,211,153,0.3);color:#34d399;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
+        Düğümler
+      </button>
       <button class="btn btn-rose" id="btnQuickLock" title="Kokpiti kilitle">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Kilitle
@@ -919,6 +927,31 @@
   </div>
 </dialog>
 
+<!-- DÜĞÜM YÖNETİM MODALI -->
+<dialog id="diagNodes" style="max-width:560px;">
+  <h3 style="margin-bottom:8px;">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
+    mFk Sunucu Düğümleri
+  </h3>
+  <p>Aktif düğümü seçin. Tüm komutlar seçili sunucuya gönderilir.</p>
+
+  <div id="nodeList" style="display:flex;flex-direction:column;gap:8px;margin:14px 0;"></div>
+
+  <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;">
+    <p style="font-size:12px;color:#64748b;margin-bottom:10px;font-family:var(--font-mono);">Yeni Düğüm Ekle</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;">
+      <div><label for="inpNodeName">Takma Ad</label><input id="inpNodeName" placeholder="HEL-02" maxlength="20"></div>
+      <div><label for="inpNodeIp">IP Adresi</label><input id="inpNodeIp" placeholder="65.108.x.x"></div>
+      <div><label for="inpNodePort">Port</label><input id="inpNodePort" placeholder="22" value="22"></div>
+    </div>
+  </div>
+
+  <div class="dialog-foot" style="margin-top:16px;">
+    <button class="btn" id="btnCloseNodes">Kapat</button>
+    <button class="btn" id="btnAddNode" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.4);color:#34d399;">+ Düğüm Ekle</button>
+  </div>
+</dialog>
+
 <script>
   /* PROPRIETARY AND CONFIDENTIAL • COPYRIGHT © 2026 mFk Games. All Rights Reserved. */
   console.log("%c[mFk CYBERSHIELD] Güvenli Savunma Hattı Devrede.", "color:#fbbf24;font-size:16px;font-weight:bold;");
@@ -967,9 +1000,62 @@
   const REPO = 'mFkGames/mfkvpn.github.io';
   const WORKFLOW = 'vpn-control.yml';
 
-  // ŞİFRELENMİŞ TOKEN KASASI (GitHub botu asla tespit edemez, dışarıdan görünmez)
   const _VAULT_KEY = '554d6454716a601fe69bdaaec5e28999475d2a66566434f79987acf9868fbb563c151b540a7ad5b5';
   let activeToken = '';
+
+  // Düğüm sistemi
+  const DEFAULT_NODE = { name: 'HEL-01', ip: '46.224.62.213', port: '22', isDefault: true };
+  function getNodes() {
+    try { return JSON.parse(ls.getItem('mfk_nodes') || 'null') || [DEFAULT_NODE]; } catch(e) { return [DEFAULT_NODE]; }
+  }
+  function saveNodes(nodes) { ls.setItem('mfk_nodes', JSON.stringify(nodes)); }
+  let activeNode = (() => {
+    const nodes = getNodes();
+    const ai = parseInt(ls.getItem('mfk_active_node') || '0', 10);
+    return nodes[ai] || nodes[0] || DEFAULT_NODE;
+  })();
+
+  function updateNodeBadge() {
+    const el = $('#activeNodeLabel');
+    if (el) el.textContent = activeNode.name + ' • ' + activeNode.ip;
+  }
+
+  function renderNodeList() {
+    const nodes = getNodes();
+    const box = $('#nodeList');
+    box.innerHTML = nodes.map((n, i) => {
+      const isActive = (n.ip === activeNode.ip && n.port === activeNode.port);
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,${isActive?'0.07':'0.03'});border:1px solid rgba(255,255,255,${isActive?'0.14':'0.06'});">
+        <span style="flex:1;font-family:var(--font-mono);font-size:13px;">
+          <b style="color:${isActive?'#f59e0b':'#f8fafc'}">${n.name}</b>
+          <span style="color:#64748b;margin-left:6px;">${n.ip}:${n.port||22}</span>
+        </span>
+        ${isActive ? '<span style="font-size:11px;color:#10b981;font-family:var(--font-mono);">● AKTİF</span>' :
+          `<button onclick="selectNode(${i})" style="font-size:11px;padding:4px 10px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#06b6d4;border-radius:6px;cursor:pointer;">Seç</button>`}
+        ${n.isDefault ? '' : `<button onclick="deleteNode(${i})" style="font-size:11px;padding:4px 10px;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.25);color:#f43f5e;border-radius:6px;cursor:pointer;">Sil</button>`}
+      </div>`;
+    }).join('');
+  }
+
+  window.selectNode = function(i) {
+    const nodes = getNodes();
+    activeNode = nodes[i] || DEFAULT_NODE;
+    ls.setItem('mfk_active_node', String(i));
+    updateNodeBadge();
+    renderNodeList();
+    logStream(`↔ Aktif düğüm: ${activeNode.name} (${activeNode.ip})`, 'ok');
+  };
+
+  window.deleteNode = function(i) {
+    const nodes = getNodes();
+    if (nodes[i] && nodes[i].isDefault) return;
+    nodes.splice(i, 1);
+    saveNodes(nodes);
+    activeNode = nodes[0] || DEFAULT_NODE;
+    ls.setItem('mfk_active_node', '0');
+    updateNodeBadge();
+    renderNodeList();
+  };
 
   function unpackToken(hex, pin) {
     let res = '';
@@ -986,9 +1072,9 @@
   let currentConfName = '';
 
   const MOCK_PEERS = [
-    { name: 'mFk-iPhone-15-Pro', ip: '10.66.66.2', hs: Math.floor(Date.now() / 1000) - 95, rx: 198429104, tx: 42472910 },
-    { name: 'mFk-MacBook-M3', ip: '10.66.66.3', hs: Math.floor(Date.now() / 1000) - 130, rx: 894028472, tx: 92837410 },
-    { name: 'mFk-Titan-Rig', ip: '10.66.66.4', hs: Math.floor(Date.now() / 1000) - 34000, rx: 55910284, tx: 3290384 }
+    { name: 'mFk-iPhone-15-Pro', ip: '10.13.13.2', hs: Math.floor(Date.now() / 1000) - 95, rx: 198429104, tx: 42472910 },
+    { name: 'mFk-MacBook-M3', ip: '10.13.13.3', hs: Math.floor(Date.now() / 1000) - 130, rx: 894028472, tx: 92837410 },
+    { name: 'mFk-Titan-Rig', ip: '10.13.13.4', hs: Math.floor(Date.now() / 1000) - 34000, rx: 55910284, tx: 3290384 }
   ];
 
   const MOCK_RUNS = [
@@ -1044,13 +1130,15 @@
 
   async function runWorkflowAction(inputs, label) {
     sfx('click');
-    logStream(`➜ [GİTOPS] ${label} tetikleniyor...`, 'cmd');
+    logStream(`➜ [GİTOPS] ${label} tetikleniyor... [${activeNode.name}]`, 'cmd');
     const t0 = Date.now() - 5000;
+    // Aktif düğüm varsayılan değilse host/port geçir
+    const nodeInputs = activeNode.isDefault ? {} : { host: activeNode.ip, port: activeNode.port };
     const res = await ghReq(`/actions/workflows/${WORKFLOW}/dispatches`, {
       method: 'POST',
-      body: JSON.stringify({ ref: 'main', inputs })
+      body: JSON.stringify({ ref: 'main', inputs: { ...inputs, ...nodeInputs } })
     });
-    if (!res.ok) throw new Error(`GitHub isteği reddetti (${res.status}).`);
+    if (!res.ok) throw new Error(`GitHub isteği reddetti (${res.status})`);
 
     let target = null;
     for (let i = 0; i < 16 && !target; i++) {
@@ -1316,6 +1404,28 @@
     $('#btnClearTerminal').onclick = () => { $('#streamBox').innerHTML = ''; };
     $('#btnConfNo').onclick = () => $('#diagConfirm').close();
 
+    // Düğüm modal
+    ['#btnNodes', '#activeNodeBadge'].forEach(sel => {
+      const el = $(sel);
+      if (el) { el.removeAttribute('onclick'); el.onclick = () => { sfx('click'); renderNodeList(); $('#diagNodes').showModal(); }; }
+    });
+    $('#btnCloseNodes').onclick = () => $('#diagNodes').close();
+    $('#btnAddNode').onclick = () => {
+      const name = ($('#inpNodeName').value || '').trim();
+      const ip = ($('#inpNodeIp').value || '').trim();
+      const port = ($('#inpNodePort').value || '22').trim();
+      if (!/^[A-Za-z0-9_-]{1,20}$/.test(name) || !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) {
+        sfx('err'); return;
+      }
+      const nodes = getNodes();
+      if (nodes.find(n => n.ip === ip && n.port === port)) { sfx('err'); return; }
+      nodes.push({ name, ip, port, isDefault: false });
+      saveNodes(nodes);
+      $('#inpNodeName').value = ''; $('#inpNodeIp').value = ''; $('#inpNodePort').value = '22';
+      renderNodeList();
+    };
+
+    updateNodeBadge();
     renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
   });
 </script>
