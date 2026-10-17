@@ -110,11 +110,13 @@
       background: #020408;
       backdrop-filter: blur(40px);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: calc(24px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) calc(20px + env(safe-area-inset-left, 0px));
+      justify-content: space-between;
+      padding: calc(30px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) calc(20px + env(safe-area-inset-left, 0px));
       transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     #gateCanvas {
@@ -901,6 +903,9 @@
 <!-- mFk SİBER KİLİT EKRANI (GİZEMLİ GİRİŞ PORTALI) -->
 <div id="lockGate">
   <canvas id="gateCanvas"></canvas>
+  
+  <div style="flex:1;min-height:20px;"></div>
+
   <div class="gate-card" id="gateCard" style="z-index:2;position:relative;">
     <div class="gate-crest">
       <img src="mFk_icon.png" alt="mFk System">
@@ -914,6 +919,18 @@
       Giriş
     </button>
   </div>
+
+  <div style="flex:1;min-height:20px;"></div>
+
+  <!-- KİLİT EKRANI ALT BİLGİ & LİSANS -->
+  <footer style="z-index:2;position:relative;width:100%;max-width:540px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px;font-size:12px;color:#64748b;font-family:var(--font-mono);text-align:center;padding:12px 10px;">
+    <span>© 2026 <strong style="color:#e2e8f0;font-weight:700;">mFkGames</strong>. Tüm hakları saklıdır.</span>
+    <span style="color:rgba(255,255,255,0.2)">•</span>
+    <a href="#" id="btnOpenPrivacyGate" style="color:#38bdf8;text-decoration:none;transition:color 0.2s;display:inline-flex;align-items:center;gap:5px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Gizlilik & Lisans
+    </a>
+  </footer>
 </div>
 
 <!-- ANA KOKPİT -->
@@ -1880,12 +1897,17 @@
       sfx('unlock');
     };
 
-    // Gizlilik Politikası Modalı
-    $('#btnOpenPrivacy').onclick = e => {
-      e.preventDefault();
-      sfx('click');
-      $('#diagPrivacy').showModal();
-    };
+    // Gizlilik Politikası Modalı (Kilit Ekranı + Kokpit)
+    ['#btnOpenPrivacy', '#btnOpenPrivacyGate'].forEach(sel => {
+      const b = $(sel);
+      if (b) {
+        b.onclick = e => {
+          e.preventDefault();
+          sfx('click');
+          $('#diagPrivacy').showModal();
+        };
+      }
+    });
     $('#btnClosePrivacy').onclick = () => $('#diagPrivacy').close();
 
     // Kozmik Bağımsız Yıldızlar / Siber Parçacıklar (Lock Gate)
