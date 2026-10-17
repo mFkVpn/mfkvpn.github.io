@@ -890,78 +890,192 @@
     }
 
     @media (max-width: 992px) {
-      .core-hud { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 26px 20px; }
-      .core-telemetry { justify-content: center; gap: 20px 24px; }
-      .core-actions { width: 100%; min-width: 0; }
       .cockpit-grid { grid-template-columns: 1fr; }
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 680px) {
+      .cockpit {
+        padding-left: calc(12px + env(safe-area-inset-left, 0px));
+        padding-right: calc(12px + env(safe-area-inset-right, 0px));
+        padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px));
+      }
+
+      /* Header Hizalama */
       header {
+        display: flex;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
+        padding: 6px 0 16px;
       }
+
+      .brand-identity {
+        gap: 10px;
+        min-width: 0;
+      }
+
       .brand-crest-box {
-        width: 64px !important;
-        height: 64px !important;
+        width: 48px !important;
+        height: 48px !important;
       }
+
       .brand-titles h1 {
-        font-size: 26px !important;
-      }
-      #activeNodeBadge {
-        font-size: 10px;
-        padding: 3px 8px;
-      }
-      .core-hud {
-        padding: 22px 14px !important;
-        border-radius: 18px !important;
-      }
-      .core-reactor {
-        width: 126px !important;
-        height: 126px !important;
-      }
-      .core-center-badge {
-        width: 86px !important;
-        height: 86px !important;
-      }
-      .core-center-badge img {
-        width: 78px !important;
-        height: 78px !important;
-      }
-      .core-info h2 {
         font-size: 22px !important;
+        margin-bottom: 2px;
       }
+
+      #activeNodeBadge {
+        font-size: 10px !important;
+        padding: 3px 6px !important;
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      header > div:last-child {
+        gap: 6px !important;
+      }
+
+      header .btn {
+        padding: 8px 10px !important;
+        font-size: 11.5px !important;
+      }
+
+      /* Kokpit Çubuğu ve Aksiyonlar */
+      .core-hud {
+        padding: 16px 14px !important;
+        border-radius: 16px !important;
+        gap: 14px !important;
+      }
+
+      .core-hud-top {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 14px !important;
+      }
+
+      .core-hud-text h2 {
+        font-size: 17px !important;
+      }
+
       .core-actions {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
       }
+
       .core-actions .btn {
-        padding: 13px 8px;
-        font-size: 13px;
-        justify-content: center;
+        width: 100% !important;
+        padding: 10px 8px !important;
+        font-size: 12px !important;
+        justify-content: center !important;
       }
-      .core-telemetry {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        width: 100%;
-        text-align: left;
+
+      /* Telemetri Grid (Mobilde 2 sütun tertemiz) */
+      .core-telemetry-row {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
       }
-      .telem-box {
-        padding: 8px 10px;
+
+      .core-telemetry-row .telem-cell:last-child {
+        grid-column: span 2;
       }
-      .telem-val {
-        font-size: 13.5px;
+
+      .telem-cell {
+        padding: 8px 10px !important;
       }
+
+      .telem-cell-lbl {
+        font-size: 9.5px !important;
+      }
+
+      .telem-cell-val {
+        font-size: 12.5px !important;
+      }
+
+      /* Taktik Piller */
+      .tactical-strip {
+        gap: 8px !important;
+        margin-bottom: 16px !important;
+      }
+
+      .strip-pill {
+        width: 100% !important;
+        padding: 7px 12px !important;
+        font-size: 11px !important;
+      }
+
+      /* Cihaz Kartları */
+      .panel-head {
+        padding: 14px 14px !important;
+        gap: 8px !important;
+      }
+
+      .panel-head .panel-label {
+        font-size: 14.5px !important;
+      }
+
+      .device-grid {
+        padding: 12px 10px !important;
+        gap: 10px !important;
+      }
+
+      .device-card {
+        padding: 10px 12px !important;
+        gap: 10px !important;
+        grid-template-columns: 38px 1fr auto !important;
+      }
+
+      .device-crest {
+        width: 38px !important;
+        height: 38px !important;
+      }
+
+      .device-crest svg {
+        width: 18px !important;
+        height: 18px !important;
+      }
+
+      .device-info b {
+        font-size: 13px !important;
+        flex-wrap: wrap;
+        gap: 4px !important;
+      }
+
+      .device-info .ip-tag {
+        font-size: 10.5px !important;
+        padding: 0 4px !important;
+      }
+
+      .device-sub {
+        font-size: 10px !important;
+        gap: 8px !important;
+        flex-wrap: wrap;
+      }
+
+      /* Kilit Ekranı */
       .gate-card {
-        padding: 38px 24px 32px;
-        border-radius: 26px;
+        padding: 28px 18px 24px !important;
+        border-radius: 22px !important;
       }
+
       .gate-crest {
-        width: 210px;
-        height: 210px;
+        width: 180px !important;
+        height: 180px !important;
+        margin-bottom: 16px !important;
+      }
+
+      .gate-tag {
+        font-size: 9.5px !important;
+        padding: 3px 10px !important;
+      }
+
+      .gate-input {
+        font-size: 18px !important;
+        padding: 12px !important;
       }
     }
   </style>
