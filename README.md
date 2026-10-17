@@ -4,93 +4,42 @@
 
 # 🌐 mFkVpN
 
-### Sıfır Saldırı Yüzeyli, Küresel Düğümlü Kişisel GitOps WireGuard Komuta Merkezi
+### Next-Gen Personal WireGuard Dashboard & Stealth Control Portal
 
-**mFk Games** için özel olarak geliştirilmiş askeri düzeyde kişisel VPN savunma hattı.  
-İnternete açık web paneli yok, dinleyen admin portu yok, yetkisiz shell erişimi yok.
-
-[![Status](https://img.shields.io/badge/Status-Active%20Shield-34D399?style=flat-square&logo=wireguard&logoColor=white)](https://github.com/mFkGames/mfkvpn.github.io)
-[![GitOps](https://img.shields.io/badge/GitOps-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/mFkGames/mfkvpn.github.io)
-[![Server](https://img.shields.io/badge/Hetzner-Cloud%20Linux-D50C2D?style=flat-square&logo=hetzner&logoColor=white)](https://github.com/mFkGames/mfkvpn.github.io)
-[![Security](https://img.shields.io/badge/Security-Forced--Command%20SSH-F59E0B?style=flat-square)](https://github.com/mFkGames/mfkvpn.github.io)
+[![Security](https://img.shields.io/badge/Security-Zero--Knowledge-06B6D4?style=flat-square)](LICENSE)
 [![License](https://img.shields.io/badge/License-Proprietary%20mFk-red?style=flat-square)](LICENSE)
+[![Encryption](https://img.shields.io/badge/Encryption-X25519%20%7C%20ChaCha20-10B981?style=flat-square)](LICENSE)
 
 </div>
 
 ---
 
-## ⚡ Neden Farklı?
+### 🛡️ TR • Genel Bakış
 
-Klasik VPN panelleri (wg-easy vb.) internete açık bir web arayüzü bırakır. Bu arayüz doğrudan port taramalarına, brute-force saldırılarına ve açık riski taşır.
+**mFkVpN**, kişisel kullanım için tasarlanmış, yüksek güvenlikli ve modern bir WireGuard yönetim arayüzüdür.
 
-**mFk Cybershield ise sıfır saldırı yüzeyi prensibiyle çalışır:**
-* **Sıfır Açık Panel:** Sunucuda web sunucusu (Nginx/Apache/Node vb.) çalışmaz. Yalnızca UDP 51820 ve SSH açıktır.
-* **En Az Yetki (Least Privilege):** İşlemler `root` yerine kısıtlı `vpnctl` kullanıcısı ile yürütülür.
-* **Forced-Command Zırhı:** SSH anahtarı çalınsa dahi `authorized_keys` içindeki kilit nedeniyle yalnızca 4 adet whitelist komut çalışabilir, terminal/shell açılamaz.
-* **Sıfır Bilgi İstemci (Zero-Knowledge):** WireGuard anahtar çiftleri doğrudan tarayıcınızda üretilir (Web Crypto X25519). Özel anahtar sunucuya veya dışarıya asla iletilmez.
-* **Şifrelenmiş Kriptex Kasası:** GitHub erişim token'ı koda açık metin olarak yazılmaz; kriptex şifresiyle bellekte çözülür.
+* **Sıfır Günlük (Zero-Logs):** Hiçbir kullanıcı etkinliği veya DNS sorgusu diske kaydedilmez; tüm süreçler RAM üzerinden işlenir.
+* **Uçtan Uca Şifreleme:** İstemci tarafı X25519 asimetrik anahtar üretimi ile özel anahtarlar tarayıcı dışına çıkmaz.
+* **Modern Mobil Deneyim:** PWA uyumlu, bağımsız çalışan ve tam ekran mobil erişim desteği.
+* **Gelişmiş Gizlilik:** Ağ sızıntılarını önleyen entegre tünelleme ve dinamik parametre koruması.
 
 ---
 
-## 🧭 Sistem Mimarisi
+### 🌐 EN • Overview
 
-```mermaid
-flowchart LR
-    A["📱 mFk Kokpit / Mobil<br/>(Master PIN Doğrulaması)"] -->|"workflow_dispatch<br/>start · stop · restart · status"| B["⚙️ GitHub Actions Runner<br/>(Kilitli Repository Secrets)"]
-    B -->|"ssh -i ed25519 vpnctl@HOST"| C["🖥️ Hetzner Cloud Sunucu<br/>(sshd)"]
-    C -->|"forced-command<br/>/usr/local/bin/vpnctl-ssh"| D{"Whitelist<br/>Filtresi"}
-    D -->|Geçerli| E["sudo vpnctl<br/>(Docker WireGuard)"]
-    D -->|Geçersiz| X["⛔ DENIED"]
-    E --> F["📤 Şifreli Çıktı Kokpite Döner"]
-```
+**mFkVpN** is a high-security, next-generation WireGuard dashboard and stealth portal engineered for private operations.
 
----
-
-## 🚀 Komuta Kokpiti Kullanımı
-
-1. **Giriş:** `index.html` sayfasını tarayıcınızda açın.
-2. **Kimlik Doğrulama:** Master PIN ekranına özel parolanızı girin.
-3. **Yönetim:**
-   * **[Başlat]:** WireGuard konteynerini ayağa kaldırır ve kayıtlı cihazları tünele bağlar.
-   * **[Durdur]:** Acil durum tünel kesicidir (Kill-Switch). Tüm cihazların bağlantısını anında keser.
-   * **[Yeniden Başlat]:** Tüneli 2 saniyede yenileyip bağlantıları tazeler.
-   * **[Durumu Tara]:** Anlık çalışma süresi, bağlı peer sayısı ve el sıkışma sürelerini çeker.
-   * **[+ Yeni Cihaz]:** Telefon veya bilgisayar için tarayıcıda tek tıkla QR kod ve `.conf` üretir.
-
----
-
-## 📁 Dizin Yapısı
-
-```
-mfkvpn/
-├── index.html                   # mFkVpN Siber Komuta Kokpiti
-├── manifest.json                # PWA Mobil Uygulama Tanımı
-├── LICENSE                      # mFk Games Özel Mülkiyet Lisansı
-├── README.md                    # Sistem Dokümantasyonu
-└── .github/
-    └── workflows/
-        ├── vpn-control.yml      # GitOps Güvenli Kontrol
-        └── vpn-healthcheck.yml  # Otomatik Sağlık Taraması
-```
-
----
-
-## 🔐 Güvenlik Katmanları
-
-| Katman | Koruma Önlemi |
-|---|---|
-| **Erişim** | Master PIN korumalı siber kilit ekranı & kaynak kodu koruma caydırıcısı |
-| **Orkestrasyon** | GitHub 2FA korumalı Repository Secrets (`HOST`, `USERNAME`, `SSH_KEY`, `SSH_PORT`) |
-| **Ağ Taşıma** | Tek amaçlı `ed25519` SSH anahtarı + `StrictHostKeyChecking` |
-| **Sunucu Girişi** | `restrict,command="/usr/local/bin/vpnctl-ssh"` forced-command filtresi |
-| **Konteyner** | Kernel-level WireGuard `ChaCha20-Poly1305` tüneli |
+* **Zero-Logs Commitment:** No user activity, network traffic, or DNS queries are stored on disk.
+* **Client-Side Cryptography:** End-to-end asymmetric key generation (X25519); private keys never leave your device.
+* **PWA & Mobile Ready:** Responsive, standalone application experience for mobile devices.
+* **Strict Leak Prevention:** Comprehensive tunnel configuration designed to prevent DNS and IP leaks.
 
 ---
 
 <div align="center">
 
-**PROPRIETARY & CONFIDENTIAL**  
-Copyright © 2026 **mFk Games** (mFk). Tüm hakları saklıdır.  
-*İzinsiz kopyalama, dağıtma veya tersine mühendislik yapılması yasaktır.*
+**PROPRIETARY & CONFIDENTIAL • TESCİLLİ VE GİZLİDİR**  
+Copyright © 2026 **mFk Games**. All rights reserved / Tüm hakları saklıdır.  
+*Refer to [LICENSE](LICENSE) for terms.*
 
 </div>
