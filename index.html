@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>mfkvpn | Kişisel GitOps WireGuard Kontrol Paneli</title>
+  <meta name="description" content="Açık yönetim portu bulunmayan, GitHub Actions üzerinden kontrol edilen yeni nesil kişisel WireGuard VPN sistemi.">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  
+  <!-- Fontlar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- QR Kod Üretici -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #070a13;
+      --bg-card: rgba(14, 21, 37, 0.72);
+      --bg-surface: #0a0f1d;
+      --ink: #f1f5f9;
+      --ink-dim: #cbd5e1;
+      --mut: #64748b;
+      --mut-light: #94a3b8;
+      
+      --brand: #6366f1;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.35);
+      --rose: #f43f5e;
+      --rose-glow: rgba(244, 63, 94, 0.35);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.35);
+      
+      --border: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(255, 255, 255, 0.16);
+      
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-display: 'Sora', sans-serif;
+      --font-mono: 'JetBrains Mono', Consolas, monospace;
+      
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-full: 9999px;
+      
+      --transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      --state-color: var(--mut);
+      --state-glow: rgba(100, 116, 139, 0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-main);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    /* Arka Plan Efekti */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background: 
+        radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* SİBER GÜVENLİK KİLİT EKRANI (LOCKSCREEN) */
+    #lockOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: rgba(4, 7, 15, 0.94);
+      backdrop-filter: blur(24px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    #lockOverlay.unlocked {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .lock-box {
+      background: #0b1120;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 25px 90px rgba(0, 0, 0, 0.9), 0 0 40px rgba(99, 102, 241, 0.2);
+      text-align: center;
+      position: relative;
+      animation: floatIn 0.4s ease-out;
+    }
+
+    @keyframes floatIn {
+      from { transform: translateY(18px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .lock-shield {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      display: grid;
+      place-items: center;
+      margin: 0 auto 18px;
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.5);
+    }
+
+    .lock-shield svg {
+      width: 32px;
+      height: 32px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.2;
+    }
+
+    .lock-box h2 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .lock-box p {
+      font-size: 13px;
+      color: var(--mut-light);
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    .lock-input-wrap {
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    .lock-input {
+      width: 100%;
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      letter-spacing: 0.15em;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .lock-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .lock-box.shake {
+      animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-2px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
+
+    .lock-license-note {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 14px;
+      font-family: var(--font-mono);
+    }
+
+    /* ANA KONTEYNER */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0 28px;
+      flex-wrap: wrap;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .brand-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: white;
+      stroke-width: 2.2;
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      background: linear-gradient(to right, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text h1 span {
+      background: linear-gradient(to right, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--mut-light);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 2px 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tag.repo {
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.25);
+      background: rgba(56, 189, 248, 0.08);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Genel Butonlar */
+    .btn {
+      font-family: var(--font-main);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+      backdrop-filter: blur(8px);
+    }
+
+    .btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: var(--border-highlight);
+      transform: translateY(-1px);
+    }
+
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      border: none;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-emerald {
+      background: rgba(16, 185, 129, 0.14);
+      border-color: rgba(16, 185, 129, 0.45);
+      color: #34d399;
+    }
+
+    .btn-rose {
+      background: rgba(244, 63, 94, 0.12);
+      border-color: rgba(244, 63, 94, 0.4);
+      color: #fb7185;
+    }
+
+    .btn-amber {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .btn-sm { padding: 6px 12px; font-size: 12.5px; border-radius: 8px; }
+
+    /* Kart Yapısı */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(16px);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    }
+
+    /* Hero HUD Kartı */
+    .hero-card {
+      padding: 32px 36px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 32px;
+      align-items: center;
+      margin-bottom: 24px;
+      box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .status-ring {
+      width: 140px;
+      height: 140px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .status-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+    .ring-bg { fill: none; stroke: rgba(255, 255, 255, 0.05); stroke-width: 6; }
+
+    .ring-prog {
+      fill: none;
+      stroke: var(--state-color);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 0;
+      transition: stroke 0.4s ease;
+      filter: drop-shadow(0 0 12px var(--state-color));
+    }
+
+    .ring-center-icon {
+      position: absolute;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: grid;
+      place-items: center;
+      color: var(--state-color);
+      box-shadow: 0 0 25px var(--state-glow);
+    }
+
+    .ring-center-icon svg { width: 28px; height: 28px; transform: none; fill: none; stroke: currentColor; stroke-width: 2.2; }
+
+    body.is-running { --state-color: var(--emerald); --state-glow: var(--emerald-glow); }
+    body.is-stopped { --state-color: var(--rose); --state-glow: var(--rose-glow); }
+    body.is-busy { --state-color: var(--amber); --state-glow: var(--amber-glow); }
+    body.is-busy .ring-prog {
+      stroke-dasharray: 100 277;
+      animation: ringSpin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes ringSpin { 100% { transform: rotate(360deg); } }
+
+    .hero-info h2 {
+      font-family: var(--font-display);
+      font-size: clamp(26px, 3.2vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    .hero-info .status-badge {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--state-color);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .status-badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--state-color);
+      box-shadow: 0 0 10px var(--state-color);
+    }
+
+    .hero-metrics {
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .metric-item { display: flex; flex-direction: column; }
+    .metric-label { font-size: 12.5px; color: var(--mut); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+    .metric-value { font-size: 18px; font-weight: 700; color: var(--ink); font-family: var(--font-mono); margin-top: 2px; }
+
+    .hero-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      min-width: 280px;
+    }
+
+    .hero-controls .btn { padding: 14px 16px; font-size: 14.5px; font-weight: 700; }
+
+    /* 4'lü İstatistik ve Güvenlik Çubuğu */
+    .feature-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .feature-card {
+      padding: 18px 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(14, 21, 37, 0.45);
+    }
+
+    .feature-card-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      color: #38bdf8;
+    }
+
+    .feature-card-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
+    .feature-card-content h3 { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .feature-card-content p { font-size: 12.5px; color: var(--mut-light); line-height: 1.45; }
+
+    /* Ana Çalışma Alanı */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 22px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-title small { font-family: var(--font-mono); font-size: 12px; color: var(--mut); font-weight: normal; }
+
+    /* Cihaz Listesi */
+    .device-list {
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .device-item {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: var(--transition);
+    }
+
+    .device-item:hover {
+      background: rgba(255, 255, 255, 0.045);
+      border-color: var(--border-highlight);
+    }
+
+    .device-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(6, 182, 212, 0.25));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: grid;
+      place-items: center;
+      position: relative;
+      color: #38bdf8;
+    }
+
+    .device-avatar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+    .device-avatar .online-pin {
+      position: absolute;
+      right: -3px; bottom: -3px;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: #475569;
+      border: 2px solid #0b1120;
+    }
+
+    .device-item.is-online .online-pin {
+      background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald);
+    }
+
+    .device-details b {
+      font-size: 15px; font-weight: 700; color: var(--ink);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .device-details .device-ip {
+      font-family: var(--font-mono); font-size: 12.5px; color: #38bdf8;
+      background: rgba(56, 189, 248, 0.08); padding: 1px 7px;
+      border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .device-sub {
+      display: flex; gap: 16px; margin-top: 4px;
+      font-size: 12px; color: var(--mut-light); font-family: var(--font-mono);
+    }
+
+    .btn-delete {
+      color: var(--mut); background: none; border: none; padding: 8px;
+      border-radius: 8px; cursor: pointer; transition: var(--transition);
+    }
+    .btn-delete:hover { color: var(--rose); background: rgba(244, 63, 94, 0.12); }
+
+    .empty-state {
+      padding: 44px 20px; text-align: center; color: var(--mut-light);
+      border: 1px dashed var(--border); border-radius: var(--radius-md);
+    }
+
+    /* Canlı Terminal */
+    .terminal-body {
+      padding: 16px 20px;
+      background: #03060d;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: #a5b4fc;
+      min-height: 160px;
+      max-height: 260px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.65;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .terminal-line { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 4px; }
+    .terminal-time { color: var(--mut); }
+    .terminal-msg { flex: 1; color: #e2e8f0; }
+    .terminal-msg.is-ok { color: #34d399; }
+    .terminal-msg.is-err { color: #fb7185; }
+    .terminal-msg.is-warn { color: #fbbf24; }
+    .terminal-msg.is-cmd { color: #38bdf8; }
+
+    /* Runs Listesi */
+    .runs-wrap {
+      padding: 16px 20px; display: flex; flex-direction: column;
+      gap: 8px; max-height: 290px; overflow-y: auto;
+    }
+
+    .run-item {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; padding: 10px 14px; background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      text-decoration: none; color: var(--ink); font-size: 13px;
+    }
+
+    .run-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+    .run-item-left { display: flex; align-items: center; gap: 10px; }
+
+    .run-status-bullet {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--mut); flex-shrink: 0;
+    }
+    .run-status-bullet.success { background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
+    .run-status-bullet.failure { background: var(--rose); box-shadow: 0 0 8px var(--rose); }
+    .run-status-bullet.in_progress, .run-status-bullet.queued { background: var(--amber); }
+
+    .run-item-time { font-size: 11.5px; color: var(--mut); font-family: var(--font-mono); }
+
+    /* Modallar */
+    dialog {
+      background: #0b1120;
+      color: var(--ink);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      max-width: 500px;
+      width: calc(100% - 32px);
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.85);
+      margin: auto;
+    }
+
+    dialog::backdrop { background: rgba(3, 6, 13, 0.8); backdrop-filter: blur(8px); }
+
+    dialog h3 {
+      font-family: var(--font-display);
+      font-size: 20px; font-weight: 700; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    dialog p { color: var(--mut-light); font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
+
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--ink-dim); margin: 16px 0 6px; }
+
+    input, select {
+      width: 100%; background: #060a14; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 14px; color: var(--ink);
+      font-family: inherit; font-size: 14px; transition: var(--transition);
+    }
+
+    input:focus, select:focus {
+      outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .dialog-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; flex-wrap: wrap; }
+
+    .qr-container {
+      background: white; border-radius: var(--radius-md); padding: 16px;
+      margin: 16px auto; width: 240px; display: grid; place-items: center;
+    }
+
+    .qr-container svg { width: 100%; height: auto; display: block; }
+
+    .info-callout {
+      background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 14px;
+      font-size: 12.5px; color: #c7d2fe; display: flex; gap: 10px;
+    }
+
+    .info-callout svg { width: 18px; height: 18px; flex-shrink: 0; color: #818cf8; }
+
+    @media (max-width: 992px) {
+      .hero-card { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+      .hero-metrics { justify-content: center; }
+      .hero-controls { width: 100%; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="is-running">
+
+<!-- GÜVENLİK VE ERİŞİM KİLİT EKRANI -->
+<div id="lockOverlay">
+  <div class="lock-box" id="lockBox">
+    <div class="lock-shield">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <h2>mfkVPN • Güvenlik Duvarı</h2>
+    <p id="lockSubtitle">Bu sistem mFk Games'e ait özel mülkiyettir. Devam etmek için Master PIN giriniz.</p>
+    
+    <div class="lock-input-wrap">
+      <input type="password" id="masterPinInput" class="lock-input" maxlength="32" placeholder="••••••••" autocomplete="current-password" autofocus>
+    </div>
+    
+    <button class="btn btn-primary" id="btnUnlock" style="width:100%;padding:14px;font-size:15px;font-weight:700;">
+      Kilidi Aç & Giriş Yap
+    </button>
+    
+    <div class="lock-license-note">
+      PROPRIETARY & CONFIDENTIAL • COPYRIGHT © 2026 mFk Games.<br>İzinsiz erişim ve kopyalama kesinlikle yasaktır.
+    </div>
+  </div>
+</div>
+
+<div class="container" id="mainDashboard">
+
+  <!-- Üst Menü / Navbar -->
+  <header>
+    <div class="brand-wrap">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>mfk<span>VPN</span></h1>
+        <div class="brand-badges">
+          <span class="tag">WireGuard GitOps</span>
+          <span class="tag repo" id="repoTag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span id="repoNameDisplay">mFkGames/mfkvpn.github.io</span>
+          </span>
+          <span class="tag" style="color:#34d399;border-color:rgba(52,211,153,0.3)">Korumalı</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-rose btn-sm" id="btnLockNow" title="Paneli derhal kilitle">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Kilitle
+      </button>
+      <button class="btn" id="btnHelp" title="Mimari ve Güvenlik">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Nasıl Çalışır?
+      </button>
+      <button class="btn btn-primary" id="btnSettings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Ayarlar
+      </button>
+    </div>
+  </header>
+
+  <!-- Ana HUD: VPN Durumu ve Güç Kontrolleri -->
+  <div class="card hero-card">
+    <div class="status-ring">
+      <svg viewBox="0 0 130 130">
+        <circle class="ring-bg" cx="65" cy="65" r="60"/>
+        <circle class="ring-prog" cx="65" cy="65" r="60"/>
+      </svg>
+      <div class="ring-center-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      </div>
+    </div>
+
+    <div class="hero-info">
+      <div class="status-badge">
+        <span class="dot"></span>
+        <span id="badgeStateText">GİTOPS BAĞLANTISI HAZIR</span>
+      </div>
+      <h2 id="heroTitle">VPN Tüneli Aktif</h2>
+      
+      <div class="hero-metrics">
+        <div class="metric-item">
+          <span class="metric-label">Çalışma Süresi</span>
+          <span class="metric-value" id="valUptime">3 gün 14 sa</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Bağlı Cihazlar</span>
+          <span class="metric-value" id="valPeersCount">2 Aktif / 3 Kayıtlı</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Son Tetikleme</span>
+          <span class="metric-value" id="valLastAction">4 dk önce</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Saldırı Yüzeyi</span>
+          <span class="metric-value" style="color:#34d399">0 Port (Kilitli)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-controls">
+      <button class="btn btn-emerald" data-action="start" id="btnStart">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Başlat
+      </button>
+      <button class="btn btn-rose" data-action="stop" id="btnStop">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        Durdur
+      </button>
+      <button class="btn btn-amber" data-action="restart" id="btnRestart">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        Yeniden Başlat
+      </button>
+      <button class="btn" data-action="status" id="btnStatus">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Durumu Sorgula
+      </button>
+    </div>
+  </div>
+
+  <!-- 4'lü Güvenlik ve Mimari Rozet Çubuğu -->
+  <div class="feature-strip">
+    <div class="card feature-card">
+      <div class="feature-card-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="feature-card-content">
+        <h3>Sıfır Açık Port</h3>
+        <p>Sunucuda internete açık web paneli yoktur. Tüm orkestrasyon kısıtlı SSH ve GitHub Actions üzerindedir.</p>
+      </div>
+    </div>
+
+    <div class="card feature-card">
+      <div class="feature-card-icon" style="color:#a78bfa">
+        <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      </div>
+      <div class="feature-card-content">
+        <h3>Sıfır Bilgi (X25519)</h3>
+        <p>Özel anahtarlar doğrudan tarayıcınızda üretilir. Gizli anahtar sunucuya veya GitHub'a gitmez.</p>
+      </div>
+    </div>
+
+    <div class="card feature-card">
+      <div class="feature-card-icon" style="color:#34d399">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="feature-card-content">
+        <h3>Kernel WireGuard</h3>
+        <p>Hetzner Cloud üzerinde modern ChaCha20-Poly1305 şifreleme ve maksimum bant genişliği.</p>
+      </div>
+    </div>
+
+    <div class="card feature-card">
+      <div class="feature-card-icon" style="color:#f43f5e">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="feature-card-content">
+        <h3>Forced Command</h3>
+        <p>SSH anahtarı çalınsa dahi yalnızca 4 adet whitelist komut çalışabilir, shell açılamaz.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ana Çalışma Alanı: Cihazlar ve Canlı Terminal -->
+  <div class="dashboard-grid">
+    
+    <!-- Sol Panel: Yetkilendirilmiş Cihazlar (WireGuard Peers) -->
+    <div class="card">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          Yetkili Cihazlar
+          <small id="deviceCountBadge">3 cihaz kayıtlı</small>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm" id="btnRefreshPeers" title="Cihaz listesini yenile">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            Yenile
+          </button>
+          <button class="btn btn-primary btn-sm" id="btnAddPeer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Yeni Cihaz Ekle
+          </button>
+        </div>
+      </div>
+
+      <div class="device-list" id="deviceList"></div>
+    </div>
+
+    <!-- Sağ Panel: GitOps Canlı Terminal & İşlem Geçmişi -->
+    <div class="card terminal-wrap">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          GitOps Terminali
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn-sm" id="btnClearLog">Temizle</button>
+        </div>
+      </div>
+
+      <div class="terminal-body" id="terminalOutput">
+        <div class="terminal-line"><span class="terminal-time">[21:45:00]</span><span class="terminal-msg is-ok">✓ mfkvpn güvenlik arayüzü başlatıldı.</span></div>
+        <div class="terminal-line"><span class="terminal-time">[21:45:01]</span><span class="terminal-msg is-cmd">➜ GitHub Actions workflow_dispatch hazır: vpn-control.yml</span></div>
+      </div>
+
+      <div class="panel-header" style="border-top:1px solid var(--border);padding:14px 20px 10px;">
+        <div class="panel-title" style="font-size:14px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Son GitHub Actions Tetiklemeleri
+        </div>
+      </div>
+
+      <div class="runs-wrap" id="runsList"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL 1: Ayarlar (GitHub PAT, Repo, Master PIN) -->
+<dialog id="modalSettings">
+  <h3>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Güvenlik & Kontrol Ayarları
+  </h3>
+  <p>Bu ayarlar yalnızca tarayıcınızın yerel depolama alanında şifrelenir ve GitHub API'sine iletilir.</p>
+
+  <label for="inpRepo">Hedef Repository</label>
+  <input id="inpRepo" value="mFkGames/mfkvpn.github.io" spellcheck="false">
+
+  <label for="inpToken">GitHub Personal Access Token (PAT)</label>
+  <div style="position:relative;">
+    <input id="inpToken" type="password" autocomplete="off" placeholder="ghp_... veya github_pat_..." spellcheck="false">
+    <button type="button" id="btnToggleToken" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mut);cursor:pointer;padding:6px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+  </div>
+
+  <label for="inpChangePin">Master PIN (Giriş Parolası)</label>
+  <input id="inpChangePin" type="password" maxlength="32" placeholder="Yeni Master PIN belirle" spellcheck="false">
+
+  <div class="dialog-buttons">
+    <button class="btn" id="btnTestConn">Bağlantıyı Test Et</button>
+    <button class="btn btn-rose" id="btnClearToken">Token'ı Temizle</button>
+    <button class="btn" id="btnCloseSettings">Kapat</button>
+    <button class="btn btn-primary" id="btnSaveSettings">Kaydet & Uygula</button>
+  </div>
+</dialog>
+
+<!-- MODAL 2: Yeni Cihaz Ekleme -->
+<dialog id="modalAddPeer">
+  <div id="peerStep1">
+    <h3>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      Yeni Cihaz Yetkilendir
+    </h3>
+    <p>WireGuard anahtar çifti (X25519) doğrudan bu tarayıcıda üretilir. Özel anahtar sunucuya gitmez.</p>
+
+    <label for="inpPeerName">Cihaz Adı</label>
+    <input id="inpPeerName" maxlength="24" placeholder="ornek: telefon veya macbook" spellcheck="false">
+
+    <label for="selPeerType">Cihaz Türü</label>
+    <select id="selPeerType">
+      <option value="phone">📱 Akıllı Telefon (iOS / Android)</option>
+      <option value="laptop">💻 Dizüstü Bilgisayar</option>
+      <option value="desktop">🖥️ Masaüstü Bilgisayar</option>
+    </select>
+
+    <label for="selPeerDns">DNS Sunucusu</label>
+    <select id="selPeerDns">
+      <option value="1.1.1.1, 1.0.0.1">Cloudflare DNS (1.1.1.1 - Gizlilik Odaklı)</option>
+      <option value="94.140.14.14, 94.140.15.15">AdGuard DNS (Reklam Engelleyici)</option>
+      <option value="8.8.8.8, 8.8.4.4">Google DNS (8.8.8.8)</option>
+    </select>
+
+    <div class="dialog-buttons">
+      <button class="btn" id="btnCancelAddPeer">Vazgeç</button>
+      <button class="btn btn-primary" id="btnGeneratePeer">Anahtar Üret & Ekle</button>
+    </div>
+  </div>
+
+  <div id="peerStep2" hidden>
+    <h3 id="peerSuccessTitle">Cihaz Hazır!</h3>
+    <p>WireGuard uygulamasından QR kodu taratın veya <code>.conf</code> dosyasını indirin.</p>
+    <div class="qr-container" id="qrContainer"></div>
+
+    <div class="dialog-buttons">
+      <button class="btn" id="btnCopyConf">Metni Kopyala</button>
+      <button class="btn btn-primary" id="btnDownloadConf">.conf İndir</button>
+      <button class="btn" id="btnClosePeerSuccess">Kapat</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- MODAL 3: Onay Kutusu -->
+<dialog id="modalConfirm">
+  <h3 id="confirmTitle">İşlem Onayı</h3>
+  <p id="confirmDesc">Bu işlemi gerçekleştirmek istediğinize emin misiniz?</p>
+  <div class="dialog-buttons">
+    <button class="btn" id="btnConfirmNo">Vazgeç</button>
+    <button class="btn btn-rose" id="btnConfirmYes">Evet, Devam Et</button>
+  </div>
+</dialog>
+
+<!-- MODAL 4: Mimari Bilgi -->
+<dialog id="modalHelp" style="max-width: 600px;">
+  <h3>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    mfkvpn Güvenlik Mimarisi
+  </h3>
+  <div style="background:#050811;padding:16px;border-radius:12px;border:1px solid var(--border);margin:12px 0;font-family:var(--font-mono);font-size:12px;line-height:1.7;">
+    1. <strong>Tetikleme:</strong> İşlem GitHub Actions workflow_dispatch ile tetiklenir.<br>
+    2. <strong>Forced Command:</strong> SSH bağlantısı sunucuda sadece <code>vpnctl-ssh</code> scriptini çalıştırabilir.<br>
+    3. <strong>Sıfır Port:</strong> Sunucuda dışarıya açık web kontrol paneli veya yetkili admin portu yoktur.
+  </div>
+  <div class="dialog-buttons">
+    <button class="btn btn-primary" id="btnCloseHelp">Anladım</button>
+  </div>
+</dialog>
+
+<script>
+  /* PROPRIETARY AND CONFIDENTIAL - Copyright (c) 2026 mFk Games. All Rights Reserved. */
+  console.log("%c[GÜVENLİK UYARISI] mFk Games Özel Mülkiyetidir.", "color:#ef4444;font-size:16px;font-weight:bold;");
+  console.log("%cBu sistem mFk Games'e ait özel mülkiyettir. İzinsiz erişim, kopyalama veya tersine mühendislik yasaktır.", "color:#94a3b8;font-size:12px;");
+
+  // Sağ tık ve kaynak kodu koruma caydırıcısı
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'i' || e.key === 'j')) || e.key === 'F12') {
+      e.preventDefault();
+    }
+  });
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+  const ls = localStorage;
+  const GITHUB_API = 'https://api.github.com';
+  const WORKFLOW_FILE = 'vpn-control.yml';
+
+  // Config ve Güvenlik
+  const config = {
+    get repo() { return ls.getItem('mfk_repo') || 'mFkGames/mfkvpn.github.io'; },
+    set repo(val) { ls.setItem('mfk_repo', val); },
+    get token() { return ls.getItem('mfk_token') || ''; },
+    set token(val) { ls.setItem('mfk_token', val); },
+    get pin() { return ls.getItem('mfk_pin') || 'mfk2026'; },
+    set pin(val) { ls.setItem('mfk_pin', val); }
+  };
+
+  let isLocked = false;
+  let activeConfString = '';
+  let activeConfName = '';
+
+  const MOCK_PEERS = [
+    { name: 'mefe-iphone15', ip: '10.66.66.2', hs: Math.floor(Date.now() / 1000) - 80, rx: 145829104, tx: 38472910, type: 'phone' },
+    { name: 'macbook-m3-pro', ip: '10.66.66.3', hs: Math.floor(Date.now() / 1000) - 140, rx: 894028472, tx: 92837410, type: 'laptop' },
+    { name: 'ev-masaustu-pc', ip: '10.66.66.4', hs: Math.floor(Date.now() / 1000) - 36000, rx: 45910284, tx: 1290384, type: 'desktop' }
+  ];
+
+  const MOCK_RUNS = [
+    { title: 'VPN Control (start)', status: 'completed', conclusion: 'success', time: '12 dakika önce', url: '#' },
+    { title: 'VPN Control (status)', status: 'completed', conclusion: 'success', time: '1 saat önce', url: '#' }
+  ];
+
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const formatBytes = b => {
+    if (!b || b === 0) return '0 B';
+    const k = 1024, s = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(b) / Math.log(k));
+    return (b / Math.pow(k, i)).toFixed(1) + ' ' + s[i];
+  };
+
+  const formatRelativeTime = ts => {
+    if (!ts) return 'bilinmiyor';
+    const s = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+    if (s < 60) return s + ' sn önce';
+    if (s < 3600) return Math.floor(s / 60) + ' dk önce';
+    if (s < 86400) return Math.floor(s / 3600) + ' sa önce';
+    return Math.floor(s / 86400) + ' gün önce';
+  };
+
+  const escapeHtml = str => String(str).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[m]);
+
+  function logTerminal(msg, type = '') {
+    const term = $('#terminalOutput');
+    const now = new Date();
+    const timeStr = `[${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}]`;
+    const line = document.createElement('div');
+    line.className = 'terminal-line';
+    line.innerHTML = `<span class="terminal-time">${timeStr}</span><span class="terminal-msg ${type ? 'is-'+type : ''}">${escapeHtml(msg)}</span>`;
+    term.appendChild(line);
+    term.scrollTop = term.scrollHeight;
+  }
+
+  function setLock(state) {
+    isLocked = state;
+    $$('.hero-controls .btn, #btnAddPeer, #btnRefreshPeers').forEach(b => b.disabled = state);
+  }
+
+  async function githubFetch(endpoint, options = {}) {
+    if (!config.token) throw new Error('Token girilmemiş. Ayarlar menüsünden PAT ekleyin.');
+    const res = await fetch(`${GITHUB_API}/repos/${config.repo}${endpoint}`, {
+      ...options,
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(options.headers || {})
+      }
+    });
+    if (res.status === 401) throw new Error('Token geçersiz veya süresi dolmuş.');
+    if (res.status === 403) throw new Error('Token yetkisiz (Actions: Read & write gerekli).');
+    if (res.status === 404) throw new Error('Repo veya Workflow bulunamadı.');
+    return res;
+  }
+
+  async function dispatchAction(inputs, actionLabel) {
+    if (!config.token) {
+      logTerminal(`[DEMO SİMÜLASYONU] ${actionLabel} sanal olarak yürütülüyor...`, 'warn');
+      await wait(1200);
+      return ['state=running started=' + new Date().toISOString(), 'peers=3'];
+    }
+
+    logTerminal(`[GİTOPS] ${actionLabel} tetikleniyor...`, 'cmd');
+    const startTime = Date.now() - 6000;
+    const res = await githubFetch(`/actions/workflows/${WORKFLOW_FILE}/dispatches`, {
+      method: 'POST',
+      body: JSON.stringify({ ref: 'main', inputs })
+    });
+    if (res.status !== 204) throw new Error(`GitHub isteği reddetti (${res.status}).`);
+
+    let targetRun = null;
+    for (let i = 0; i < 18 && !targetRun; i++) {
+      await wait(2200);
+      const data = await (await githubFetch(`/actions/workflows/${WORKFLOW_FILE}/runs?event=workflow_dispatch&per_page=5`)).json();
+      targetRun = (data.workflow_runs || []).find(r => new Date(r.created_at).getTime() >= startTime);
+    }
+    if (!targetRun) throw new Error('Workflow bulunamadı veya gecikti.');
+
+    logTerminal(`➜ Runner atandı (ID: #${targetRun.id})...`, 'cmd');
+    for (let i = 0; i < 50 && targetRun.status !== 'completed'; i++) {
+      await wait(2400);
+      targetRun = await (await githubFetch(`/actions/runs/${targetRun.id}`)).json();
+    }
+    if (targetRun.conclusion !== 'success') throw new Error(`İşlem başarısız: ${targetRun.conclusion}`);
+
+    let logLines = [];
+    try {
+      const jobs = await (await githubFetch(`/actions/runs/${targetRun.id}/jobs`)).json();
+      if (jobs.jobs && jobs.jobs[0]) {
+        const raw = await (await githubFetch(`/actions/jobs/${jobs.jobs[0].id}/logs`)).text();
+        logLines = raw.split('\n').map(l => l.replace(/^\S+Z\s/, '').trim());
+      }
+    } catch (e) {}
+    return logLines;
+  }
+
+  function updateHeroState(stateKey, titleText, uptimeStart, peersCount) {
+    document.body.classList.remove('is-running', 'is-stopped', 'is-busy');
+    document.body.classList.add('is-' + stateKey);
+    $('#heroTitle').textContent = titleText;
+    const badge = $('#badgeStateText');
+    badge.textContent = stateKey === 'running' ? 'GİTOPS KORUMASI AKTİF' : (stateKey === 'stopped' ? 'VPN DURDURULDU' : 'İŞLEM YÜRÜTÜLÜYOR');
+    if (peersCount !== undefined) $('#valPeersCount').textContent = `${peersCount} Cihaz Bağlı`;
+  }
+
+  async function triggerPower(action) {
+    const labels = { start: 'Başlatılıyor', stop: 'Durduruluyor', restart: 'Yeniden Başlatılıyor', status: 'Sorgulanıyor' };
+    setLock(true);
+    updateHeroState('busy', `VPN ${labels[action]}...`);
+    try {
+      const logs = await dispatchAction({ action }, labels[action]);
+      const filtered = logs.filter(l => /^(state=|peers=|wireguard|denied)/.test(l)).join('\n');
+      logTerminal(`➜ Yanıt:\n${filtered || 'Tamamlandı.'}`, 'ok');
+
+      let saved = JSON.parse(ls.getItem('mfk_state') || '{}');
+      const stMatch = /state=(\w+)/.exec(filtered);
+      const peMatch = /peers=(\d+)/.exec(filtered);
+      if (stMatch) saved.state = stMatch[1];
+      else saved.state = (action === 'stop' ? 'exited' : 'running');
+      if (peMatch) saved.peers = parseInt(peMatch[1], 10);
+      saved.lastQuery = new Date().toISOString();
+      ls.setItem('mfk_state', JSON.stringify(saved));
+      updateHeroState(saved.state === 'running' ? 'running' : 'stopped', saved.state === 'running' ? 'VPN Tüneli Aktif' : 'VPN Tüneli Kapalı', null, saved.peers);
+    } catch (err) {
+      logTerminal(`[HATA] ${err.message}`, 'err');
+      updateHeroState('stopped', 'Bağlantı Hatası');
+    }
+    setLock(false);
+    fetchWorkflowRuns();
+  }
+
+  function renderDeviceList(peers) {
+    const container = $('#deviceList');
+    $('#deviceCountBadge').textContent = `${peers.length} cihaz kayıtlı`;
+    if (!peers.length) {
+      container.innerHTML = `<div class="empty-state">Kayıtlı cihaz yok. "Yeni Cihaz Ekle" ile ekleyin.</div>`;
+      return;
+    }
+    container.innerHTML = peers.map(p => {
+      const isOnline = p.hs && (Date.now() / 1000 - p.hs < 180);
+      return `
+        <div class="device-item ${isOnline ? 'is-online' : ''}">
+          <div class="device-avatar">
+            <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span class="online-pin"></span>
+          </div>
+          <div class="device-details">
+            <b>${escapeHtml(p.name)} <span class="device-ip">${escapeHtml(p.ip || '10.66.66.x')}</span></b>
+            <div class="device-sub">
+              <span>${p.hs ? formatRelativeTime(p.hs * 1000) : 'Bağlanmadı'}</span>
+              <span>↓ ${formatBytes(p.rx || 0)}  ↑ ${formatBytes(p.tx || 0)}</span>
+            </div>
+          </div>
+          <button class="btn btn-sm btnDeletePeer" data-name="${escapeHtml(p.name)}">Sil</button>
+        </div>
+      `;
+    }).join('');
+
+    $$('.btnDeletePeer').forEach(b => {
+      b.onclick = () => {
+        const name = b.dataset.name;
+        openConfirm(`${name} Silinsin mi?`, 'Cihazın erişimi anında kaldırılır.', async () => {
+          if (!config.token) {
+            const list = JSON.parse(ls.getItem('mfk_peers') || JSON.stringify(MOCK_PEERS)).filter(x => x.name !== name);
+            ls.setItem('mfk_peers', JSON.stringify(list));
+            renderDeviceList(list);
+            logTerminal(`${name} silindi.`, 'ok');
+            return;
+          }
+          setLock(true);
+          try {
+            await dispatchAction({ action: 'remove-peer', name }, `${name} Siliniyor`);
+            fetchPeersList();
+          } catch (e) { logTerminal(e.message, 'err'); }
+          setLock(false);
+        });
+      };
+    });
+  }
+
+  async function fetchPeersList() {
+    if (!config.token) {
+      renderDeviceList(JSON.parse(ls.getItem('mfk_peers') || JSON.stringify(MOCK_PEERS)));
+      return;
+    }
+    setLock(true);
+    try {
+      const logs = await dispatchAction({ action: 'list-peers' }, 'Cihaz Listesi Alınıyor');
+      const peers = logs.filter(l => l.startsWith('peer=')).map(l => {
+        const [name, pub, ip, hs, rx, tx] = l.slice(5).split('|');
+        return { name, pub, ip, hs: Number(hs)||0, rx: Number(rx)||0, tx: Number(tx)||0 };
+      });
+      ls.setItem('mfk_peers', JSON.stringify(peers));
+      renderDeviceList(peers);
+    } catch (e) { logTerminal(e.message, 'err'); }
+    setLock(false);
+  }
+
+  const toB64 = u => btoa(String.fromCharCode(...u));
+  async function generateX25519() {
+    const k = await crypto.subtle.generateKey({ name: 'X25519' }, true, ['deriveBits']);
+    const pub = new Uint8Array(await crypto.subtle.exportKey('raw', k.publicKey));
+    const priv = new Uint8Array(await crypto.subtle.exportKey('pkcs8', k.privateKey)).slice(-32);
+    return { pub: toB64(pub), priv: toB64(priv) };
+  }
+
+  async function processAddPeer() {
+    const name = $('#inpPeerName').value.trim();
+    if (!/^[A-Za-z0-9_-]{1,24}$/.test(name)) return alert('Geçersiz ad');
+    let keys;
+    try { keys = await generateX25519(); } catch(e) { return alert('Anahtar üretilemedi'); }
+    $('#modalAddPeer').close();
+    setLock(true);
+    try {
+      let ip = '10.66.66.5', spub = 'ServerPublicKey...', ep = 'vpn.hetzner.ip:51820';
+      if (!config.token) {
+        logTerminal(`[DEMO SİMÜLASYONU] ${name} eklendi.`, 'ok');
+        const list = JSON.parse(ls.getItem('mfk_peers') || JSON.stringify(MOCK_PEERS));
+        list.unshift({ name, ip, hs: Math.floor(Date.now()/1000), rx: 0, tx: 0 });
+        ls.setItem('mfk_peers', JSON.stringify(list));
+        renderDeviceList(list);
+      } else {
+        const logs = await dispatchAction({ action: 'add-peer', name, pubkey: keys.pub }, `${name} Ekleniyor`);
+        const addLine = logs.find(l => l.startsWith('added='));
+        if (addLine) [, ip, spub, ep] = addLine.slice(6).split('|');
+        fetchPeersList();
+      }
+
+      activeConfString = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${ip}/32\nDNS = ${$('#selPeerDns').value}\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+      activeConfName = name;
+
+      if (window.qrcode) {
+        const q = qrcode(0, 'M');
+        q.addData(activeConfString);
+        q.make();
+        $('#qrContainer').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+      }
+      $('#peerSuccessTitle').textContent = `"${name}" Hazır!`;
+      $('#peerStep1').hidden = true;
+      $('#peerStep2').hidden = false;
+      $('#modalAddPeer').showModal();
+    } catch (e) { logTerminal(e.message, 'err'); }
+    setLock(false);
+  }
+
+  async function fetchWorkflowRuns() {
+    const list = $('#runsList');
+    if (!config.token) {
+      list.innerHTML = MOCK_RUNS.map(r => `
+        <div class="run-item">
+          <div class="run-item-left"><span class="run-status-bullet ${r.conclusion}"></span><span>${r.title}</span></div>
+          <span class="run-item-time">${r.time}</span>
+        </div>
+      `).join('');
+      return;
+    }
+    try {
+      const data = await (await githubFetch(`/actions/workflows/${WORKFLOW_FILE}/runs?per_page=5`)).json();
+      list.innerHTML = (data.workflow_runs || []).map(r => `
+        <a class="run-item" href="${r.html_url}" target="_blank" rel="noopener">
+          <div class="run-item-left"><span class="run-status-bullet ${r.conclusion || r.status}"></span><span>${escapeHtml(r.display_title || 'VPN')}</span></div>
+          <span class="run-item-time">${formatRelativeTime(r.created_at)}</span>
+        </a>
+      `).join('');
+    } catch(e) {}
+  }
+
+  function openConfirm(title, desc, onYes) {
+    $('#confirmTitle').textContent = title;
+    $('#confirmDesc').textContent = desc;
+    $('#modalConfirm').showModal();
+    $('#btnConfirmYes').onclick = () => { $('#modalConfirm').close(); if (onYes) onYes(); };
+  }
+
+  // Kilit Açma Doğrulaması
+  function attemptUnlock() {
+    const entered = $('#masterPinInput').value.trim();
+    if (entered === config.pin) {
+      $('#lockOverlay').classList.add('unlocked');
+      sessionStorage.setItem('mfk_unlocked', '1');
+      $('#masterPinInput').value = '';
+    } else {
+      const box = $('#lockBox');
+      box.classList.add('shake');
+      setTimeout(() => box.classList.remove('shake'), 500);
+      $('#masterPinInput').value = '';
+      $('#masterPinInput').focus();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Kilit Kontrolü
+    if (sessionStorage.getItem('mfk_unlocked') === '1') {
+      $('#lockOverlay').classList.add('unlocked');
+    }
+    $('#btnUnlock').onclick = attemptUnlock;
+    $('#masterPinInput').addEventListener('keydown', e => { if (e.key === 'Enter') attemptUnlock(); });
+
+    $('#btnLockNow').onclick = () => {
+      sessionStorage.removeItem('mfk_unlocked');
+      $('#lockOverlay').classList.remove('unlocked');
+      $('#masterPinInput').focus();
+    };
+
+    $$('.hero-controls .btn').forEach(btn => {
+      btn.onclick = () => {
+        const action = btn.dataset.action;
+        if (action === 'stop') openConfirm('VPN Durdurulsun mu?', 'Tüm cihazların tüneli kesilecektir.', () => triggerPower('stop'));
+        else if (action === 'restart') openConfirm('VPN Yeniden Başlatılsın mı?', 'Kısa süreli kesinti olacaktır.', () => triggerPower('restart'));
+        else triggerPower(action);
+      };
+    });
+
+    $('#btnAddPeer').onclick = () => {
+      $('#inpPeerName').value = '';
+      $('#peerStep1').hidden = false;
+      $('#peerStep2').hidden = true;
+      $('#modalAddPeer').showModal();
+    };
+    $('#btnCancelAddPeer').onclick = () => $('#modalAddPeer').close();
+    $('#btnGeneratePeer').onclick = processAddPeer;
+    $('#btnClosePeerSuccess').onclick = () => $('#modalAddPeer').close();
+
+    $('#btnCopyConf').onclick = async () => {
+      await navigator.clipboard.writeText(activeConfString);
+      alert('Konfigürasyon panoya kopyalandı.');
+    };
+    $('#btnDownloadConf').onclick = () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([activeConfString], { type: 'text/plain' }));
+      a.download = `${activeConfName || 'mfkvpn'}.conf`;
+      a.click();
+    };
+
+    $('#btnSettings').onclick = () => {
+      $('#inpRepo').value = config.repo;
+      $('#inpToken').value = config.token;
+      $('#inpChangePin').value = '';
+      $('#modalSettings').showModal();
+    };
+    $('#btnCloseSettings').onclick = () => $('#modalSettings').close();
+    $('#btnToggleToken').onclick = () => {
+      const i = $('#inpToken'); i.type = i.type === 'password' ? 'text' : 'password';
+    };
+    $('#btnSaveSettings').onclick = () => {
+      if ($('#inpRepo').value.trim()) config.repo = $('#inpRepo').value.trim();
+      config.token = $('#inpToken').value.trim();
+      if ($('#inpChangePin').value.trim()) config.pin = $('#inpChangePin').value.trim();
+      $('#modalSettings').close();
+      logTerminal('✓ Ayarlar güncellendi.', 'ok');
+      fetchWorkflowRuns();
+      fetchPeersList();
+    };
+    $('#btnClearToken').onclick = () => {
+      config.token = ''; $('#inpToken').value = ''; $('#modalSettings').close();
+    };
+    $('#btnTestConn').onclick = async () => {
+      const t = $('#inpToken').value.trim(), r = $('#inpRepo').value.trim();
+      if (!t) return alert('Önce token girin.');
+      try {
+        const res = await fetch(`${GITHUB_API}/repos/${r}`, { headers: { Authorization: `Bearer ${t}` } });
+        alert(res.ok ? 'Bağlantı Başarılı!' : `Hata Kodu: ${res.status}`);
+      } catch(e) { alert(e.message); }
+    };
+
+    $('#btnHelp').onclick = () => $('#modalHelp').showModal();
+    $('#btnCloseHelp').onclick = () => $('#modalHelp').close();
+    $('#btnRefreshPeers').onclick = fetchPeersList;
+    $('#btnClearLog').onclick = () => { $('#terminalOutput').innerHTML = ''; };
+    $('#btnConfirmNo').onclick = () => $('#modalConfirm').close();
+
+    renderDeviceList(JSON.parse(ls.getItem('mfk_peers') || JSON.stringify(MOCK_PEERS)));
+    fetchWorkflowRuns();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+name: VPN Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "VPN Eylemi (start, stop, restart, status, list-peers, remove-peer, add-peer)"
+        type: choice
+        required: true
+        default: status
+        options:
+          - start
+          - stop
+          - restart
+          - status
+          - list-peers
+          - remove-peer
+          - add-peer
+      name:
+        description: "Cihaz Adı (add-peer veya remove-peer için)"
+        type: string
+        required: false
+        default: ""
+      pubkey:
+        description: "İstemci Public Key (add-peer için)"
+        type: string
+        required: false
+        default: ""
+
+permissions: {}
+
+concurrency:
+  group: vpn-control
+  cancel-in-progress: false
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    environment: vpn
+    steps:
+      - name: Run VPN action over SSH
+        env:
+          HOST: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+          ACTION: ${{ inputs.action }}
+          PEER_NAME: ${{ inputs.name }}
+          PEER_PUBKEY: ${{ inputs.pubkey }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_vpn
+          chmod 600 ~/.ssh/id_vpn
+          ssh-keyscan -p "$SSH_PORT" -H "$HOST" > ~/.ssh/known_hosts 2>/dev/null
+
+          # Güvenli komut inşası
+          COMMAND="$ACTION"
+          if [ -n "$PEER_NAME" ]; then
+            COMMAND="$COMMAND $PEER_NAME"
+          fi
+          if [ -n "$PEER_PUBKEY" ]; then
+            COMMAND="$COMMAND $PEER_PUBKEY"
+          fi
+
+          ssh -i ~/.ssh/id_vpn \
+              -p "$SSH_PORT" \
+              -o BatchMode=yes \
+              -o ConnectTimeout=10 \
+              -o StrictHostKeyChecking=yes \
+              "$USERNAME@$HOST" "$COMMAND"
