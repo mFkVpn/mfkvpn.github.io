@@ -853,68 +853,96 @@
 
     @keyframes pulse { 50% { opacity: 0.4; } }
 
-    /* DİYALOGLAR — Mobile-First Sheet Tasarımı */
+    /* DİYALOGLAR — Siber Güvenlik Temalı Kart Tasarımı */
     dialog {
-      background: linear-gradient(180deg, #0d1527 0%, #080d19 100%);
+      background: linear-gradient(180deg, #0b1120 0%, #060a14 100%);
       color: var(--ink);
-      border: 1px solid rgba(245, 158, 11, 0.28);
+      font-family: var(--font-main);
+      border: 1px solid rgba(56, 189, 248, 0.22);
       border-radius: var(--radius-lg);
       padding: 24px 22px;
       max-width: 520px;
       width: calc(100vw - 28px);
       max-height: calc(100vh - 40px);
       overflow-y: auto;
-      box-shadow: 0 25px 90px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      box-shadow: 0 25px 90px rgba(0, 0, 0, 0.95), 0 0 40px rgba(6, 182, 212, 0.1);
       margin: auto;
       box-sizing: border-box;
     }
 
     dialog::backdrop {
-      background: rgba(2, 4, 10, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(2, 4, 10, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     dialog h3 {
       font-family: var(--font-display);
-      font-size: var(--fs-h3);
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
       color: #fff;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.015em;
     }
 
-    dialog p { color: var(--ink-dim); font-size: 14.5px; line-height: 1.48; margin-bottom: 14px; }
+    dialog p { 
+      font-family: var(--font-main);
+      color: var(--ink-dim); 
+      font-size: 13.5px; 
+      line-height: 1.45; 
+      margin: 0; 
+    }
 
     .dialog-head {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .dialog-head-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .dialog-badge-icon {
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(168, 85, 247, 0.16));
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
     }
 
     .dialog-title {
       font-family: var(--font-display);
-      font-size: var(--fs-h3);
-      font-weight: 600;
+      font-size: 19px;
+      font-weight: 700;
       color: #fff;
-      margin: 0 0 4px;
+      margin: 0 0 3px;
       display: flex;
       align-items: center;
       gap: 8px;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.015em;
     }
 
     .dialog-subtitle {
-      color: var(--ink-dim);
-      font-size: var(--fs-caption);
-      line-height: 1.45;
+      color: #94a3b8;
+      font-size: 12.5px;
+      line-height: 1.4;
       margin: 0;
     }
 
     .btn-close-icon {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #94a3b8;
       width: 32px;
@@ -924,34 +952,213 @@
       display: grid;
       place-items: center;
       cursor: pointer;
-      font-size: 14px;
-      line-height: 1;
       transition: all 0.2s ease;
       padding: 0;
     }
 
     .btn-close-icon:hover {
-      background: rgba(244, 63, 94, 0.15);
-      border-color: rgba(244, 63, 94, 0.4);
+      background: rgba(244, 63, 94, 0.18);
+      border-color: rgba(244, 63, 94, 0.45);
       color: #f43f5e;
+      transform: rotate(90deg);
     }
 
-    label { display: block; font-size: 12px; font-weight: 600; color: #cbd5e1; margin: 12px 0 5px; }
+    /* Form Grupları ve Giriş Alanları */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .form-label svg {
+      color: #38bdf8;
+      width: 14px;
+      height: 14px;
+    }
+
+    .input-hint {
+      display: block;
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+
+    /* Cihaz Türü Kart Izgarası (Segmente Kartlar) */
+    .device-type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .dev-type-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 6px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      text-align: center;
+    }
+
+    .dev-type-card:hover {
+      background: rgba(56, 189, 248, 0.06);
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .dev-type-card.active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.16), rgba(168, 85, 247, 0.16));
+      border-color: #38bdf8;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.28), inset 0 0 12px rgba(56, 189, 248, 0.1);
+    }
+
+    .dev-type-card .dev-type-icon {
+      width: 24px;
+      height: 24px;
+      color: #64748b;
+      display: grid;
+      place-items: center;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .dev-type-card:hover .dev-type-icon {
+      color: #cbd5e1;
+      transform: scale(1.08);
+    }
+
+    .dev-type-card.active .dev-type-icon {
+      color: #38bdf8;
+      transform: scale(1.1);
+    }
+
+    .dev-type-card .dev-type-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #e2e8f0;
+      line-height: 1.2;
+    }
+
+    .dev-type-card.active .dev-type-title {
+      color: #fff;
+    }
+
+    .dev-type-card .dev-type-sub {
+      font-size: 10px;
+      color: #64748b;
+      line-height: 1.2;
+    }
+
+    .dev-type-card.active .dev-type-sub {
+      color: #94a3b8;
+    }
+
+    /* Özel Açılır Menüler & Girdiler */
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid #94a3b8;
+      border-bottom: 2px solid #94a3b8;
+      transform: translateY(-65%) rotate(45deg);
+      pointer-events: none;
+      transition: border-color 0.2s;
+    }
+
+    .select-wrap:focus-within::after {
+      border-color: #38bdf8;
+    }
 
     input, select {
-      width: 100%; background: #03060d; border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 11px 12px; color: #fff;
-      font-family: inherit; font-size: 14px; transition: var(--transition);
+      width: 100%; 
+      background: #030712; 
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px; 
+      padding: 12px 14px; 
+      color: #fff;
+      font-family: var(--font-main); 
+      font-size: 14px; 
+      transition: var(--transition);
       box-sizing: border-box;
     }
 
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    select option {
+      background: #0d1527;
+      color: #f8fafc;
+      padding: 12px;
+    }
+
     input:focus, select:focus {
-      outline: none; border-color: var(--mfk-gold); box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+      outline: none; 
+      border-color: #38bdf8; 
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+      background: #040918;
     }
 
     .dialog-foot {
-      display: flex; gap: 8px; justify-content: flex-end;
-      margin-top: 20px; flex-wrap: wrap;
+      display: flex; 
+      gap: 10px; 
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 22px; 
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .btn-submit-peer {
+      background: linear-gradient(135deg, #0284c7 0%, #06b6d4 50%, #8b5cf6 100%) !important;
+      color: #fff !important;
+      font-weight: 700 !important;
+      font-size: 13.5px !important;
+      padding: 11px 20px !important;
+      border-radius: 12px !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      box-shadow: 0 4px 18px rgba(6, 182, 212, 0.35) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      cursor: pointer;
+    }
+
+    .btn-submit-peer:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(6, 182, 212, 0.5) !important;
+    }
+
+    .btn-submit-peer:active {
+      transform: translateY(1px);
     }
 
     /* QR Kutu — modern siber çerçeveli kart */
@@ -1814,37 +2021,100 @@
 <dialog id="diagPeer">
   <div id="stepForm">
     <div class="dialog-head">
-      <div>
-        <h3 class="dialog-title">Yeni Cihaz Yetkilendir</h3>
-        <p class="dialog-subtitle">WireGuard anahtarları (X25519) tarayıcınızda üretilir. Özel anahtar sunucuya gönderilmez.</p>
+      <div class="dialog-head-left">
+        <div class="dialog-badge-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="dialog-title">Yeni Cihaz Yetkilendir</h3>
+          <p class="dialog-subtitle">Sıfır-Bilgi Güvenliği • X25519 anahtarları tarayıcınızda üretilir.</p>
+        </div>
       </div>
-      <button type="button" class="btn-close-icon" onclick="document.getElementById('diagPeer').close()" title="Kapat">✕</button>
+      <button type="button" class="btn-close-icon" onclick="document.getElementById('diagPeer').close()" title="Kapat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
 
-    <label for="peerTypeSel">Cihaz Türü</label>
-    <select id="peerTypeSel" style="margin-bottom:12px;">
-      <option value="phone">📱 Akıllı Telefon (iOS / Android)</option>
-      <option value="pc">💻 Bilgisayar (Windows / Mac / Linux)</option>
-      <option value="tablet">📟 Tablet / iPad</option>
-      <option value="other">🌐 Diğer Cihaz</option>
-    </select>
+    <!-- CİHAZ TÜRÜ SEÇİMİ (SEGMENLİ KARTLAR) -->
+    <div class="form-group">
+      <label class="form-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        Cihaz Türü
+      </label>
+      <div class="device-type-grid" id="devTypeGrid">
+        <div class="dev-type-card active" data-type="phone">
+          <div class="dev-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <span class="dev-type-title">Telefon</span>
+          <span class="dev-type-sub">iOS &amp; Android</span>
+        </div>
 
-    <label for="peerNameInp">Cihaz Adı</label>
-    <input id="peerNameInp" maxlength="24" placeholder="ornek: mefe-telefon" spellcheck="false" style="margin-bottom:12px;">
+        <div class="dev-type-card" data-type="pc">
+          <div class="dev-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <span class="dev-type-title">Bilgisayar</span>
+          <span class="dev-type-sub">Windows &amp; Mac</span>
+        </div>
 
-    <label for="peerNodeSel">Hedef Sunucu / Ülke</label>
-    <select id="peerNodeSel" style="margin-bottom:12px;"></select>
+        <div class="dev-type-card" data-type="tablet">
+          <div class="dev-type-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>
+          </div>
+          <span class="dev-type-title">Tablet</span>
+          <span class="dev-type-sub">iPad &amp; Android</span>
+        </div>
+      </div>
+      <input type="hidden" id="peerTypeSel" value="phone">
+    </div>
 
-    <label for="peerDnsSel">DNS &amp; Reklam Filtresi</label>
-    <select id="peerDnsSel">
-      <option value="1.1.1.1, 1.0.0.1">⚡ Cloudflare DNS (En Hızlı 1.1.1.1)</option>
-      <option value="94.140.14.14, 94.140.15.15">🛡️ AdGuard DNS (Otomatik Reklam Engelleyici)</option>
-      <option value="8.8.8.8, 8.8.4.4">🌐 Google DNS (8.8.8.8)</option>
-    </select>
+    <!-- CİHAZ ADI GİRİŞİ -->
+    <div class="form-group">
+      <label class="form-label" for="peerNameInp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Cihaz Tanımlayıcısı (Ad)
+      </label>
+      <input id="peerNameInp" maxlength="24" placeholder="Ornek: mefe-telefon" spellcheck="false" autocomplete="off">
+      <span class="input-hint">Yalnızca harf, rakam ve tire (-). Boş bırakılırsa otomatik üretilir.</span>
+    </div>
 
+    <!-- HEDEF SUNUCU -->
+    <div class="form-group">
+      <label class="form-label" for="peerNodeSel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        Hedef Sunucu / Lokasyon
+      </label>
+      <div class="select-wrap">
+        <select id="peerNodeSel"></select>
+      </div>
+    </div>
+
+    <!-- DNS FİLTRESİ -->
+    <div class="form-group">
+      <label class="form-label" for="peerDnsSel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        DNS &amp; Güvenlik Kalkanı
+      </label>
+      <div class="select-wrap">
+        <select id="peerDnsSel">
+          <option value="1.1.1.1, 1.0.0.1">⚡ Cloudflare DNS (1.1.1.1 — En Hızlı)</option>
+          <option value="94.140.14.14, 94.140.15.15">🛡️ AdGuard DNS (Otomatik Reklam Engelleyici)</option>
+          <option value="8.8.8.8, 8.8.4.4">🌐 Google DNS (8.8.8.8)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- BUTONLAR -->
     <div class="dialog-foot">
-      <button class="btn btn-ghost" id="btnCancelPeer">Vazgeç</button>
-      <button class="btn btn-gold" id="btnSubmitPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;">Anahtarları Üret &amp; Ekle</button>
+      <button class="btn btn-ghost" id="btnCancelPeer" style="padding:11px 18px;border-radius:12px;font-weight:600;">Vazgeç</button>
+      <button class="btn btn-submit-peer" id="btnSubmitPeer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Anahtarları Üret &amp; Tüneli Kur
+      </button>
     </div>
   </div>
 
@@ -1857,11 +2127,21 @@
 
   <div id="stepResult" hidden>
     <div class="dialog-head">
-      <div>
-        <h3 id="resTitle" class="dialog-title">Cihaz Hazır!</h3>
-        <p class="dialog-subtitle">WireGuard uygulamasından QR kodu taratın veya doğrudan aktarın.</p>
+      <div class="dialog-head-left">
+        <div class="dialog-badge-icon" style="border-color:rgba(16, 185, 129, 0.4);background:linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(6, 182, 212, 0.16));">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div>
+          <h3 id="resTitle" class="dialog-title">Cihaz Hazır!</h3>
+          <p class="dialog-subtitle">WireGuard uygulamasından QR kodu taratın veya .conf dosyasını indirin.</p>
+        </div>
       </div>
-      <button type="button" class="btn-close-icon" onclick="document.getElementById('diagPeer').close()" title="Kapat">✕</button>
+      <button type="button" class="btn-close-icon" onclick="document.getElementById('diagPeer').close()" title="Kapat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
 
     <div class="qr-box-wrap">
@@ -2865,10 +3145,27 @@
       };
     });
 
+    // Cihaz Türü Seçici (Segmente Kartlar)
+    $$('.dev-type-card').forEach(card => {
+      card.onclick = () => {
+        $$('.dev-type-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        const type = card.dataset.type;
+        $('#peerTypeSel').value = type;
+        if (!$('#peerNameInp').value) {
+          $('#peerNameInp').placeholder = type === 'pc' ? 'Ornek: mefe-pc' : (type === 'tablet' ? 'Ornek: mefe-ipad' : 'Ornek: mefe-telefon');
+        }
+        sfx('click');
+      };
+    });
+
     $('#btnAddPeer').onclick = () => {
       sfx('click');
       $('#peerNameInp').value = '';
+      $('#peerTypeSel').value = 'phone';
+      $$('.dev-type-card').forEach(c => c.classList.toggle('active', c.dataset.type === 'phone'));
       $('#stepForm').hidden = false;
+      if ($('#stepLoading')) $('#stepLoading').hidden = true;
       $('#stepResult').hidden = true;
       $('#diagPeer').showModal();
     };
