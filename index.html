@@ -1743,7 +1743,7 @@
       <div class="log-tab-panel active" id="panelKonsol">
         <div class="stream-box" id="streamBox">
           <div class="stream-row"><span class="stream-ts">[21:50:00]</span><span class="stream-text ok">✓ mFk Cybershield başlatıldı.</span></div>
-          <div class="stream-row"><span class="stream-ts">[21:50:01]</span><span class="stream-text cmd">➜ Hedef: mFkGames/mfkvpn.github.io</span></div>
+          <div class="stream-row"><span class="stream-ts">[21:50:01]</span><span class="stream-text cmd">➜ Hedef: mFkVpn/mfkvpn.github.io</span></div>
         </div>
       </div>
 
@@ -1846,6 +1846,13 @@
       <button class="btn btn-ghost" id="btnCancelPeer">Vazgeç</button>
       <button class="btn btn-gold" id="btnSubmitPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;">Anahtarları Üret &amp; Ekle</button>
     </div>
+  </div>
+
+  <!-- YÜKLENİYOR DURUMU -->
+  <div id="stepLoading" hidden style="text-align:center;padding:36px 16px;">
+    <div class="status-orb" style="margin:0 auto 16px;width:24px;height:24px;animation:statusPulse 1.2s infinite;"></div>
+    <h3 class="dialog-title" style="justify-content:center;margin-bottom:8px;">Tünel İnşa Ediliyor...</h3>
+    <p class="dialog-subtitle" style="margin:0 auto;max-width:320px;">Kriptografik anahtarlar sunucuya işleniyor. QR kod açılıyor, lütfen bekleyin...</p>
   </div>
 
   <div id="stepResult" hidden>
@@ -2611,16 +2618,27 @@
 
     let keys;
     try { keys = await makeX25519(); } catch(e) { return alert('Anahtar üretilemedi'); }
-    $('#diagPeer').close();
+    
+    // Modal içinde yükleniyor ekranını göster (diyaloğu kapatma)
+    $('#stepForm').hidden = true;
+    if ($('#stepLoading')) $('#stepLoading').hidden = false;
+    $('#stepResult').hidden = true;
     setLock(true);
+
     try {
-      let ip = '10.13.13.5', spub = 'ServerPubKey...', ep = `${targetNode.ip}:51820`;
+      let ip = '10.13.13.5', spub = '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=', ep = `${targetNode.ip}:51820`;
       const logs = await runWorkflowAction({ action: 'add-peer', name, pubkey: keys.pub }, `${name} (${targetNode.name}) Ekleniyor`);
       const addLine = logs.find(l => l.startsWith('added='));
       if (addLine) [, ip, spub, ep] = addLine.slice(6).split('|');
-      loadPeers();
 
-      currentConf = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${ip}/32\nDNS = ${$('#peerDnsSel').value}\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+      const count = (cachedPeerList || []).length;
+      const assignedIp = (ip && ip !== '10.13.13.5') ? ip : `10.13.13.${count + 3}`;
+      const newPeerItem = { name, pub: keys.pub, ip: assignedIp, hs: 0, rx: 0, tx: 0 };
+      cachedPeerList = [newPeerItem, ...(cachedPeerList || [])];
+      ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
+      renderPeers(cachedPeerList);
+
+      currentConf = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${assignedIp}/32\nDNS = ${$('#peerDnsSel').value}\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
       currentConfName = name;
 
       if (window.qrcode) {
@@ -2633,10 +2651,13 @@
         $('#btnOpenWireguardApp').href = `wireguard://tunnel?conf=${encodeURIComponent(currentConf)}`;
       }
       $('#resTitle').textContent = `"${name}" Hazır!`;
-      $('#stepForm').hidden = true;
+      if ($('#stepLoading')) $('#stepLoading').hidden = true;
       $('#stepResult').hidden = false;
-      $('#diagPeer').showModal();
-    } catch(e) { logStream(e.message, 'err'); }
+    } catch(e) {
+      logStream(e.message, 'err');
+      alert('Tünel oluşturma hatası: ' + e.message);
+      $('#diagPeer').close();
+    }
     setLock(false);
   }
 
@@ -2689,7 +2710,7 @@
       logStream('✓ Yeni GitHub Token başarıyla kaydedildi ve oturum açıldı.', 'ok');
       checkTokenStatus();
       loadRuns();
-      loadPeers();
+      renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
       return;
     }
 
@@ -2704,7 +2725,7 @@
       logStream('✓ Oturum doğrulandı. mFk Cybershield hazır.', 'ok');
       checkTokenStatus();
       loadRuns();
-      loadPeers();
+      renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
     } else {
       sfx('err');
       const c = $('#gateCard');
@@ -2724,14 +2745,14 @@
       if (savedPin) {
         $('#lockGate').classList.add('cleared');
         loadRuns();
-        loadPeers();
+        renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
       }
       checkTokenStatus();
     } else if (savedPin && unpackToken(_VAULT_KEY, savedPin).startsWith('ghp_')) {
       activeToken = unpackToken(_VAULT_KEY, savedPin);
       $('#lockGate').classList.add('cleared');
       loadRuns();
-      loadPeers();
+      renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
       checkTokenStatus();
     }
 
