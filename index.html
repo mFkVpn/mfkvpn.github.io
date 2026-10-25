@@ -733,10 +733,10 @@
 
     .device-card {
       display: grid;
-      grid-template-columns: 46px 1fr auto;
-      gap: 16px;
+      grid-template-columns: 28px 44px 1fr auto;
+      gap: 14px;
       align-items: center;
-      padding: 14px 18px;
+      padding: 13px 18px;
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
@@ -745,19 +745,57 @@
 
     .device-card:hover {
       background: rgba(255, 255, 255, 0.045);
-      border-color: rgba(245, 158, 11, 0.3);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .device-idx-badge {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .device-card.online .device-idx-badge {
+      color: #38bdf8;
     }
 
     .device-crest {
-      width: 46px;
-      height: 46px;
-      border-radius: var(--radius-sm);
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(6, 182, 212, 0.2));
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: grid;
       place-items: center;
       position: relative;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+    }
+
+    .device-card.is-pc .device-crest {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.25);
+      color: #38bdf8;
+    }
+
+    .device-card.is-tab .device-crest {
+      background: rgba(245, 158, 11, 0.08);
+      border-color: rgba(245, 158, 11, 0.25);
       color: #fbbf24;
+    }
+
+    .device-card.is-mobile .device-crest {
+      background: rgba(168, 85, 247, 0.08);
+      border-color: rgba(168, 85, 247, 0.25);
+      color: #c084fc;
+    }
+
+    .device-card.online .device-crest {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #10b981;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
     }
 
     .device-crest svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
@@ -796,13 +834,13 @@
 
     /* KONSOL / TERMİNAL */
     .stream-box {
-      padding: 12px 16px;
+      padding: 14px 18px;
       background: #03050c;
       font-family: var(--font-mono);
       font-size: 12px;
       color: #cbd5e1;
-      min-height: 120px;
-      max-height: 240px;
+      min-height: 380px;
+      max-height: 480px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-all;
@@ -826,11 +864,12 @@
     .log-tab-panel.active { display: block; }
 
     .history-feed {
-      padding: 10px 16px;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      max-height: 240px;
+      min-height: 380px;
+      max-height: 480px;
       overflow-y: auto;
     }
 
@@ -1904,20 +1943,32 @@
   <div class="cockpit-grid">
     
     <!-- CİHAZ YÖNETİMİ -->
-    <div class="panel" style="display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="panel" style="display:flex;flex-direction:column;justify-content:space-between;height:100%;">
       <div>
         <div class="panel-head">
           <div class="panel-label">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
             Yetkili mFk Cihazları
-            <small id="countLabel" style="color:var(--ink-dim);font-weight:400;font-size:12px;margin-left:6px;">0 Kayıtlı</small>
+            <small id="countLabel" style="color:var(--ink-dim);font-weight:500;font-size:12px;margin-left:6px;">0 Kayıtlı</small>
           </div>
           <div class="panel-action-group" style="display:flex;gap:6px;align-items:center;">
-            <button class="btn btn-sm" id="btnExportBackup" title="Cihaz Listesini İndir (Yedek)">💾 <span class="lbl-full">Yedekle</span><span class="lbl-short">Yedek</span></button>
-            <button class="btn btn-sm" id="btnImportBackup" title="Yedekten Cihaz Yükle">📥 <span class="lbl-full">Yükle</span><span class="lbl-short">Yükle</span></button>
+            <button class="btn btn-sm" id="btnExportBackup" title="Cihaz Listesini İndir (Yedek)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span class="lbl-full">Yedekle</span><span class="lbl-short">Yedek</span>
+            </button>
+            <button class="btn btn-sm" id="btnImportBackup" title="Yedekten Cihaz Yükle">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span class="lbl-full">Yükle</span><span class="lbl-short">Yükle</span>
+            </button>
             <input type="file" id="fileImportBackup" accept=".json" style="display:none;">
-            <button class="btn btn-sm" id="btnRefreshPeers"><span class="lbl-full">Yenile</span><span class="lbl-short">Yenile</span></button>
-            <button class="btn btn-gold btn-sm" id="btnAddPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;">＋ <span class="lbl-full">Yeni Cihaz</span><span class="lbl-short">Cihaz</span></button>
+            <button class="btn btn-sm" id="btnRefreshPeers">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <span class="lbl-full">Yenile</span><span class="lbl-short">Yenile</span>
+            </button>
+            <button class="btn btn-gold btn-sm" id="btnAddPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;display:inline-flex;align-items:center;gap:6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span class="lbl-full">Yeni Cihaz</span><span class="lbl-short">Ekle</span>
+            </button>
           </div>
         </div>
         <div class="device-grid" id="peerContainer"></div>
@@ -2110,8 +2161,8 @@
 
     <!-- BUTONLAR -->
     <div class="dialog-foot">
-      <button class="btn btn-ghost" id="btnCancelPeer" style="padding:11px 18px;border-radius:12px;font-weight:600;">Vazgeç</button>
-      <button class="btn btn-submit-peer" id="btnSubmitPeer">
+      <button type="button" class="btn btn-ghost" id="btnCancelPeer" style="padding:11px 18px;border-radius:12px;font-weight:600;">Vazgeç</button>
+      <button type="button" class="btn btn-submit-peer" id="btnSubmitPeer">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         Anahtarları Üret &amp; Tüneli Kur
       </button>
@@ -2151,19 +2202,19 @@
     <div class="step-result-actions">
       <a class="btn-hero" id="btnOpenWireguardApp" href="#" style="text-decoration:none;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-        <span>📱 Mobil WireGuard'da Aç</span>
+        <span>Mobil WireGuard'da Aç</span>
       </a>
       <div class="result-btn-grid">
-        <button class="btn btn-gold" id="btnDownloadConf">
+        <button type="button" class="btn btn-gold" id="btnDownloadConf">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          💻 .conf İndir (PC)
+          .conf İndir (PC)
         </button>
-        <button class="btn btn-glass" id="btnCopyConf">
+        <button type="button" class="btn btn-glass" id="btnCopyConf">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           Metni Kopyala
         </button>
       </div>
-      <button class="btn btn-ghost" id="btnCloseResult">Kapat</button>
+      <button type="button" class="btn btn-ghost" id="btnCloseResult">Kapat</button>
     </div>
   </div>
 </dialog>
@@ -2698,7 +2749,7 @@
   }
 
   let currentPeerPage = 1;
-  const PEERS_PER_PAGE = 10;
+  const PEERS_PER_PAGE = 5;
   let cachedPeerList = [];
 
   function renderPeers(list) {
@@ -2747,7 +2798,8 @@
           : `<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`);
 
       return `
-        <div class="device-card ${live ? 'online' : ''}">
+        <div class="device-card ${live ? 'online' : ''} ${isPc ? 'is-pc' : (isTab ? 'is-tab' : 'is-mobile')}">
+          <div class="device-idx-badge">${globalIdx + 1}</div>
           <div class="device-crest">
             ${iconSvg}
             <span class="status-light ${live ? 'pulsing' : ''}" title="${live ? 'Aktif Tünel (Sinyal Alınıyor)' : 'Bağlantı Yok'}"></span>
@@ -2755,15 +2807,19 @@
           <div class="device-info">
             <b>${p.name} <span class="ip-tag">${p.ip || '10.13.13.x'}</span></b>
             <div class="device-sub">
-              <span>${p.hs ? '⚡ ' + formatRel(p.hs * 1000) : 'Bağlantı yok'}</span>
+              <span>${live ? '⚡ ' + formatRel(p.hs * 1000) : (p.hs ? 'Son: ' + formatRel(p.hs * 1000) : 'Bağlantı yok')}</span>
               <span>↓ ${formatBytes(p.rx||0)}  ↑ ${formatBytes(p.tx||0)}</span>
             </div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-sm btnQrView" data-name="${p.name}" data-ip="${p.ip||''}" data-pub="${p.pub||''}" title="QR Kodu ve Ayarları Gör" style="background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.3);color:#38bdf8;">
+            <button class="btn btn-sm btnQrView" data-name="${p.name}" data-ip="${p.ip||''}" data-pub="${p.pub||''}" title="Ayar &amp; QR Kod Gör" style="background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.3);color:#38bdf8;display:inline-flex;align-items:center;gap:4px;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>Ayar</span>
             </button>
-            <button class="btn btn-sm btnDel" data-name="${p.name}" title="Erişimi İptal Et">Sil</button>
+            <button class="btn btn-sm btnDel" data-name="${p.name}" title="Erişimi İptal Et" style="display:inline-flex;align-items:center;gap:4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+              <span>Sil</span>
+            </button>
           </div>
         </div>
       `;
