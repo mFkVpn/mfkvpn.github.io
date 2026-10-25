@@ -1871,16 +1871,16 @@
     <div class="step-result-actions">
       <a class="btn-hero" id="btnOpenWireguardApp" href="#" style="text-decoration:none;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-        <span>📱 WireGuard'da Aç</span>
+        <span>📱 Mobil WireGuard'da Aç</span>
       </a>
       <div class="result-btn-grid">
         <button class="btn btn-gold" id="btnDownloadConf">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          .conf İndir
+          💻 .conf İndir (PC)
         </button>
         <button class="btn btn-glass" id="btnCopyConf">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Kopyala
+          Metni Kopyala
         </button>
       </div>
       <button class="btn btn-ghost" id="btnCloseResult">Kapat</button>
@@ -2526,9 +2526,26 @@
         const ip = b.dataset.ip || '10.13.13.x';
         const pub = b.dataset.pub || 'ServerPublicKey';
         sfx('click');
-        const ep = `${activeNode.ip}:51820`;
-        // Zero-Knowledge mimarisi: Istemci PrivateKey'i sunucuda saklanmaz
-        currentConf = `[Interface]\n# DIKKAT: Cihaz özel anahtarı (PrivateKey) güvenlik gereği sunucuda tutulmaz.\n# Yeni bir profil için cihazı silip yeniden ekleyin.\nPrivateKey = <CIHAZ_OZEL_ANAHTARINIZ>\nAddress = ${ip}/32\nDNS = 1.1.1.1, 1.0.0.1\n\n# Kayıtlı Cihaz Public Key: ${pub}\n[Peer]\nPublicKey = /pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=\nAllowedIPs = 0.0.0.0/0\nEndpoint = 46.224.62.213:51820\nPersistentKeepalive = 25\n`;
+        const ep = '46.224.62.213:51820';
+        const spub = '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=';
+
+        const peerKeys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
+        let privKey = peerKeys[name];
+
+        if (!privKey) {
+          const manualKey = prompt(`"${name}" cihazının özel anahtarı (PrivateKey) bu tarayıcının yerel belleğinde bulunamadı.\n(Sıfır-bilgi güvenliği gereği her cihazın anahtarı yalnızca ilk oluşturma anında üretilir).\n\nEğer cihazınıza ait özel anahtarınız (Base64) varsa buraya yapıştırabilirsiniz:`);
+          if (manualKey && manualKey.trim().length >= 40) {
+            privKey = manualKey.trim();
+            peerKeys[name] = privKey;
+            ls.setItem('mfk_peer_keys', JSON.stringify(peerKeys));
+          } else {
+            alert(`"${name}" için geçerli bir özel anahtar girilmedi.\n\nBu bilgisayar için lütfen ana ekrandaki "+ Yeni Cihaz" butonunu kullanarak yeni bir tünel ekleyin.`);
+            return;
+          }
+        }
+
+        currentConf = `[Interface]\nPrivateKey = ${privKey}\nAddress = ${ip}/32\nDNS = 1.1.1.1, 1.0.0.1\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+
         currentConfName = name;
         if (window.qrcode) {
           const q = qrcode(0, 'M');
@@ -2541,8 +2558,11 @@
         }
         $('#resTitle').textContent = `"${name}" Bağlantı Bilgisi`;
         $('#stepForm').hidden = true;
+        if ($('#stepLoading')) $('#stepLoading').hidden = true;
         $('#stepResult').hidden = false;
-        $('#diagPeer').showModal();
+        if (!$('#diagPeer').open) {
+          $('#diagPeer').showModal();
+        }
       };
     });
 
@@ -2617,48 +2637,73 @@
     const targetNode = nodes[nodeIdx] || activeNode;
 
     let keys;
-    try { keys = await makeX25519(); } catch(e) { return alert('Anahtar üretilemedi'); }
-    
-    // Modal içinde yükleniyor ekranını göster (diyaloğu kapatma)
-    $('#stepForm').hidden = true;
-    if ($('#stepLoading')) $('#stepLoading').hidden = false;
-    $('#stepResult').hidden = true;
-    setLock(true);
-
-    try {
-      let ip = '10.13.13.5', spub = '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=', ep = `${targetNode.ip}:51820`;
-      const logs = await runWorkflowAction({ action: 'add-peer', name, pubkey: keys.pub }, `${name} (${targetNode.name}) Ekleniyor`);
-      const addLine = logs.find(l => l.startsWith('added='));
-      if (addLine) [, ip, spub, ep] = addLine.slice(6).split('|');
-
-      const count = (cachedPeerList || []).length;
-      const assignedIp = (ip && ip !== '10.13.13.5') ? ip : `10.13.13.${count + 3}`;
-      const newPeerItem = { name, pub: keys.pub, ip: assignedIp, hs: 0, rx: 0, tx: 0 };
-      cachedPeerList = [newPeerItem, ...(cachedPeerList || [])];
-      ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
-      renderPeers(cachedPeerList);
-
-      currentConf = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${assignedIp}/32\nDNS = ${$('#peerDnsSel').value}\n\n[Peer]\nPublicKey = ${spub || '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0='}\nAllowedIPs = 0.0.0.0/0\nEndpoint = 46.224.62.213:51820\nPersistentKeepalive = 25\n`;
-      currentConfName = name;
-
-      if (window.qrcode) {
-        const q = qrcode(0, 'M');
-        q.addData(currentConf);
-        q.make();
-        $('#qrTarget').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
-      }
-      if ($('#btnOpenWireguardApp')) {
-        $('#btnOpenWireguardApp').href = `wireguard://tunnel?conf=${encodeURIComponent(currentConf)}`;
-      }
-      $('#resTitle').textContent = `"${name}" Hazır!`;
-      if ($('#stepLoading')) $('#stepLoading').hidden = true;
-      $('#stepResult').hidden = false;
-    } catch(e) {
-      logStream(e.message, 'err');
-      alert('Tünel oluşturma hatası: ' + e.message);
-      $('#diagPeer').close();
+    try { 
+      keys = await makeX25519(); 
+    } catch(e) { 
+      return alert('Kriptografik anahtar üretilemedi: ' + e.message); 
     }
-    setLock(false);
+    
+    // IP Hesabı: Mevcut en yüksek okteti bularak benzersiz IP ata
+    let maxOctet = 3;
+    (cachedPeerList || []).forEach(p => {
+      if (p.ip) {
+        const m = p.ip.match(/10\.13\.13\.(\d+)/);
+        if (m) {
+          const o = parseInt(m[1], 10);
+          if (o > maxOctet) maxOctet = o;
+        }
+      }
+    });
+    const assignedIp = `10.13.13.${maxOctet + 1}`;
+    const spub = '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=';
+    const ep = '46.224.62.213:51820';
+    const dns = ($('#peerDnsSel') && $('#peerDnsSel').value) ? $('#peerDnsSel').value : '1.1.1.1, 1.0.0.1';
+
+    // 1. PrivateKey'i HEMEN tarayıcıda yerel sakla (Sıfır-Bilgi, asla kaybolmaz)
+    const peerKeys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
+    peerKeys[name] = keys.priv;
+    ls.setItem('mfk_peer_keys', JSON.stringify(peerKeys));
+
+    // 2. Eksiksiz konfigürasyonu hemen oluştur
+    currentConf = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${assignedIp}/32\nDNS = ${dns}\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+    currentConfName = name;
+
+    // 3. QR Kodu ve butonları anında hazırla
+    if (window.qrcode) {
+      const q = qrcode(0, 'M');
+      q.addData(currentConf);
+      q.make();
+      $('#qrTarget').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+    }
+    if ($('#btnOpenWireguardApp')) {
+      $('#btnOpenWireguardApp').href = `wireguard://tunnel?conf=${encodeURIComponent(currentConf)}`;
+    }
+
+    // 4. Cihaz listesine hemen ekle ve yansıt
+    const newPeerItem = { name, pub: keys.pub, ip: assignedIp, hs: 0, rx: 0, tx: 0 };
+    cachedPeerList = [newPeerItem, ...(cachedPeerList || []).filter(p => p.name !== name)];
+    ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
+    renderPeers(cachedPeerList);
+
+    // 5. SONUÇ EKRANINI ANINDA AÇ (0 GECİKME!)
+    $('#resTitle').textContent = `"${name}" Hazır!`;
+    $('#stepForm').hidden = true;
+    if ($('#stepLoading')) $('#stepLoading').hidden = true;
+    $('#stepResult').hidden = false;
+    if (!$('#diagPeer').open) {
+      $('#diagPeer').showModal();
+    }
+    sfx('ok');
+
+    // 6. Arka planda sunucuya kaydet (kullanıcıyı asla bekletmez veya ekranı kapatmaz)
+    logStream(`⚡ ${name} için sunucu tüneli kaydediliyor...`, 'info');
+    runWorkflowAction({ action: 'add-peer', name, pubkey: keys.pub }, `${name} Sunucuya Ekleniyor`)
+      .then(logs => {
+        logStream(`✓ ${name} sunucuya başarıyla işlendi ve aktif edildi!`, 'ok');
+      })
+      .catch(err => {
+        logStream(`[BİLGİ] Sunucu senkronu: ${err.message}`, 'warn');
+      });
   }
 
   function confirmAction(title, desc, onYes) {
@@ -2832,14 +2877,24 @@
     $('#btnCloseResult').onclick = () => $('#diagPeer').close();
 
     $('#btnCopyConf').onclick = async () => {
-      await navigator.clipboard.writeText(currentConf);
-      alert('Panoya kopyalandı.');
+      if (!currentConf) return;
+      try {
+        await navigator.clipboard.writeText(currentConf);
+        alert('Tünel yapılandırması panoya kopyalandı.');
+      } catch(e) {
+        prompt('Konfigürasyonu kopyalayın:', currentConf);
+      }
     };
     $('#btnDownloadConf').onclick = () => {
+      if (!currentConf) return alert('Konfigürasyon bulunamadı.');
+      const blob = new Blob([currentConf], { type: 'text/plain;charset=utf-8' });
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([currentConf], { type: 'text/plain' }));
-      a.download = `${currentConfName || 'mfk'}.conf`;
+      a.href = URL.createObjectURL(blob);
+      a.download = `${currentConfName || 'mfkvpn'}.conf`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
+      sfx('ok');
     };
 
     // Cihaz Yedekleme & Geri Yükleme (Export / Import Backup)
