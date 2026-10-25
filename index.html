@@ -2528,7 +2528,7 @@
         sfx('click');
         const ep = `${activeNode.ip}:51820`;
         // Zero-Knowledge mimarisi: Istemci PrivateKey'i sunucuda saklanmaz
-        currentConf = `[Interface]\n# DIKKAT: Cihaz özel anahtarı (PrivateKey) güvenlik gereği sunucuda tutulmaz.\n# Yeni bir profil için cihazı silip yeniden ekleyin.\nPrivateKey = <CIHAZ_OZEL_ANAHTARINIZ>\nAddress = ${ip}/32\nDNS = 1.1.1.1, 1.0.0.1\n\n# Kayıtlı Cihaz Public Key: ${pub}\n[Peer]\nPublicKey = <SUNUCU_PUBLIC_KEY>\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+        currentConf = `[Interface]\n# DIKKAT: Cihaz özel anahtarı (PrivateKey) güvenlik gereği sunucuda tutulmaz.\n# Yeni bir profil için cihazı silip yeniden ekleyin.\nPrivateKey = <CIHAZ_OZEL_ANAHTARINIZ>\nAddress = ${ip}/32\nDNS = 1.1.1.1, 1.0.0.1\n\n# Kayıtlı Cihaz Public Key: ${pub}\n[Peer]\nPublicKey = /pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=\nAllowedIPs = 0.0.0.0/0\nEndpoint = 46.224.62.213:51820\nPersistentKeepalive = 25\n`;
         currentConfName = name;
         if (window.qrcode) {
           const q = qrcode(0, 'M');
@@ -2638,7 +2638,7 @@
       ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
       renderPeers(cachedPeerList);
 
-      currentConf = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${assignedIp}/32\nDNS = ${$('#peerDnsSel').value}\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0, ::/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+      currentConf = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${assignedIp}/32\nDNS = ${$('#peerDnsSel').value}\n\n[Peer]\nPublicKey = ${spub || '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0='}\nAllowedIPs = 0.0.0.0/0\nEndpoint = 46.224.62.213:51820\nPersistentKeepalive = 25\n`;
       currentConfName = name;
 
       if (window.qrcode) {
