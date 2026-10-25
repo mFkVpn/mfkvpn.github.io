@@ -1,0 +1,101 @@
+name: VPN Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "VPN Eylemi (start, stop, restart, status, list-peers, remove-peer, add-peer)"
+        type: choice
+        required: true
+        default: status
+        options:
+          - start
+          - stop
+          - restart
+          - status
+          - list-peers
+          - remove-peer
+          - add-peer
+      name:
+        description: "Cihaz Adı (add-peer veya remove-peer için)"
+        type: string
+        required: false
+        default: ""
+      pubkey:
+        description: "İstemci Public Key (add-peer için)"
+        type: string
+        required: false
+        default: ""
+      host:
+        description: "Hedef Düğüm IP (boşsa varsayılan HOST kullanılır)"
+        type: string
+        required: false
+        default: ""
+      port:
+        description: "Hedef Düğüm SSH Portu"
+        type: string
+        required: false
+        default: ""
+
+permissions: {}
+
+concurrency:
+  group: vpn-control
+  cancel-in-progress: false
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Run VPN action over SSH
+        env:
+          HOST: ${{ inputs.host != '' && inputs.host || secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_PORT: ${{ inputs.port != '' && inputs.port || secrets.SSH_PORT || 22 }}
+          ACTION: ${{ inputs.action }}
+          PEER_NAME: ${{ inputs.name }}
+          PEER_PUBKEY: ${{ inputs.pubkey }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_vpn
+          chmod 600 ~/.ssh/id_vpn
+          ssh-keyscan -p "$SSH_PORT" -H "$HOST" > ~/.ssh/known_hosts 2>/dev/null
+
+          # Girdi doğrulama ve enjeksiyon engelleme
+          case "$ACTION" in
+            start|stop|restart|status|list-peers|remove-peer|add-peer) ;;
+            *) echo "Geçersiz eylem: $ACTION" >&2; exit 1 ;;
+          esac
+
+          if [ -n "$PEER_NAME" ]; then
+            if ! [[ "$PEER_NAME" =~ ^[A-Za-z0-9_-]{1,32}$ ]]; then
+              echo "Hata: Geçersiz peer adı formatı." >&2
+              exit 1
+            fi
+          fi
+
+          if [ -n "$PEER_PUBKEY" ]; then
+            if ! [[ "$PEER_PUBKEY" =~ ^[A-Za-z0-9+/=]{43,44}$ ]]; then
+              echo "Hata: Geçersiz public key formatı." >&2
+              exit 1
+            fi
+          fi
+
+          # Güvenli komut inşası
+          COMMAND="$ACTION"
+          if [ -n "$PEER_NAME" ]; then
+            COMMAND="$COMMAND $PEER_NAME"
+          fi
+          if [ -n "$PEER_PUBKEY" ]; then
+            COMMAND="$COMMAND $PEER_PUBKEY"
+          fi
+
+          ssh -i ~/.ssh/id_vpn \
+              -p "$SSH_PORT" \
+              -o BatchMode=yes \
+              -o ConnectTimeout=10 \
+              -o StrictHostKeyChecking=yes \
+              "$USERNAME@$HOST" "$COMMAND"

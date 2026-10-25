@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+C="wireguard"
+PEERS_FILE="/etc/wireguard/peers.map"
+mkdir -p /etc/wireguard
+touch "$PEERS_FILE"
+
+# Mevcut peer'ı haritaya ekle (eğer boşsa)
+if ! grep -q "s+4kpwyp+" "$PEERS_FILE" 2>/dev/null; then
+  echo "Mevcut-Cihaz|s+4kpwyp+68TS8+Faf4mIR4YfoOXmIL2LprhWl2fX28=|10.13.13.2" >> "$PEERS_FILE"
+fi
+
+case "${1:-}" in
+  start)
+    docker start "$C" >/dev/null
+    echo "state=running started=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    ;;
+  stop)
+    docker stop "$C" >/dev/null
+    echo "state=exited"
+    ;;
+  restart)
+    docker restart "$C" >/dev/null
+    echo "state=running started=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    ;;
+  status)
+    st=$(docker inspect -f '{{.State.Status}}' "$C" 2>/dev/null || echo "unknown")
+    if [ "$st" = "running" ]; then
+      echo "state=running"
+    else
+      echo "state=exited"
+    fi
+    pcount=$(docker exec "$C" wg show wg0 peers 2>/dev/null | wc -l || echo 0)
+    echo "peers=$pcount"
+    ;;
+  list-peers)
+    DUMP=$(docker exec "$C" wg show wg0 dump 2>/dev/null || true)
+    if [ -f "$PEERS_FILE" ]; then
+      while IFS='|' read -r name pub ip; do
+        [ -z "$name" ] && continue
+        LINE=$(echo "$DUMP" | grep "$pub" || true)
+        if [ -n "$LINE" ]; then
+          HS=$(echo "$LINE" | awk '{print $5}')
+          RX=$(echo "$LINE" | awk '{print $6}')
+          TX=$(echo "$LINE" | awk '{print $7}')
+        else
+          HS=0; RX=0; TX=0
+        fi
+        echo "peer=$name|$pub|$ip|$HS|$RX|$TX"
+      done < "$PEERS_FILE"
+    fi
+    ;;
+  add-peer)
+    NAME="${2:-}"
+    PUBKEY="${3:-}"
+    if [ -z "$NAME" ] || [ -z "$PUBKEY" ]; then
+      echo "error=missing name or pubkey" >&2
+      exit 2
+    fi
+    
+    COUNT=$(wc -l < "$PEERS_FILE" 2>/dev/null || echo 0)
+    OCTET=$((COUNT + 2))
+    NEW_IP="10.13.13.${OCTET}"
+    
+    docker exec "$C" wg set wg0 peer "$PUBKEY" allowed-ips "${NEW_IP}/32"
+    echo "$NAME|$PUBKEY|$NEW_IP" >> "$PEERS_FILE"
+    
+    SERVER_PUB=$(docker exec "$C" wg show wg0 public-key 2>/dev/null || echo "/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=")
+    ENDPOINT="46.224.62.213:51820"
+    echo "added=$NAME|$NEW_IP|$SERVER_PUB|$ENDPOINT"
+    ;;
+  remove-peer)
+    NAME="${2:-}"
+    if [ -f "$PEERS_FILE" ]; then
+      PUBKEY=$(grep "^$NAME|" "$PEERS_FILE" | cut -d'|' -f2 || true)
+      if [ -n "$PUBKEY" ]; then
+        docker exec "$C" wg set wg0 peer "$PUBKEY" remove 2>/dev/null || true
+        sed -i "/^$NAME|/d" "$PEERS_FILE"
+      fi
+    fi
+    echo "removed=$NAME"
+    ;;
+  *)
+    echo "invalid action" >&2
+    exit 2
+    ;;
+esac

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadDisplayName</key>
+    <string>mFkVpN • Yüksek Güvenlikli Ağ</string>
+    <key>PayloadDescription</key>
+    <string>mFk Games Dahili IKEv2 VPN Bağlantı Profili (Sıfır Kurulum)</string>
+    <key>PayloadOrganization</key>
+    <string>mFk Games</string>
+    <key>PayloadIdentifier</key>
+    <string>com.mfkgames.vpn.ikev2</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>47A1B2C3-D4E5-4700-8888-A1B2C3D4E5F6</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadType</key>
+            <string>com.apple.vpn.managed</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadIdentifier</key>
+            <string>com.mfkgames.vpn.ikev2.config</string>
+            <key>PayloadUUID</key>
+            <string>58B2C3D4-E5F6-4700-9999-B2C3D4E5F6A7</string>
+            <key>PayloadDisplayName</key>
+            <string>mFkVpN</string>
+            <key>UserDefinedName</key>
+            <string>mFkVpN</string>
+            <key>VPNType</key>
+            <string>IKEv2</string>
+            <key>IKEv2</key>
+            <dict>
+                <key>RemoteAddress</key>
+                <string>46.224.62.213.sslip.io</string>
+                <key>RemoteIdentifier</key>
+                <string>46.224.62.213.sslip.io</string>
+                <key>LocalIdentifier</key>
+                <string></string>
+                <key>AuthenticationMethod</key>
+                <string>None</string>
+                <key>ExtendedAuthEnabled</key>
+                <true/>
+                <key>DeadPeerDetectionRate</key>
+                <string>Medium</string>
+                <key>DisableMOBIKE</key>
+                <integer>0</integer>
+                <key>DisableRedirect</key>
+                <integer>0</integer>
+                <key>EnablePFS</key>
+                <integer>1</integer>
+                <key>EnableRevocationCheck</key>
+                <integer>0</integer>
+                <key>UseConfigurationAttributeInternalIPSubnet</key>
+                <integer>0</integer>
+            </dict>
+            <key>IPv4</key>
+            <dict>
+                <key>OverridePrimary</key>
+                <integer>1</integer>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>

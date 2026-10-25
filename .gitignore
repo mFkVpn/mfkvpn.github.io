@@ -1,0 +1,12 @@
+id_vpn
+id_vpn.pub
+*.key
+*.pem
+*.psk
+.env
+node_modules/
+package.json
+package-lock.json
+*.apk
+android_app/build/
+android_app/.dart_tool/
