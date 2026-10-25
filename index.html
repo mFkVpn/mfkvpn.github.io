@@ -2825,12 +2825,14 @@
       `;
     }).join('');
 
-    // Sayfalama Çubuğu Kontrolü
+    // Sayfalama Çubuğu Kontrolü (5 cihazdan fazlasında göster)
     const pagBar = $('#peerPaginationBar');
     if (pagBar) {
       if (totalPages > 1) {
         pagBar.style.display = 'flex';
-        $('#pageInfoText').textContent = `${sorted.length} Cihaz • Sayfa ${currentPeerPage} / ${totalPages}`;
+        const startNum = startIdx + 1;
+        const endNum = Math.min(startIdx + PEERS_PER_PAGE, sorted.length);
+        $('#pageInfoText').textContent = `${startNum}-${endNum} / ${sorted.length} Cihaz`;
         
         let btnsHtml = `
           <button class="page-btn" id="btnPagePrev" ${currentPeerPage <= 1 ? 'disabled' : ''}>◀</button>
@@ -2919,6 +2921,7 @@
 
   async function loadPeers() {
     setLock(true);
+    logStream('⚡ Cihaz bağlantı durumları kontrol ediliyor...', 'cmd');
     try {
       const logs = await runWorkflowAction({ action: 'list-peers' }, 'Cihazlar Alınıyor');
       const peers = logs.filter(l => l.startsWith('peer=')).map(l => {
@@ -2927,6 +2930,8 @@
       });
       ls.setItem('mfk_peer_cache', JSON.stringify(peers));
       renderPeers(peers);
+      const activeCnt = peers.filter(p => p.hs && (Date.now()/1000 - p.hs < 180)).length;
+      logStream(`✓ ${peers.length} cihaz listelendi • ${activeCnt} aktif tünel`, 'ok');
     } catch(e) {
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
     }
@@ -3092,6 +3097,8 @@
       checkTokenStatus();
       loadRuns();
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
+      // Arka planda canlı peer verilerini çek (bağlantı durumunu göstermek için)
+      setTimeout(() => loadPeers(), 2000);
       return;
     }
 
@@ -3107,6 +3114,8 @@
       checkTokenStatus();
       loadRuns();
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
+      // Arka planda canlı peer verilerini çek (bağlantı durumunu güncellemek için)
+      setTimeout(() => loadPeers(), 2000);
     } else {
       sfx('err');
       const c = $('#gateCard');
@@ -3127,6 +3136,8 @@
         $('#lockGate').classList.add('cleared');
         loadRuns();
         renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
+        // Arka planda canlı bağlantı durumunu güncelle (2s sonra)
+        setTimeout(() => loadPeers(), 2000);
       }
       checkTokenStatus();
     } else if (savedPin && unpackToken(_VAULT_KEY, savedPin).startsWith('ghp_')) {
@@ -3134,6 +3145,8 @@
       $('#lockGate').classList.add('cleared');
       loadRuns();
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
+      // Arka planda canlı bağlantı durumunu güncelle (2s sonra)
+      setTimeout(() => loadPeers(), 2000);
       checkTokenStatus();
     }
 
@@ -3292,6 +3305,47 @@
     $('#btnRefreshPeers').onclick = loadPeers;
     $('#btnClearTerminal').onclick = () => { $('#streamBox').innerHTML = ''; };
     $('#btnConfNo').onclick = () => $('#diagConfirm').close();
+
+    // Otomatik Periyodik Cihaz Durumu Yenileme (60 saniyede bir)
+    setInterval(() => {
+      if (!activeToken) return;
+      if (!$('#lockGate').classList.contains('cleared')) return;
+      // Sessizce arka planda çek - setLock çağırmaz, loglamamaz
+      (async () => {
+        try {
+          const dispatch = await ghReq(`/actions/workflows/${WORKFLOW}/dispatches`, {
+            method: 'POST',
+            body: JSON.stringify({ ref: 'main', inputs: { action: 'list-peers' } })
+          });
+          if (!dispatch.ok) return;
+          const t0 = Date.now() - 3000;
+          let target = null;
+          for (let i = 0; i < 15 && !target; i++) {
+            await wait(2000);
+            const d = await (await ghReq(`/actions/workflows/${WORKFLOW}/runs?event=workflow_dispatch&per_page=5`)).json();
+            target = (d.workflow_runs || []).find(r => new Date(r.created_at).getTime() >= t0);
+          }
+          if (!target) return;
+          for (let i = 0; i < 40 && target.status !== 'completed'; i++) {
+            await wait(2000);
+            target = await (await ghReq(`/actions/runs/${target.id}`)).json();
+          }
+          if (target.conclusion !== 'success') return;
+          const j = await (await ghReq(`/actions/runs/${target.id}/jobs`)).json();
+          if (!j.jobs || !j.jobs[0]) return;
+          const raw = await (await ghReq(`/actions/jobs/${j.jobs[0].id}/logs`)).text();
+          const lines = raw.split('\n').map(l => l.replace(/^\S+Z\s/, '').trim());
+          const peers = lines.filter(l => l.startsWith('peer=')).map(l => {
+            const [name, pub, ip, hs, rx, tx] = l.slice(5).split('|');
+            return { name, pub, ip, hs: Number(hs)||0, rx: Number(rx)||0, tx: Number(tx)||0 };
+          });
+          if (peers.length > 0) {
+            ls.setItem('mfk_peer_cache', JSON.stringify(peers));
+            renderPeers(peers);
+          }
+        } catch(e) {}
+      })();
+    }, 60000);
 
     // Düğüm modal
     ['#btnNodes', '#activeNodeBadge'].forEach(sel => {
