@@ -4122,6 +4122,196 @@
     });
   }
 
+  // =========================================================================
+  // KRİPTOGRAFİK BULUT EŞZAMANLAMA (Zero-Knowledge AES-GCM Private Key Sync)
+  // =========================================================================
+  async function getCryptoKey(pin, salt) {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw', enc.encode(pin), { name: 'PBKDF2' }, false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  async function encryptVaultKey(plaintext, pin) {
+    if (!plaintext || !pin) return null;
+    try {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await getCryptoKey(pin, salt);
+      const enc = new TextEncoder();
+      const ciphertext = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv }, key, enc.encode(plaintext)
+      );
+      const combined = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+      combined.set(salt, 0);
+      combined.set(iv, salt.length);
+      combined.set(new Uint8Array(ciphertext), salt.length + iv.length);
+      return btoa(String.fromCharCode(...combined));
+    } catch(e) { return null; }
+  }
+
+  async function decryptVaultKey(b64Str, pin) {
+    if (!b64Str || !pin) return null;
+    try {
+      const bin = atob(b64Str);
+      const combined = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) combined[i] = bin.charCodeAt(i);
+      const salt = combined.slice(0, 16);
+      const iv = combined.slice(16, 28);
+      const ciphertext = combined.slice(28);
+      const key = await getCryptoKey(pin, salt);
+      const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv }, key, ciphertext
+      );
+      return new TextDecoder().decode(decrypted);
+    } catch(e) { return null; }
+  }
+
+  // =========================================================================
+  // BULUT EŞZAMANLAMA (Cross-Device Cloud Sync - PC, Telefon ve Tablet)
+  // =========================================================================
+  async function syncPeersFromJson(silent = true) {
+    try {
+      let remoteData = null;
+      // 1. Doğrudan statik CDN üzerinden peers.json çek (50ms - Anında Yanıt)
+      try {
+        const resp = await fetch('./peers.json?_t=' + Date.now(), { cache: 'no-store' });
+        if (resp.ok) remoteData = await resp.json();
+      } catch(e) {}
+
+      // 2. Statik fetch yanıt vermezse GitHub API üzerinden al
+      if (!remoteData && (activeToken || ls.getItem('mfk_custom_token'))) {
+        try {
+          const ghResp = await ghReq('/contents/peers.json');
+          if (ghResp.ok) {
+            const ghJson = await ghResp.json();
+            const decoded = decodeURIComponent(escape(atob(ghJson.content.replace(/\s/g, ''))));
+            remoteData = JSON.parse(decoded);
+          }
+        } catch(e) {}
+      }
+
+      if (!remoteData || !Array.isArray(remoteData.peers)) return;
+
+      const deletedPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
+      const meta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
+      const keys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
+      const pin = sessionStorage.getItem('mfk_pin_session') || ls.getItem('mfk_pin_persistent') || '';
+
+      const mergedList = [];
+      for (const rp of remoteData.peers) {
+        if (deletedPeers.includes(rp.name)) continue;
+
+        // Özel İsim ve Not Senkronizasyonu
+        if (rp.alias || rp.note) {
+          meta[rp.name] = {
+            alias: (rp.alias || meta[rp.name]?.alias || '').replace(/\s*\([^)]*\)/g, '').trim(),
+            note: rp.note || meta[rp.name]?.note || ''
+          };
+        }
+
+        // Şifrelenmiş PrivateKey varsa PIN ile çöz ve yerel depoya ekle
+        if (rp.enc_priv && pin && !keys[rp.name]) {
+          try {
+            const decKey = await decryptVaultKey(rp.enc_priv, pin);
+            if (decKey && decKey.length >= 40) keys[rp.name] = decKey;
+          } catch(e) {}
+        }
+
+        mergedList.push({
+          name: rp.name,
+          pub: rp.pub || '',
+          ip: rp.ip || '10.13.13.x',
+          hs: rp.hs || 0,
+          rx: rp.rx || 0,
+          tx: rp.tx || 0
+        });
+      }
+
+      ls.setItem('mfk_peer_meta', JSON.stringify(meta));
+      ls.setItem('mfk_peer_keys', JSON.stringify(keys));
+      cachedPeerList = mergedList;
+      ls.setItem('mfk_peer_cache', JSON.stringify(mergedList));
+      renderPeers(mergedList);
+
+      if (!silent) {
+        logStream(`✓ ${mergedList.length} cihaz buluttan başarıyla senkronize edildi.`, 'ok');
+      }
+    } catch(err) {
+      console.warn('Sync peers error:', err);
+    }
+  }
+
+  async function savePeersToRepo() {
+    const tok = ls.getItem('mfk_custom_token') || activeToken;
+    if (!tok) return;
+    try {
+      const peerList = cachedPeerList || [];
+      const meta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
+      const keys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
+      const pin = sessionStorage.getItem('mfk_pin_session') || ls.getItem('mfk_pin_persistent') || '';
+
+      let currentSha = null;
+      try {
+        const getFile = await ghReq('/contents/peers.json');
+        if (getFile.ok) {
+          const fileData = await getFile.json();
+          currentSha = fileData.sha;
+        }
+      } catch(e) {}
+
+      const exportPeers = [];
+      for (const p of peerList) {
+        const pMeta = meta[p.name] || {};
+        const priv = keys[p.name];
+        let encPriv = null;
+        if (priv && pin) {
+          try { encPriv = await encryptVaultKey(priv, pin); } catch(e){}
+        }
+        exportPeers.push({
+          name: p.name,
+          alias: (pMeta.alias || p.name).replace(/\s*\([^)]*\)/g, '').trim(),
+          note: pMeta.note || '',
+          pub: p.pub || '',
+          ip: p.ip || '',
+          hs: p.hs || 0,
+          rx: p.rx || 0,
+          tx: p.tx || 0,
+          enc_priv: encPriv
+        });
+      }
+
+      const payload = {
+        version: 1,
+        updated_at: new Date().toISOString(),
+        peers: exportPeers
+      };
+
+      const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+      const putBody = {
+        message: `sync: update peers registry (${peerList.length} devices) [skip ci]`,
+        content: contentBase64,
+        branch: 'main'
+      };
+      if (currentSha) putBody.sha = currentSha;
+
+      await ghReq('/contents/peers.json', {
+        method: 'PUT',
+        body: JSON.stringify(putBody)
+      });
+      logStream('☁️ Cihaz listesi ve anahtarlar tüm cihazlarınız (PC/Mobil/Tablet) için buluta eşitlendi.', 'ok');
+    } catch(e) {
+      console.warn('Failed to sync peers.json to repo:', e);
+    }
+  }
+
   function unpackToken(hex, pin) {
     let res = '';
     for (let i = 0; i < hex.length; i += 2) {
@@ -4137,8 +4327,9 @@
   let currentConfName = '';
 
   const MOCK_PEERS = [
-    { name: 'PC-PCmFk', ip: '10.13.13.5', hs: Math.floor(Date.now() / 1000) - 300, rx: 105695684, tx: 30266288 },
-    { name: 'mFk-iphone', ip: '10.13.13.5', hs: Math.floor(Date.now() / 1000) - 120, rx: 2452, tx: 2716 }
+    { name: 'PC-PCmFk', alias: 'PC-PCmFk', ip: '10.13.13.5', hs: Math.floor(Date.now() / 1000) - 300, rx: 105695684, tx: 30266288 },
+    { name: 'MOB-mFk-iphone', alias: 'mFk-iphone', ip: '10.13.13.5', hs: Math.floor(Date.now() / 1000) - 120, rx: 2452, tx: 2716 },
+    { name: 'MOB-Songul', alias: 'Songül', ip: '10.13.13.6', hs: Math.floor(Date.now() / 1000) - 100, rx: 2041940, tx: 29488780 }
   ];
 
   const escapeHtml = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -4803,6 +4994,7 @@
             ls.setItem('mfk_peer_meta', JSON.stringify(meta));
           } catch(e){}
           renderPeers();
+          savePeersToRepo(); // Silme durumunu tüm cihazlara anında senkronize et
           sfx('ok');
 
           // 3. Arka planda sunucu tünelini kalıcı olarak kaldır (hem ad hem public key iletilir)
@@ -4894,6 +5086,10 @@
       logStream('⚡ Cihaz bağlantı durumları kontrol ediliyor...', 'cmd');
     }
     try {
+      // 1. Önce buluttan anında senkronize et (50ms - 0 Gecikme ile tüm cihazlar görünür)
+      await syncPeersFromJson(silent);
+
+      // 2. Canlı sunucu sorgusu
       const logs = await runWorkflowAction({ action: 'list-peers' }, 'Cihazlar Alınıyor', silent);
       const serverPeers = logs.filter(l => l.startsWith('peer=')).map(l => {
         const [name, pub, ip, hs, rx, tx] = l.slice(5).split('|');
@@ -5220,6 +5416,7 @@
     cachedPeerList = [newPeerItem, ...(cachedPeerList || []).filter(p => p.name !== name)];
     ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
     renderPeers(cachedPeerList);
+    savePeersToRepo(); // Anında PC/Mobil/Tablet bulutuna kaydet
 
     // 5. SONUÇ EKRANINI ANINDA AÇ (0 GECİKME!)
     $('#resTitle').textContent = `"${rawName || name}" Hazır!`;
@@ -5306,13 +5503,13 @@
     if (candidate.startsWith('ghp_')) {
       activeToken = savedCustom || candidate;
       sessionStorage.setItem('mfk_pin_session', pin);
+      ls.setItem('mfk_pin_persistent', pin);
       sfx('unlock');
       $('#lockGate').classList.add('cleared');
       logStream('✓ Oturum doğrulandı. mFk Cybershield hazır.', 'ok');
       checkTokenStatus();
       loadRuns();
-      renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
-      // Arka planda canlı peer verilerini çek (bağlantı durumunu güncellemek için)
+      syncPeersFromJson(true); // Mobilde/Tablette anında PC'deki cihazları çek
       setTimeout(() => loadPeers(true), 1200);
     } else {
       sfx('err');
@@ -5351,7 +5548,7 @@
       });
       ls.setItem('mfk_peer_meta', JSON.stringify(pMeta));
     } catch(e){}
-    const savedPin = sessionStorage.getItem('mfk_pin_session');
+    const savedPin = sessionStorage.getItem('mfk_pin_session') || ls.getItem('mfk_pin_persistent');
     const savedCustom = ls.getItem('mfk_custom_token');
     if (savedCustom) {
       activeToken = savedCustom;
@@ -5359,7 +5556,7 @@
         $('#lockGate').classList.add('cleared');
         loadRuns();
         renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
-        // Arka planda canlı bağlantı durumunu güncelle (2s sonra)
+        syncPeersFromJson(true);
         setTimeout(() => loadPeers(true), 1200);
       }
       checkTokenStatus();
@@ -5885,6 +6082,7 @@
         sfx('ok');
         $('#diagEditPeer').close();
         renderPeers();
+        savePeersToRepo(); // İsim değişikliğini tüm cihazlara anında eşitle
         logStream(`✓ ${name} cihazı özelleştirildi: ${alias || name}`, 'ok');
       };
     }

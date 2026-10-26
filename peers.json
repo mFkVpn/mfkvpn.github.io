@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-26T21:30:00Z",
+  "peers": [
+    {
+      "name": "PC-PCmFk",
+      "alias": "PC-PCmFk",
+      "pub": "miG2MCJIOL+e/xJ9z/4b/zyC7D7X8/EuIeQaGCplPBk=",
+      "ip": "10.13.13.5",
+      "hs": 1793003239,
+      "rx": 105695684,
+      "tx": 30266288
+    },
+    {
+      "name": "MOB-mFk-iphone",
+      "alias": "mFk-iphone",
+      "pub": "zamcblaqw9LB7mdPUOasYiJq4PVoXYFx2Yqd/vfLiAo=",
+      "ip": "10.13.13.5",
+      "hs": 1793016976,
+      "rx": 2452,
+      "tx": 2716
+    },
+    {
+      "name": "MOB-Songul",
+      "alias": "Songul",
+      "pub": "qfkZAwn2IWvNOXzi5WyuCn1xxHO9T8oIMlNBycctHGg=",
+      "ip": "10.13.13.6",
+      "hs": 1793033770,
+      "rx": 2041940,
+      "tx": 29488780
+    }
+  ]
+}
