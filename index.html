@@ -2505,6 +2505,7 @@
       .device-traffic-inline {
         font-size: 10.5px !important;
         gap: 6px !important;
+        margin-left: 0 !important;
       }
     }
   
@@ -4104,7 +4105,7 @@
 
   function setLock(v) {
     isLocked = v;
-    $$('.core-actions .btn, #btnAddPeer, #btnRefreshPeers').forEach(b => b.disabled = v);
+    $$('.core-actions .btn').forEach(b => b.disabled = v);
   }
 
   async function ghReq(endpoint, opts = {}) {
@@ -4238,9 +4239,12 @@
   function renderPeers(list) {
     if (list) cachedPeerList = list;
     
-    // Silinmiş cihazları kalıcı kara listeden süz (1. cihazın geri gelmesini 100% önler)
+    // Silinmiş cihazları kalıcı kara listeden süz (Canlı veya trafik almış cihazlar asla gizlenmez)
     const deletedPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
-    const allPeers = (cachedPeerList || []).filter(p => !deletedPeers.includes(p.name));
+    const allPeers = (cachedPeerList || []).filter(p => {
+      if ((p.rx && p.rx > 0) || (p.tx && p.tx > 0) || (p.hs && p.hs > 0)) return true;
+      return !deletedPeers.includes(p.name);
+    });
     
     const box = $('#peerContainer');
     if ($('#countLabel')) $('#countLabel').textContent = `${allPeers.length} Kayıtlı`;
@@ -4382,9 +4386,8 @@
                     : '<span class="peer-status-tag tag-offline"><span class="tag-dot"></span>Bağlantı Yok</span>')}
               </div>
               
-              <!-- 2. Tek Satırda Trafik Verileri (Gönderme & Alma - Sıfır Taşma) -->
-              <div class="device-traffic-inline" style="display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-family:var(--font-mono);white-space:nowrap;flex-shrink:0;">
-                <span class="device-traffic-sep" style="color:rgba(255,255,255,0.25);">•</span>
+              <!-- 2. Tek Satırda Trafik Verileri (Sağa Yaslı - Zarif & Düzenli) -->
+              <div class="device-traffic-inline" style="margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-family:var(--font-mono);white-space:nowrap;flex-shrink:0;">
                 <span style="color:#38bdf8;font-weight:600;">↓ ${formatBytes(p.rx||0)}</span>
                 <span style="color:rgba(255,255,255,0.25);">•</span>
                 <span style="color:#c084fc;font-weight:600;">↑ ${formatBytes(p.tx||0)}</span>
@@ -4701,26 +4704,40 @@
   }
 
   async function loadPeers(silent = false) {
+    const btnRef = $('#btnRefreshPeers');
     if (!silent) {
-      setLock(true);
+      if (btnRef) btnRef.style.opacity = '0.5';
       logStream('⚡ Cihaz bağlantı durumları kontrol ediliyor...', 'cmd');
     }
     try {
       const logs = await runWorkflowAction({ action: 'list-peers' }, 'Cihazlar Alınıyor', silent);
-      const peers = logs.filter(l => l.startsWith('peer=')).map(l => {
+      const serverPeers = logs.filter(l => l.startsWith('peer=')).map(l => {
         const [name, pub, ip, hs, rx, tx] = l.slice(5).split('|');
         return { name, pub, ip, hs: Number(hs)||0, rx: Number(rx)||0, tx: Number(tx)||0 };
       });
-      ls.setItem('mfk_peer_cache', JSON.stringify(peers));
-      renderPeers(peers);
-      const activeCnt = peers.filter(p => p.hs && (Date.now()/1000 - p.hs < 180)).length;
+      
+      // Sunucu listesi ile yerel önbellekteki taze cihazları akıllıca birleştir
+      const currentCache = JSON.parse(ls.getItem('mfk_peer_cache') || '[]');
+      const merged = [...serverPeers];
+      currentCache.forEach(cp => {
+        if (!merged.some(sp => sp.name === cp.name || (sp.pub && cp.pub && sp.pub === cp.pub))) {
+          merged.push(cp);
+        }
+      });
+
+      cachedPeerList = merged;
+      ls.setItem('mfk_peer_cache', JSON.stringify(merged));
+      renderPeers(merged);
+
+      const activeCnt = merged.filter(p => p.hs && (Date.now()/1000 - p.hs < 180)).length;
       if (!silent) {
-        logStream(`✓ ${peers.length} cihaz listelendi • ${activeCnt} aktif tünel`, 'ok');
+        logStream(`✓ ${merged.length} cihaz listelendi • ${activeCnt} aktif tünel`, 'ok');
       }
     } catch(e) {
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
+    } finally {
+      if (btnRef) btnRef.style.opacity = '1';
     }
-    if (!silent) setLock(false);
   }
 
   let currentRunsPage = 1;
@@ -4988,6 +5005,9 @@
     }
 
     // 4. Cihaz listesine hemen ekle ve yansıt
+    const delList = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
+    const cleanDelList = delList.filter(d => d !== name && d !== rawName && !name.toLowerCase().includes(d.toLowerCase()));
+    ls.setItem('mfk_deleted_peers', JSON.stringify(cleanDelList));
     if (rawName) {
       savePeerMeta(name, rawName, '');
     }
@@ -5071,7 +5091,7 @@
       loadRuns();
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
       // Arka planda canlı peer verilerini çek (bağlantı durumunu göstermek için)
-      setTimeout(() => loadPeers(), 2000);
+      setTimeout(() => loadPeers(true), 1200);
       return;
     }
 
@@ -5088,7 +5108,7 @@
       loadRuns();
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
       // Arka planda canlı peer verilerini çek (bağlantı durumunu güncellemek için)
-      setTimeout(() => loadPeers(), 2000);
+      setTimeout(() => loadPeers(true), 1200);
     } else {
       sfx('err');
       const c = $('#gateCard');
@@ -5101,6 +5121,11 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     // Oturum Kontrolü
+    try {
+      const dPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
+      const filtered = dPeers.filter(d => !/iphone|MOB-mFk/i.test(d));
+      ls.setItem('mfk_deleted_peers', JSON.stringify(filtered));
+    } catch(e){}
     const savedPin = sessionStorage.getItem('mfk_pin_session');
     const savedCustom = ls.getItem('mfk_custom_token');
     if (savedCustom) {
@@ -5110,7 +5135,7 @@
         loadRuns();
         renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
         // Arka planda canlı bağlantı durumunu güncelle (2s sonra)
-        setTimeout(() => loadPeers(), 2000);
+        setTimeout(() => loadPeers(true), 1200);
       }
       checkTokenStatus();
     } else if (savedPin && unpackToken(_VAULT_KEY, savedPin).startsWith('ghp_')) {
@@ -5119,7 +5144,7 @@
       loadRuns();
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
       // Arka planda canlı bağlantı durumunu güncelle (2s sonra)
-      setTimeout(() => loadPeers(), 2000);
+      setTimeout(() => loadPeers(true), 1200);
       checkTokenStatus();
     }
 
