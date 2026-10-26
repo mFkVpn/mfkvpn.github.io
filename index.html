@@ -2490,6 +2490,23 @@
         padding: 12px !important;
       }
     }
+
+    /* Ekstra Dar Ekranlar & Akıllı Telefonlar (Taşmasız Tek/Çift Satır Akışı) */
+    @media (max-width: 480px) {
+      #activeNodeLabel {
+        max-width: 85px !important;
+      }
+      .peer-title-text {
+        max-width: 115px !important;
+      }
+      .device-traffic-sep {
+        display: none !important;
+      }
+      .device-traffic-inline {
+        font-size: 10.5px !important;
+        gap: 6px !important;
+      }
+    }
   
     /* =========================================================================
        DİNAMİK FARE TAKİP IŞIĞI (Radial Spotlight Border & Surface)
@@ -3181,7 +3198,6 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
           Operasyon Günlüğü
         </div>
-        <button class="btn btn-sm" id="btnClearTerminal">Temizle</button>
       </div>
 
       <!-- Sekmeler -->
@@ -4352,12 +4368,12 @@
               ${iconSvg}
               <span class="status-light ${live ? 'pulsing' : ''}" title="${live ? 'Aktif Tünel (Sinyal Alınıyor)' : 'Bağlantı Yok'}"></span>
             </div>
-            <div class="device-info" style="min-width:0;flex:1;">
-              <!-- 1. Satır: Cihaz Adı, Düzenle Kalemi & Temiz Durum Rozeti -->
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <b style="font-size:14px;letter-spacing:-0.01em;">${meta.alias ? escapeHtml(meta.alias) : escapeHtml(p.name)}</b>
-                ${meta.alias ? `<span class="alias-real-name" style="font-size:11px;color:#64748b;">(${escapeHtml(p.name)})</span>` : ''}
-                <button type="button" class="btn-edit-alias btnEditPeer" data-name="${p.name}" title="Özel İsim ve Not Düzenle" onclick="event.stopPropagation()">
+            <div class="device-info" style="min-width:0;flex:1;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;">
+              <!-- 1. Cihaz Adı, Düzenle Kalemi & Temiz Durum Rozeti -->
+              <div class="device-title-wrap" style="display:inline-flex;align-items:center;gap:7px;min-width:0;flex-shrink:0;">
+                <b class="peer-title-text" style="font-size:13.5px;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;" title="${escapeHtml(meta.alias || p.name)}">${meta.alias ? escapeHtml(meta.alias) : escapeHtml(p.name)}</b>
+                ${meta.alias ? `<span class="alias-real-name" style="font-size:11px;color:#64748b;white-space:nowrap;">(${escapeHtml(p.name)})</span>` : ''}
+                <button type="button" class="btn-edit-alias btnEditPeer" data-name="${p.name}" title="Özel İsim ve Not Düzenle" onclick="event.stopPropagation()" style="opacity:0.65;padding:2px;display:inline-flex;align-items:center;background:none;border:none;color:#94a3b8;cursor:pointer;">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 </button>
                 ${live 
@@ -4367,10 +4383,11 @@
                     : '<span class="peer-status-tag tag-offline"><span class="tag-dot"></span>Bağlantı Yok</span>')}
               </div>
               
-              <!-- 2. Satır: Yalnızca Gönderme ve Alma Verileri (Sade & Şık) -->
-              <div class="device-sub" style="margin-top:4px;display:flex;align-items:center;gap:8px;font-size:11.5px;font-family:var(--font-mono);">
+              <!-- 2. Tek Satırda Trafik Verileri (Gönderme & Alma - Sıfır Taşma) -->
+              <div class="device-traffic-inline" style="display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-family:var(--font-mono);white-space:nowrap;flex-shrink:0;">
+                <span class="device-traffic-sep" style="color:rgba(255,255,255,0.25);">•</span>
                 <span style="color:#38bdf8;font-weight:600;">↓ ${formatBytes(p.rx||0)}</span>
-                <span style="color:rgba(255,255,255,0.2);">•</span>
+                <span style="color:rgba(255,255,255,0.25);">•</span>
                 <span style="color:#c084fc;font-weight:600;">↑ ${formatBytes(p.tx||0)}</span>
               </div>
             </div>
@@ -5560,7 +5577,7 @@
     }
 
     $('#btnRefreshPeers').onclick = loadPeers;
-    $('#btnClearTerminal').onclick = () => { $('#streamBox').innerHTML = ''; };
+    if ($('#btnClearTerminal')) $('#btnClearTerminal').onclick = () => { $('#streamBox').innerHTML = ''; };
     $('#btnConfNo').onclick = () => $('#diagConfirm').close();
 
     // Otomatik Periyodik Cihaz Durumu Yenileme (25 saniyede bir, sekme açıksa)
