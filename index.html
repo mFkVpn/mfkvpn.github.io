@@ -4117,9 +4117,8 @@
   let currentConfName = '';
 
   const MOCK_PEERS = [
-    { name: 'mFk-iPhone-15-Pro', ip: '10.13.13.2', hs: Math.floor(Date.now() / 1000) - 95, rx: 198429104, tx: 42472910 },
-    { name: 'mFk-MacBook-M3', ip: '10.13.13.3', hs: Math.floor(Date.now() / 1000) - 130, rx: 894028472, tx: 92837410 },
-    { name: 'mFk-Titan-Rig', ip: '10.13.13.4', hs: Math.floor(Date.now() / 1000) - 34000, rx: 55910284, tx: 3290384 }
+    { name: 'PC-PCmFk', ip: '10.13.13.5', hs: Math.floor(Date.now() / 1000) - 300, rx: 105695684, tx: 30266288 },
+    { name: 'mFk-iphone', ip: '10.13.13.5', hs: Math.floor(Date.now() / 1000) - 120, rx: 2452, tx: 2716 }
   ];
 
   const escapeHtml = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -4204,10 +4203,10 @@
 
   const MOCK_RUNS = [
     { id: 101, run_number: 142, display_title: 'VPN Kontrolü • Sunucu Durumu', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 45 * 1000).toISOString(), html_url: '#' },
-    { id: 102, run_number: 141, display_title: 'Yeni Cihaz Yetkilendirme (MOB-Pixel)', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 360 * 1000).toISOString(), html_url: '#' },
+    { id: 102, run_number: 141, display_title: 'Yeni Cihaz Yetkilendirme', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 360 * 1000).toISOString(), html_url: '#' },
     { id: 103, run_number: 140, display_title: 'Hetzner Finlandiya Otomatik Healthcheck', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 3600 * 1000).toISOString(), html_url: '#' },
     { id: 104, run_number: 139, display_title: 'WireGuard Kernel Tünel Başlatma', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 7200 * 1000).toISOString(), html_url: '#' },
-    { id: 105, run_number: 138, display_title: 'Cihaz Tünel Yapılandırması (PC-Titan)', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 14400 * 1000).toISOString(), html_url: '#' },
+    { id: 105, run_number: 138, display_title: 'Cihaz Tünel Yapılandırması', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 14400 * 1000).toISOString(), html_url: '#' },
     { id: 106, run_number: 137, display_title: 'Sıfır Günlük & Bellek Temizliği', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 86400 * 1000).toISOString(), html_url: '#' },
     { id: 107, run_number: 136, display_title: 'X25519 Kripto Anahtar Doğrulama', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 90000 * 1000).toISOString(), html_url: '#' },
     { id: 108, run_number: 135, display_title: 'Helsinki DC Ağ Trafiği Senkronizasyonu', status: 'completed', conclusion: 'success', created_at: new Date(Date.now() - 172800 * 1000).toISOString(), html_url: '#' }
@@ -4704,7 +4703,7 @@
         const ip = b.dataset.ip || '10.13.13.x';
         const pub = b.dataset.pub || 'ServerPublicKey';
         sfx('click');
-        const ep = '46.224.62.213:51820';
+        const ep = `${(activeNode && activeNode.ip) ? activeNode.ip : '46.224.62.213'}:51820`;
         const spub = '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=';
 
         const peerKeys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
@@ -4847,12 +4846,12 @@
         e.stopPropagation();
         const name = b.dataset.name;
         const ip = b.dataset.ip || '10.13.13.x';
-        const ep = '46.224.62.213:51820';
+        const ep = `${(activeNode && activeNode.ip) ? activeNode.ip : '46.224.62.213'}:51820`;
         const spub = '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=';
         const peerKeys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
         const privKey = peerKeys[name];
         if (!privKey) {
-          alert(`"${name}" cihazının özel anahtarı bu tarayıcıda bulunamadı. Lütfen "Ayar" butonundan yapılandırın.`);
+          alert(`"${name}" cihazının özel anahtarı (PrivateKey) bu tarayıcıda kayıtlı değil.\n\nSıfır-bilgi güvenliği gereği anahtarlar sunucuda saklanmaz; konfigürasyon dosyasını cihazı ilk eklediğiniz tarayıcıdan indirebilirsiniz.`);
           return;
         }
         const conf = `[Interface]\nPrivateKey = ${privKey}\nAddress = ${ip}/32\nDNS = 1.1.1.1, 1.0.0.1\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
@@ -5727,7 +5726,8 @@
         version: 2,
         date: new Date().toISOString(),
         peers: JSON.parse(ls.getItem('mfk_peer_cache') || '[]'),
-        keys: JSON.parse(ls.getItem('mfk_peer_keys') || '{}')
+        keys: JSON.parse(ls.getItem('mfk_peer_keys') || '{}'),
+        meta: JSON.parse(ls.getItem('mfk_peer_meta') || '{}')
       };
       const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
@@ -5758,6 +5758,11 @@
               const existingKeys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
               Object.assign(existingKeys, parsed.keys);
               ls.setItem('mfk_peer_keys', JSON.stringify(existingKeys));
+            }
+            if (parsed.meta && typeof parsed.meta === 'object') {
+              const existingMeta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
+              Object.assign(existingMeta, parsed.meta);
+              ls.setItem('mfk_peer_meta', JSON.stringify(existingMeta));
             }
           } else {
             throw new Error('Geçersiz dosya');
