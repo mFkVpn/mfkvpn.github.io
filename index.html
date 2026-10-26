@@ -749,30 +749,24 @@
       white-space: nowrap !important;
     }
 
-    /* MODERN TAKTİK MİNİ PİLLERİ (Tek Satır, Taşmasız & Tıklanabilir Detay) */
+    /* MODERN TAKTİK MİNİ PİLLERİ (Sağdan Sola Eşit Dağılım, 4 Eşit Sütun & Taşmasız) */
     .tactical-strip {
-      display: flex !important;
-      flex-wrap: nowrap !important;
-      white-space: nowrap !important;
-      gap: 10px;
-      margin-bottom: 22px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      padding-bottom: 2px;
-    }
-
-    .tactical-strip::-webkit-scrollbar {
-      display: none;
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 12px !important;
+      width: 100% !important;
+      margin-bottom: 22px !important;
+      box-sizing: border-box !important;
     }
 
     .strip-pill {
-      flex-shrink: 0 !important;
+      width: 100% !important;
+      min-width: 0 !important;
       display: inline-flex !important;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 14px;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      padding: 9px 12px !important;
       background: rgba(10, 16, 32, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 30px;
@@ -782,6 +776,8 @@
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
+      box-sizing: border-box !important;
+      white-space: nowrap !important;
     }
 
     .strip-pill:hover {
@@ -1209,10 +1205,39 @@
     .stream-ts { color: #475569; font-size: 11px; flex-shrink: 0; }
     .stream-day-sep { color: #334155; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; padding: 6px 0 3px; border-top: 1px solid rgba(255,255,255,0.04); margin-top: 4px; }
 
-    /* Tab sistemi */
-    .log-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
-    .log-tab { padding: 10px 18px; font-size: 13px; font-weight: 500; font-family: var(--font-main); color: var(--ink-dim); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; letter-spacing: -0.01em; }
-    .log-tab.active { color: var(--mfk-cyan); border-bottom-color: var(--mfk-cyan); font-weight: 600; }
+    /* Tab sistemi (Sağdan Sola Eşit %50-%50 Dağılım) */
+    .log-tabs {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      width: 100% !important;
+      border-bottom: 1px solid var(--border);
+    }
+    .log-tab {
+      width: 100% !important;
+      padding: 12px 18px !important;
+      font-size: 13px !important;
+      font-weight: 500;
+      font-family: var(--font-main);
+      color: var(--ink-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      letter-spacing: -0.01em;
+      text-align: center !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    .log-tab.active {
+      color: var(--mfk-cyan);
+      border-bottom-color: var(--mfk-cyan);
+      font-weight: 600;
+      background: rgba(6, 182, 212, 0.04);
+    }
     .log-tab-panel { display: none; }
     .log-tab-panel.active {
       display: flex;
@@ -1221,15 +1246,109 @@
       height: 100%;
     }
 
+    /* Cihaz Aksiyon Butonları (Masaüstünde Sağdan Sola 4 Eşit Buton) */
+    .panel-action-group {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 8px !important;
+      align-items: center !important;
+      min-width: 320px;
+    }
+    .panel-action-group .btn {
+      width: 100% !important;
+      justify-content: center !important;
+      text-align: center !important;
+      padding: 7px 12px !important;
+      box-sizing: border-box !important;
+      white-space: nowrap !important;
+    }
+
     .history-feed {
       padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
       flex: 1;
       min-height: 400px;
-      max-height: 520px;
+      max-height: 540px;
       overflow-y: auto;
+    }
+
+    /* GÜNLÜK OPERASYON GRUP KARTI (1. Sırada Günün Tarihi & İç İçe Listeleme) */
+    .day-group {
+      background: rgba(10, 16, 30, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .day-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .day-group-header.is-today {
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.14) 0%, rgba(168, 85, 247, 0.08) 100%);
+      border-bottom: 1px solid rgba(6, 182, 212, 0.22);
+    }
+
+    .day-group-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 0.3px;
+    }
+
+    .day-live-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .day-count-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .day-group-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px;
+    }
+
+    .feed-time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      white-space: nowrap;
     }
 
     .feed-row {
@@ -2035,18 +2154,16 @@
         font-size: 11px !important;
       }
 
-      /* Taktik Piller - Mobilde de Kesinlikle Tek Satır ve Yatay Kaydırmalı */
+      /* Taktik Piller - Mobilde 2x2 Eşit Dağılım */
       .tactical-strip {
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 8px !important;
         margin-bottom: 16px !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
       }
 
       .strip-pill {
-        width: auto !important;
-        flex-shrink: 0 !important;
-        padding: 6px 12px !important;
+        width: 100% !important;
+        padding: 8px 10px !important;
         font-size: 11px !important;
       }
 
@@ -2429,7 +2546,7 @@
             Yetkili mFk Cihazları
             <small id="countLabel" style="color:var(--ink-dim);font-weight:500;font-size:12px;margin-left:6px;">0 Kayıtlı</small>
           </div>
-          <div class="panel-action-group" style="display:flex;gap:6px;align-items:center;">
+          <div class="panel-action-group">
             <button class="btn btn-sm" id="btnExportBackup" title="Cihaz Listesini İndir (Yedek)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span class="lbl-full">Yedekle</span><span class="lbl-short">Yedek</span>
@@ -3701,6 +3818,25 @@
     renderRuns();
   }
 
+  function formatDayGroupHeader(dateStr) {
+    if (!dateStr) return { title: 'GEÇMİŞ OPERASYONLAR', isToday: false };
+    const d = new Date(dateStr);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+
+    const dayNum = d.getDate();
+    const monthName = d.toLocaleDateString('tr-TR', { month: 'long' }).toUpperCase();
+    const year = d.getFullYear();
+
+    let title = `${dayNum} ${monthName} ${year}`;
+    if (isToday) title = `BUGÜN — ${dayNum} ${monthName} ${year}`;
+    else if (isYesterday) title = `DÜN — ${dayNum} ${monthName} ${year}`;
+    return { title, isToday };
+  }
+
   function renderRuns() {
     const feed = $('#historyFeed');
     if (!feed) return;
@@ -3724,54 +3860,89 @@
     const startIdx = (currentRunsPage - 1) * RUNS_PER_PAGE;
     const pagedRuns = cachedRunsList.slice(startIdx, startIdx + RUNS_PER_PAGE);
 
-    feed.innerHTML = pagedRuns.map((x, idx) => {
+    // Günlük Gruplama: 1. sırada bugünün tarihi, o gün ne yapılmışsa o günün kartı içerisinde
+    const dayGroups = [];
+    let currentGroup = null;
+
+    pagedRuns.forEach((x, idx) => {
       const globalNum = startIdx + idx + 1;
-      const dateInfo = formatRunDate(x.created_at);
+      const d = new Date(x.created_at || Date.now());
+      const dateKey = d.toDateString();
 
-      // Durum rozeti stili
-      let statusClass = 'feed-badge-success';
-      let statusText = '✓ Başarılı';
-      const statusVal = x.conclusion || x.status || '';
-      if (statusVal === 'in_progress' || statusVal === 'queued') {
-        statusClass = 'feed-badge-pending';
-        statusText = '⏳ Sürüyor';
-      } else if (statusVal === 'failure') {
-        statusClass = 'feed-badge-failure';
-        statusText = '✕ Başarısız';
-      } else if (statusVal === 'cancelled') {
-        statusClass = 'feed-badge-cancelled';
-        statusText = '⊘ İptal';
+      if (!currentGroup || currentGroup.dateKey !== dateKey) {
+        const headerInfo = formatDayGroupHeader(x.created_at);
+        currentGroup = {
+          dateKey,
+          title: headerInfo.title,
+          isToday: headerInfo.isToday,
+          items: []
+        };
+        dayGroups.push(currentGroup);
       }
+      currentGroup.items.push({ run: x, globalNum, date: d });
+    });
 
-      const title = x.display_title || x.title || 'VPN Operasyonu';
-      const runIdStr = x.run_number ? `#${x.run_number}` : (x.id ? `#${String(x.id).slice(-4)}` : `#${globalNum}`);
+    feed.innerHTML = dayGroups.map(g => `
+      <div class="day-group">
+        <div class="day-group-header ${g.isToday ? 'is-today' : ''}">
+          <div class="day-group-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>${g.title}</span>
+            ${g.isToday ? '<span class="day-live-badge">Güncel</span>' : ''}
+          </div>
+          <span class="day-count-badge">${g.items.length} Operasyon</span>
+        </div>
+        <div class="day-group-body">
+          ${g.items.map(item => {
+            const x = item.run;
+            const globalNum = item.globalNum;
+            const dateInfo = formatRunDate(x.created_at);
 
-      return `
-        <a class="feed-row" href="${x.html_url || '#'}" target="_blank" rel="noopener" title="GitHub Actions detayını aç">
-          <div class="feed-row-left">
-            <span class="feed-num">#${globalNum}</span>
-            <div class="feed-dot ${x.conclusion || x.status || 'success'}"></div>
-            <div class="feed-details">
-              <div class="feed-title-line">
-                <span class="feed-title">${escapeHtml(title)}</span>
-                <span class="feed-run-id">${runIdStr}</span>
-              </div>
-              <div class="feed-meta-line">
-                <span class="feed-badge ${statusClass}">${statusText}</span>
-                <span class="feed-rel-time">${dateInfo.rel}</span>
-              </div>
-            </div>
-          </div>
-          <div class="feed-row-right">
-            <div class="feed-date-badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <span>${dateInfo.full}</span>
-            </div>
-            <svg class="feed-ext-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          </div>
-        </a>
-      `;
-    }).join('');
+            let statusClass = 'feed-badge-success';
+            let statusText = '✓ Başarılı';
+            const statusVal = x.conclusion || x.status || '';
+            if (statusVal === 'in_progress' || statusVal === 'queued') {
+              statusClass = 'feed-badge-pending';
+              statusText = '⏳ Sürüyor';
+            } else if (statusVal === 'failure') {
+              statusClass = 'feed-badge-failure';
+              statusText = '✕ Başarısız';
+            } else if (statusVal === 'cancelled') {
+              statusClass = 'feed-badge-cancelled';
+              statusText = '⊘ İptal';
+            }
+
+            const title = x.display_title || x.title || 'VPN Operasyonu';
+            const runIdStr = x.run_number ? `#${x.run_number}` : (x.id ? `#${String(x.id).slice(-4)}` : `#${globalNum}`);
+
+            return `
+              <a class="feed-row" href="${x.html_url || '#'}" target="_blank" rel="noopener" title="GitHub Actions detayını aç">
+                <div class="feed-row-left">
+                  <span class="feed-num">#${globalNum}</span>
+                  <div class="feed-dot ${x.conclusion || x.status || 'success'}"></div>
+                  <div class="feed-details">
+                    <div class="feed-title-line">
+                      <span class="feed-title">${escapeHtml(title)}</span>
+                      <span class="feed-run-id">${runIdStr}</span>
+                    </div>
+                    <div class="feed-meta-line">
+                      <span class="feed-badge ${statusClass}">${statusText}</span>
+                      <span class="feed-rel-time">${dateInfo.rel}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="feed-row-right">
+                  <div class="feed-time-badge">
+                    <span>${dateInfo.time || '12:00'}</span>
+                  </div>
+                  <svg class="feed-ext-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </div>
+              </a>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `).join('');
 
     // Sayfalama Çubuğu Kontrolü
     const pagBar = $('#runsPaginationBar');
