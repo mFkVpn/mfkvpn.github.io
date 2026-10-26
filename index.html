@@ -3152,6 +3152,17 @@
         <span class="btn-text">Ayarlar</span>
       </button>
 
+      <!-- MANUEL TEMİZLE BUTONU -->
+      <button class="btn btn-sm" id="btnHeaderCleanup" title="Hetzner Sunucu &amp; Log Temizliğini Başlat (Manuel Bakım)" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;background:rgba(244,63,94,0.12);border:1px solid rgba(244,63,94,0.3);color:#fb7185;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+        <span class="btn-text">Temizle</span>
+      </button>
+
       <!-- ÇIKIŞ BUTONU -->
       <button class="btn btn-rose btn-sm" id="btnQuickLock" title="Oturumu Sonlandır ve Çık" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -3741,6 +3752,26 @@
       </div>
       <div style="display:flex;align-items:center;gap:6px;color:#f59e0b;font-size:12px;font-weight:600;flex-shrink:0;">
         <span>Profiller</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+    <!-- 4. SİSTEM & LOG TEMİZLİĞİ (MANUEL BAKIM) -->
+    <div class="settings-nav-card spotlight-card" id="btnSettingsRunCleanup" role="button" tabindex="0" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(244,63,94,0.3);border-radius:14px;cursor:pointer;transition:all 0.2s ease;">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+        <div style="width:38px;height:38px;border-radius:10px;background:rgba(244,63,94,0.12);border:1px solid rgba(244,63,94,0.35);display:grid;place-items:center;color:#fb7185;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        </div>
+        <div style="min-width:0;">
+          <div style="font-weight:700;font-size:13.5px;color:#f1f5f9;display:flex;align-items:center;gap:8px;">
+            <span>Sistem &amp; Log Temizliği</span>
+            <span style="font-size:10px;font-family:var(--font-mono);background:rgba(244,63,94,0.15);color:#fb7185;border:1px solid rgba(244,63,94,0.3);padding:1px 6px;border-radius:4px;">Manuel</span>
+          </div>
+          <div style="font-size:11.5px;color:#94a3b8;margin-top:2px;">Sunucu loglarını, geçici dosyaları ve operasyon geçmişini temizle</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;color:#fb7185;font-size:12px;font-weight:600;flex-shrink:0;">
+        <span>Temizle</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </div>
@@ -5455,6 +5486,39 @@
         $('#diagNative').showModal();
       };
     }
+
+    // Manuel Sistem & Sunucu Temizliği İşleyicisi
+    const triggerManualCleanup = () => {
+      sfx('click');
+      confirmAction('Sistem Temizliği Başlatılsın mı?', 'Hetzner sunucusundaki 7 günden eski journal logları, geçici dosyalar ve tarayıcı önbelleği temizlenecektir.', async () => {
+        if ($('#diagSettings') && $('#diagSettings').open) $('#diagSettings').close();
+        setLock(true);
+        logStream('🧹 [BAKIM] Hetzner sunucu ve sistem temizliği başlatılıyor...', 'cmd');
+        try {
+          const logs = await runWorkflowAction({ action: 'cleanup' }, 'Sistem Temizliği');
+          const resText = logs.filter(l => /(DİSK|VACUUM|TEMİZLİK|state=|cleanup=)/i.test(l)).join('\n');
+          logStream(`✓ Yanıt:\n${resText || 'Sunucu temizliği tamamlandı.'}`, 'ok');
+
+          try {
+            let pCache = JSON.parse(ls.getItem('mfk_peer_cache') || '[]');
+            pCache = pCache.filter(p => p.name !== 'MOB-mfk' && p.name !== 'Mevcut-Cihaz');
+            ls.setItem('mfk_peer_cache', JSON.stringify(pCache));
+          } catch(e){}
+
+          loadRuns();
+          sfx('ok');
+          logStream('✓ Hetzner VPS logları ve geçici dosyalar temizlendi, sunucu şişmesi sıfırlandı.', 'ok');
+        } catch(err) {
+          sfx('err');
+          logStream(`[HATA] Temizlik sırasında hata: ${err.message}`, 'err');
+        } finally {
+          setLock(false);
+        }
+      });
+    };
+
+    if ($('#btnHeaderCleanup')) $('#btnHeaderCleanup').onclick = triggerManualCleanup;
+    if ($('#btnSettingsRunCleanup')) $('#btnSettingsRunCleanup').onclick = triggerManualCleanup;
 
 
     $$('.core-actions .btn').forEach(btn => {

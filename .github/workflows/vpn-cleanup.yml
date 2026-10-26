@@ -1,0 +1,53 @@
+name: VPN Auto Cleanup
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Her Pazar gecesi 03:00 UTC'de tam otomatik bakım
+  workflow_dispatch:       # İstenildiğinde manuel de tetiklenebilir
+
+permissions: {}
+
+concurrency:
+  group: vpn-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Vacuum VPS Logs & Prevent Bloat
+        env:
+          HOST: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_vpn
+          chmod 600 ~/.ssh/id_vpn
+          ssh-keyscan -p "$SSH_PORT" -H "$HOST" > ~/.ssh/known_hosts 2>/dev/null
+
+          echo "🧹 [HAFTALIK OTOMATİK BAKIM] Hetzner VPS temizleniyor..."
+          ssh -i ~/.ssh/id_vpn \
+              -p "$SSH_PORT" \
+              -o BatchMode=yes \
+              -o ConnectTimeout=10 \
+              -o StrictHostKeyChecking=yes \
+              "$USERNAME@$HOST" '
+                echo "=== TEMİZLİK ÖNCESİ DİSK ==="
+                df -h /
+                echo "=== 7 GÜNDEN ESKİ JOURNAL LOGLARINI SİL ==="
+                journalctl --vacuum-time=7d 2>&1 || true
+                echo "=== APT VE GEÇİCİ DOSYALARI TEMİZLE ==="
+                apt-get clean 2>&1 || true
+                rm -rf /tmp/* /var/tmp/* 2>&1 || true
+                echo "=== 20MB ÜSTÜ DEV LOGLARI SIFIRLA ==="
+                find /var/log -type f -name "*.log" -size +20M -exec truncate -s 2M {} + 2>/dev/null || true
+                echo "=== TEMİZLİK SONRASI DİSK ==="
+                df -h /
+                echo "state=cleaned"
+                echo "cleanup=success"
+              '
+          echo "✅ Haftalık bakım ve log temizliği başarıyla tamamlandı."
