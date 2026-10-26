@@ -350,19 +350,29 @@
     .node-switcher-pill {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 5px 12px;
+      gap: 8px;
+      padding: 6px 14px;
       background: rgba(16, 185, 129, 0.08);
       border: 1px solid rgba(16, 185, 129, 0.35);
       border-radius: 20px;
-      font-family: var(--font-mono);
-      font-size: 11.5px;
+      font-family: var(--font-main) !important;
+      font-size: 12px;
       font-weight: 600;
+      letter-spacing: -0.01em;
       color: #34d399;
       cursor: pointer;
       backdrop-filter: blur(8px);
       transition: all 0.2s ease;
       user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #activeNodeLabel {
+      font-family: var(--font-main) !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      letter-spacing: -0.01em !important;
+      color: #34d399 !important;
     }
 
     .node-switcher-pill:hover {
@@ -3017,7 +3027,7 @@
         <p class="dialog-subtitle" id="pillDetailSubtitle" style="margin:2px 0 0;">mFk Cybershield Protokolü</p>
       </div>
     </div>
-    <button type="button" class="btn-dialog-close" onclick="$('#diagPillDetail').close()">✕</button>
+    
   </div>
   <div class="dialog-body" id="pillDetailBody" style="display:flex;flex-direction:column;gap:14px;padding:16px 0;"></div>
   <div class="dialog-foot">
@@ -3232,7 +3242,7 @@
         <p class="dialog-subtitle" id="editPeerSubtitle" style="margin:2px 0 0;">Özel İsim ve Açıklayıcı Not Ekle</p>
       </div>
     </div>
-    <button type="button" class="btn-dialog-close" onclick="$('#diagEditPeer').close()">✕</button>
+    
   </div>
   <div class="dialog-body" style="display:flex;flex-direction:column;gap:14px;padding:16px 0;">
     <input type="hidden" id="editPeerOriginalName">
@@ -3533,7 +3543,10 @@
 
   function updateNodeBadge() {
     const el = $('#activeNodeLabel');
-    if (el) el.textContent = `${activeNode.country ? activeNode.country.split(' ')[0] + ' ' : ''}${activeNode.name} • ${activeNode.ip} (⚡ ${currentLivePing} ms)`;
+    if (el) {
+      const flag = activeNode.country ? activeNode.country.split(' ')[0] : '🌐';
+      el.textContent = `${flag} ${activeNode.name} • ${activeNode.ip} (⚡ ${currentLivePing} ms)`;
+    }
     populatePeerNodeSelect();
   }
 
@@ -4422,7 +4435,7 @@
   }
 
   function formatDayGroupHeader(dateStr) {
-    if (!dateStr) return { title: 'GEÇMİŞ OPERASYONLAR', isToday: false };
+    if (!dateStr) return { title: 'GEÇMİŞ OPERASYONLAR', shortTitle: 'Geçmiş', isToday: false };
     const d = new Date(dateStr);
     const now = new Date();
     const isToday = d.toDateString() === now.toDateString();
@@ -4431,13 +4444,45 @@
     const isYesterday = d.toDateString() === yesterday.toDateString();
 
     const dayNum = d.getDate();
-    const monthName = d.toLocaleDateString('tr-TR', { month: 'long' }).toUpperCase();
+    const monthLong = d.toLocaleDateString('tr-TR', { month: 'long' }).toUpperCase();
+    const monthShort = d.toLocaleDateString('tr-TR', { month: 'short' });
     const year = d.getFullYear();
 
-    let title = `${dayNum} ${monthName} ${year}`;
-    if (isToday) title = `BUGÜN — ${dayNum} ${monthName} ${year}`;
-    else if (isYesterday) title = `DÜN — ${dayNum} ${monthName} ${year}`;
-    return { title, isToday };
+    let title = `${dayNum} ${monthLong} ${year}`;
+    let shortTitle = `${dayNum} ${monthShort}`;
+    if (isToday) {
+      title = `BUGÜN — ${dayNum} ${monthLong} ${year}`;
+      shortTitle = 'Bugün';
+    } else if (isYesterday) {
+      title = `DÜN — ${dayNum} ${monthLong} ${year}`;
+      shortTitle = 'Dün';
+    }
+    return { title, shortTitle, isToday };
+  }
+
+  // Tüm operasyonları takvim günlerine göre grupla (Tam Günlük Defter Mimarisi)
+  function groupAllRunsByDay(runs) {
+    const dayMap = {};
+    const dayOrder = [];
+
+    runs.forEach(r => {
+      const d = new Date(r.created_at || Date.now());
+      const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (!dayMap[dateKey]) {
+        const headerInfo = formatDayGroupHeader(r.created_at);
+        dayMap[dateKey] = {
+          dateKey,
+          title: headerInfo.title,
+          shortTitle: headerInfo.shortTitle,
+          isToday: headerInfo.isToday,
+          runs: []
+        };
+        dayOrder.push(dateKey);
+      }
+      dayMap[dateKey].runs.push(r);
+    });
+
+    return dayOrder.map(key => dayMap[key]);
   }
 
   function renderRuns() {
@@ -4456,49 +4501,32 @@
       return;
     }
 
-    const totalPages = Math.ceil(cachedRunsList.length / RUNS_PER_PAGE);
-    if (currentRunsPage > totalPages) currentRunsPage = totalPages;
+    // 1. Tüm operasyonları gün gün grupla
+    const dayGroups = groupAllRunsByDay(cachedRunsList);
+    const totalDayPages = dayGroups.length;
+
+    if (currentRunsPage > totalDayPages) currentRunsPage = totalDayPages;
     if (currentRunsPage < 1) currentRunsPage = 1;
 
-    const startIdx = (currentRunsPage - 1) * RUNS_PER_PAGE;
-    const pagedRuns = cachedRunsList.slice(startIdx, startIdx + RUNS_PER_PAGE);
+    // Aktif gün grubu (Sayfa 1 = BUGÜN, Sayfa 2 = DÜN, Sayfa 3 = ÖNCEKİ GÜN)
+    const currentDay = dayGroups[currentRunsPage - 1];
 
-    // Günlük Gruplama: 1. sırada bugünün tarihi, o gün ne yapılmışsa o günün kartı içerisinde
-    const dayGroups = [];
-    let currentGroup = null;
+    if (!currentDay) return;
 
-    pagedRuns.forEach((x, idx) => {
-      const globalNum = startIdx + idx + 1;
-      const d = new Date(x.created_at || Date.now());
-      const dateKey = d.toDateString();
-
-      if (!currentGroup || currentGroup.dateKey !== dateKey) {
-        const headerInfo = formatDayGroupHeader(x.created_at);
-        currentGroup = {
-          dateKey,
-          title: headerInfo.title,
-          isToday: headerInfo.isToday,
-          items: []
-        };
-        dayGroups.push(currentGroup);
-      }
-      currentGroup.items.push({ run: x, globalNum, date: d });
-    });
-
-    feed.innerHTML = dayGroups.map(g => `
+    // 1. Sırada O Günün Tarihi, O Gün Yapılan Her Şey O Günün Kartı İçerisinde
+    feed.innerHTML = `
       <div class="day-group spotlight-card">
-        <div class="day-group-header ${g.isToday ? 'is-today' : ''}">
+        <div class="day-group-header ${currentDay.isToday ? 'is-today' : ''}">
           <div class="day-group-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>${g.title}</span>
-            ${g.isToday ? '<span class="day-live-badge">Güncel</span>' : ''}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>${currentDay.title}</span>
+            ${currentDay.isToday ? '<span class="day-live-badge">Güncel</span>' : ''}
           </div>
-          <span class="day-count-badge">${g.items.length} Operasyon</span>
+          <span class="day-count-badge">${currentDay.runs.length} Operasyon Kaydı</span>
         </div>
-        <div class="day-group-body">
-          ${g.items.map(item => {
-            const x = item.run;
-            const globalNum = item.globalNum;
+        <div class="day-group-body" style="max-height:460px;overflow-y:auto;">
+          ${currentDay.runs.map((x, idx) => {
+            const num = idx + 1; // O günün 1'den başlayan işlem sırası
             const dateInfo = formatRunDate(x.created_at);
 
             let statusClass = 'feed-badge-success';
@@ -4516,12 +4544,12 @@
             }
 
             const title = x.display_title || x.title || 'VPN Operasyonu';
-            const runIdStr = x.run_number ? `#${x.run_number}` : (x.id ? `#${String(x.id).slice(-4)}` : `#${globalNum}`);
+            const runIdStr = x.run_number ? `#${x.run_number}` : (x.id ? `#${String(x.id).slice(-4)}` : `#${num}`);
 
             return `
               <a class="feed-row" href="${x.html_url || '#'}" target="_blank" rel="noopener" title="GitHub Actions detayını aç">
                 <div class="feed-row-left">
-                  <span class="feed-num">#${globalNum}</span>
+                  <span class="feed-num">#${num}</span>
                   <div class="feed-dot ${x.conclusion || x.status || 'success'}"></div>
                   <div class="feed-details">
                     <div class="feed-title-line">
@@ -4545,25 +4573,24 @@
           }).join('')}
         </div>
       </div>
-    `).join('');
+    `;
 
-    // Sayfalama Çubuğu Kontrolü
+    // Gün Bazlı Sayfalama Çubuğu Kontrolü
     const pagBar = $('#runsPaginationBar');
     if (pagBar) {
-      if (totalPages > 1) {
+      if (totalDayPages > 1) {
         pagBar.style.display = 'flex';
-        const startNum = startIdx + 1;
-        const endNum = Math.min(startIdx + RUNS_PER_PAGE, cachedRunsList.length);
-        $('#runsPageInfoText').textContent = `${startNum}-${endNum} / ${cachedRunsList.length} İşlem`;
+        $('#runsPageInfoText').textContent = `Gün ${currentRunsPage} / ${totalDayPages} • ${currentDay.shortTitle} (${currentDay.runs.length} İşlem)`;
 
         let btnsHtml = `
-          <button class="page-btn" id="btnRunsPrev" ${currentRunsPage <= 1 ? 'disabled' : ''}>◀</button>
+          <button class="page-btn" id="btnRunsPrev" ${currentRunsPage <= 1 ? 'disabled' : ''} title="Daha Yeni Güne Geç">◀</button>
         `;
-        for (let i = 1; i <= totalPages; i++) {
-          btnsHtml += `<button class="page-btn ${i === currentRunsPage ? 'active' : ''}" data-runspage="${i}">${i}</button>`;
-        }
+        dayGroups.forEach((g, gIdx) => {
+          const pageNum = gIdx + 1;
+          btnsHtml += `<button class="page-btn ${pageNum === currentRunsPage ? 'active' : ''}" data-runspage="${pageNum}" style="padding:0 10px;font-size:11px;" title="${g.title}">${g.shortTitle}</button>`;
+        });
         btnsHtml += `
-          <button class="page-btn" id="btnRunsNext" ${currentRunsPage >= totalPages ? 'disabled' : ''}>▶</button>
+          <button class="page-btn" id="btnRunsNext" ${currentRunsPage >= totalDayPages ? 'disabled' : ''} title="Daha Eski Güne Geç">▶</button>
         `;
         $('#runsPageBtnContainer').innerHTML = btnsHtml;
 
