@@ -2516,6 +2516,187 @@
       font-weight: 700;
     }
 
+
+    /* =========================================================================
+       CİHAZ AKSİYON BUTONLARI (Sağdan Sola %100 Tam Genişlik 4 Eşit Sütun)
+       ========================================================================= */
+    .panel-action-group {
+      width: 100% !important;
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 8px !important;
+      box-sizing: border-box !important;
+    }
+
+    .panel-action-group .btn {
+      width: 100% !important;
+      justify-content: center !important;
+      text-align: center !important;
+      padding: 8px 6px !important;
+      box-sizing: border-box !important;
+      white-space: nowrap !important;
+      font-size: 12px !important;
+      gap: 6px !important;
+    }
+
+    /* =========================================================================
+       CİHAZ ARAMA & DURUM FİLTRELEME (Quick Search HUD)
+       ========================================================================= */
+    .peer-filter-hud {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px 18px;
+      background: rgba(10, 16, 30, 0.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .peer-search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 7px 12px;
+      transition: all 0.2s ease;
+    }
+
+    .peer-search-box:focus-within {
+      border-color: rgba(6, 182, 212, 0.4);
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.15);
+    }
+
+    .peer-search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f1f5f9;
+      font-size: 12.5px;
+      width: 100%;
+      font-family: var(--font-main);
+    }
+
+    .peer-search-box input::placeholder {
+      color: #64748b;
+    }
+
+    .peer-search-box button {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+      transition: color 0.15s;
+    }
+
+    .peer-search-box button:hover {
+      color: #fb7185;
+    }
+
+    .peer-filter-pills {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .peer-filter-pills::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .filter-chip:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .filter-chip.active {
+      background: rgba(6, 182, 212, 0.14);
+      color: #38bdf8;
+      border-color: rgba(6, 182, 212, 0.35);
+      font-weight: 700;
+    }
+
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .chip-dot.ok {
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+    }
+
+    .chip-dot.off {
+      background: #64748b;
+    }
+
+    /* =========================================================================
+       ÖZEL İSİM / NOT ETİKETLERİ & DÜZENLEME BUTONLARI
+       ========================================================================= */
+    .btn-edit-alias {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #64748b;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.15s;
+    }
+
+    .btn-edit-alias:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.25);
+      color: #38bdf8;
+    }
+
+    .alias-real-name {
+      font-size: 11px;
+      color: #64748b;
+      font-family: var(--font-mono);
+      font-weight: 400;
+      margin-left: 3px;
+    }
+
+    .peer-note-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 6px;
+      padding: 2px 8px;
+      margin-top: 3px;
+    }
+
 </style>
 </head>
 <body class="is-online">
@@ -2709,32 +2890,58 @@
     <!-- CİHAZ YÖNETİMİ -->
     <div class="panel spotlight-card" style="display:flex;flex-direction:column;justify-content:space-between;height:100%;">
       <div>
-        <div class="panel-head">
-          <div class="panel-label">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            Yetkili mFk Cihazları
-            <small id="countLabel" style="color:var(--ink-dim);font-weight:500;font-size:12px;margin-left:6px;">0 Kayıtlı</small>
+        <div class="panel-head" style="flex-direction:column;align-items:stretch;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+            <div class="panel-label">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              Yetkili mFk Cihazları
+              <small id="countLabel" style="color:var(--ink-dim);font-weight:500;font-size:12px;margin-left:6px;">0 Kayıtlı</small>
+            </div>
+            <span id="filterActiveBadge" style="font-size:11px;font-family:var(--font-mono);color:#34d399;display:none;"></span>
           </div>
+
+          <!-- 4 EŞİT AKSİYON BUTONU (Sağdan Sola %100 Genişlik, Eşit Dağılım) -->
           <div class="panel-action-group">
             <button class="btn btn-sm" id="btnExportBackup" title="Cihaz Listesini İndir (Yedek)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              <span class="lbl-full">Yedekle</span><span class="lbl-short">Yedek</span>
+              <span>Yedekle</span>
             </button>
             <button class="btn btn-sm" id="btnImportBackup" title="Yedekten Cihaz Yükle">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span class="lbl-full">Yükle</span><span class="lbl-short">Yükle</span>
+              <span>Yükle</span>
             </button>
             <input type="file" id="fileImportBackup" accept=".json" style="display:none;">
-            <button class="btn btn-sm" id="btnRefreshPeers">
+            <button class="btn btn-sm" id="btnRefreshPeers" title="Cihaz Bağlantılarını Yenile">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              <span class="lbl-full">Yenile</span><span class="lbl-short">Yenile</span>
+              <span>Yenile</span>
             </button>
-            <button class="btn btn-gold btn-sm" id="btnAddPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;display:inline-flex;align-items:center;gap:6px;">
+            <button class="btn btn-gold btn-sm" id="btnAddPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;border:none;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span class="lbl-full">Yeni Cihaz</span><span class="lbl-short">Ekle</span>
+              <span>+ Yeni Cihaz</span>
             </button>
           </div>
         </div>
+
+        <!-- CİHAZ ARAMA & DURUM FİLTRELEME (Quick Search HUD) -->
+        <div class="peer-filter-hud">
+          <div class="peer-search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="peerSearchInp" placeholder="Cihaz adı, özel not, IP (10.13.13.x) ara..." autocomplete="off">
+            <button type="button" id="btnClearSearch" title="Aramayı Temizle" style="display:none;">✕</button>
+          </div>
+          <div class="peer-filter-pills">
+            <button type="button" class="filter-chip active" data-filter="all">Tümü (<span id="cntAll">0</span>)</button>
+            <button type="button" class="filter-chip" data-filter="online">
+              <span class="chip-dot ok"></span>Aktif (<span id="cntOnline">0</span>)
+            </button>
+            <button type="button" class="filter-chip" data-filter="offline">
+              <span class="chip-dot off"></span>Beklemede (<span id="cntOffline">0</span>)
+            </button>
+            <button type="button" class="filter-chip" data-filter="pc">💻 PC</button>
+            <button type="button" class="filter-chip" data-filter="mobile">📱 Mobil</button>
+          </div>
+        </div>
+
         <div class="device-grid" id="peerContainer"></div>
       </div>
       
@@ -3013,6 +3220,40 @@
 </dialog>
 
 <!-- ONAY DİYALOĞU -->
+<!-- CİHAZ ÖZEL İSİM & NOT DÜZENLEME DİYALOĞU -->
+<dialog id="diagEditPeer">
+  <div class="dialog-head">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;border-radius:12px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);display:grid;place-items:center;color:#38bdf8;flex-shrink:0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      <div>
+        <h3 class="dialog-title" id="editPeerTitle" style="margin:0;">Cihazı Özelleştir</h3>
+        <p class="dialog-subtitle" id="editPeerSubtitle" style="margin:2px 0 0;">Özel İsim ve Açıklayıcı Not Ekle</p>
+      </div>
+    </div>
+    <button type="button" class="btn-dialog-close" onclick="$('#diagEditPeer').close()">✕</button>
+  </div>
+  <div class="dialog-body" style="display:flex;flex-direction:column;gap:14px;padding:16px 0;">
+    <input type="hidden" id="editPeerOriginalName">
+    <div>
+      <label style="display:block;font-size:11.5px;color:#94a3b8;margin-bottom:6px;font-family:var(--font-mono);">ÖZEL GÖRÜNÜM ADI (ALIAS)</label>
+      <input type="text" id="editPeerAliasInp" placeholder="Örn: Ahmet'in iPhone'u, Ofis Laptopu" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f1f5f9;font-size:13px;outline:none;">
+    </div>
+    <div>
+      <label style="display:block;font-size:11.5px;color:#94a3b8;margin-bottom:6px;font-family:var(--font-mono);">ÖZEL NOT / AÇIKLAMA</label>
+      <textarea id="editPeerNoteInp" rows="2" placeholder="Örn: Yedek internet tüneli, oyun için ayrılmış" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f1f5f9;font-size:13px;outline:none;resize:none;font-family:var(--font-main);"></textarea>
+    </div>
+  </div>
+  <div class="dialog-foot" style="display:flex;justify-content:space-between;align-items:center;">
+    <button type="button" class="btn btn-secondary" id="btnResetPeerAlias" style="color:#fb7185;">Sıfırla</button>
+    <div style="display:flex;gap:8px;">
+      <button type="button" class="btn btn-secondary" onclick="$('#diagEditPeer').close()">İptal</button>
+      <button type="button" class="btn btn-cyan" id="btnSavePeerAlias">Kaydet</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="diagConfirm">
   <div class="dialog-head" style="margin-bottom:12px;">
     <div class="dialog-head-left">
@@ -3653,12 +3894,45 @@
   let currentPeerPage = 1;
   const PEERS_PER_PAGE = 5;
   let cachedPeerList = [];
+  let currentPeerFilter = 'all';
+  let currentPeerSearch = '';
+
+  // Cihaz Özel İsim (Alias) ve Not Yönetimi
+  function getPeerMeta(name) {
+    try {
+      const meta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
+      return meta[name] || {};
+    } catch(e) { return {}; }
+  }
+
+  function savePeerMeta(name, alias, note) {
+    try {
+      const meta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
+      if (!alias && !note) {
+        delete meta[name];
+      } else {
+        meta[name] = { alias: (alias || '').trim(), note: (note || '').trim() };
+      }
+      ls.setItem('mfk_peer_meta', JSON.stringify(meta));
+    } catch(e){}
+  }
 
   function renderPeers(list) {
     if (list) cachedPeerList = list;
-    const allPeers = cachedPeerList || [];
+    
+    // Silinmiş cihazları kalıcı kara listeden süz (1. cihazın geri gelmesini 100% önler)
+    const deletedPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
+    const allPeers = (cachedPeerList || []).filter(p => !deletedPeers.includes(p.name));
+    
     const box = $('#peerContainer');
     $('#countLabel').textContent = `${allPeers.length} Kayıtlı`;
+
+    // Filtreleme Sayaçlarını Güncelle
+    const onlinePeers = allPeers.filter(p => p.hs && (Date.now() / 1000 - p.hs < 180));
+    const offlinePeers = allPeers.filter(p => !p.hs || (Date.now() / 1000 - p.hs >= 180));
+    if ($('#cntAll')) $('#cntAll').textContent = allPeers.length;
+    if ($('#cntOnline')) $('#cntOnline').textContent = onlinePeers.length;
+    if ($('#cntOffline')) $('#cntOffline').textContent = offlinePeers.length;
 
     // Toplam Trafik Hesaplama
     let totRx = 0, totTx = 0;
@@ -3667,8 +3941,7 @@
     if (trafEl) trafEl.textContent = `↓ ${formatBytes(totRx)} / ↑ ${formatBytes(totTx)}`;
 
     // Canlı Aktif Cihaz Sayısı ve Son Sinyal Zamanını Telemetri Çubuğuna Yansıt
-    const activePeers = allPeers.filter(p => p.hs && (Date.now() / 1000 - p.hs < 180));
-    const activeCount = activePeers.length;
+    const activeCount = onlinePeers.length;
     if ($('#valPeers')) {
       $('#valPeers').textContent = `${activeCount} Aktif Tünel`;
       $('#valPeers').style.color = activeCount > 0 ? '#34d399' : '#f8fafc';
@@ -3686,14 +3959,58 @@
       }
     }
 
-    if (!allPeers.length) {
-      box.innerHTML = `<div style="text-align:center;padding:30px;color:var(--ink-dim)">Yetkili cihaz yok.</div>`;
+    // Arama ve Durum Filtresi Uygulama
+    let filtered = allPeers.filter(p => {
+      const meta = getPeerMeta(p.name);
+      const isOnline = p.hs && (Date.now() / 1000 - p.hs < 180);
+      const isPc = p.name.startsWith('PC-') || /mac|rig|titan|pc|desktop|laptop/i.test(p.name);
+      const isMobile = !isPc;
+
+      // Sekme Filtresi
+      if (currentPeerFilter === 'online' && !isOnline) return false;
+      if (currentPeerFilter === 'offline' && isOnline) return false;
+      if (currentPeerFilter === 'pc' && !isPc) return false;
+      if (currentPeerFilter === 'mobile' && !isMobile) return false;
+
+      // Arama Metni Filtresi
+      if (currentPeerSearch) {
+        const q = currentPeerSearch.toLowerCase();
+        const matchName = (p.name || '').toLowerCase().includes(q);
+        const matchIp = (p.ip || '').toLowerCase().includes(q);
+        const matchAlias = (meta.alias || '').toLowerCase().includes(q);
+        const matchNote = (meta.note || '').toLowerCase().includes(q);
+        if (!matchName && !matchIp && !matchAlias && !matchNote) return false;
+      }
+      return true;
+    });
+
+    const activeBadge = $('#filterActiveBadge');
+    if (activeBadge) {
+      if (currentPeerFilter !== 'all' || currentPeerSearch) {
+        activeBadge.style.display = 'inline';
+        activeBadge.textContent = `${filtered.length} Cihaz Bulundu`;
+      } else {
+        activeBadge.style.display = 'none';
+      }
+    }
+
+    if (!filtered.length) {
+      if (allPeers.length === 0) {
+        box.innerHTML = `<div style="text-align:center;padding:36px;color:var(--ink-dim)">Henüz kayıtlı yetkili cihaz yok.</div>`;
+      } else {
+        box.innerHTML = `
+          <div style="text-align:center;padding:36px;color:var(--ink-dim);display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <span>Aranan kriterlere uygun cihaz bulunamadı.</span>
+            <button type="button" class="btn btn-sm btn-glass" onclick="resetPeerFilters()">Filtreyi Temizle</button>
+          </div>
+        `;
+      }
       if ($('#peerPaginationBar')) $('#peerPaginationBar').style.display = 'none';
       return;
     }
 
     // Sıralama: Aktif tüneller en başta, sonra ada göre
-    const sorted = [...allPeers].sort((a, b) => {
+    const sorted = [...filtered].sort((a, b) => {
       const liveA = a.hs && (Date.now() / 1000 - a.hs < 180) ? 1 : 0;
       const liveB = b.hs && (Date.now() / 1000 - b.hs < 180) ? 1 : 0;
       if (liveB !== liveA) return liveB - liveA;
@@ -3712,6 +4029,7 @@
       const live = p.hs && (Date.now() / 1000 - p.hs < 180);
       const isPc = p.name.startsWith('PC-') || /mac|rig|titan|pc|desktop|laptop/i.test(p.name);
       const isTab = p.name.startsWith('TAB-') || /ipad|tablet/i.test(p.name);
+      const meta = getPeerMeta(p.name);
       
       const iconSvg = isPc 
         ? `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
@@ -3728,8 +4046,12 @@
               <span class="status-light ${live ? 'pulsing' : ''}" title="${live ? 'Aktif Tünel (Sinyal Alınıyor)' : 'Bağlantı Yok'}"></span>
             </div>
             <div class="device-info">
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <b>${p.name}</b>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <b>${meta.alias ? escapeHtml(meta.alias) : escapeHtml(p.name)}</b>
+                ${meta.alias ? `<span class="alias-real-name">(${escapeHtml(p.name)})</span>` : ''}
+                <button type="button" class="btn-edit-alias btnEditPeer" data-name="${p.name}" title="Özel İsim ve Not Düzenle" onclick="event.stopPropagation()">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </button>
                 <span class="ip-tag">${p.ip || '10.13.13.x'}</span>
                 ${live 
                   ? '<span class="peer-status-tag tag-active"><span class="tag-dot"></span>AKTİF</span>' 
@@ -3737,6 +4059,7 @@
                     ? '<span class="peer-status-tag tag-idle"><span class="tag-dot"></span>BEKLEMEDE</span>' 
                     : '<span class="peer-status-tag tag-offline"><span class="tag-dot"></span>BAĞLANTI YOK</span>')}
               </div>
+              ${meta.note ? `<div class="peer-note-badge">📝 ${escapeHtml(meta.note)}</div>` : ''}
               <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
                 ${getRadialRingSvg(p.rx || 0, p.tx || 0, 34)}
                 <div class="device-sub" style="margin-top:0;">
@@ -3750,7 +4073,7 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 <span>Ayar</span>
               </button>
-              <button class="btn btn-sm btnDel" data-name="${p.name}" title="Erişimi İptal Et" style="display:inline-flex;align-items:center;gap:4px;">
+              <button class="btn btn-sm btnDel" data-name="${p.name}" data-pub="${p.pub||''}" title="Erişimi İptal Et" style="display:inline-flex;align-items:center;gap:4px;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
                 <span>Sil</span>
               </button>
@@ -3784,6 +4107,13 @@
               </div>
             </div>
             <div class="peer-detail-grid">
+              ${meta.note ? `
+                <div class="peer-detail-item" style="grid-column: 1 / -1;">
+                  <span class="detail-label">Özel Cihaz Notu</span>
+                  <span style="font-size:12px;color:#fde68a;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);padding:6px 12px;border-radius:6px;">📝 ${escapeHtml(meta.note)}</span>
+                </div>
+              ` : ''}
+
               <div class="peer-detail-item" style="grid-column: 1 / -1;">
                 <span class="detail-label">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -3838,7 +4168,7 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Hızlı .conf İndir</span>
               </button>
-              <button type="button" class="btn btn-sm btnDel" data-name="${p.name}" style="background:rgba(244,63,94,0.12);border-color:rgba(244,63,94,0.3);color:#fb7185;margin-left:auto;">
+              <button type="button" class="btn btn-sm btnDel" data-name="${p.name}" data-pub="${p.pub||''}" style="background:rgba(244,63,94,0.12);border-color:rgba(244,63,94,0.3);color:#fb7185;margin-left:auto;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
                 <span>Cihazı Sil</span>
               </button>
@@ -3927,27 +4257,52 @@
       };
     });
 
-    $$('.btnDel').forEach(b => {
+    // Özel İsim ve Not Düzenleme Butonları
+    $$('.btnEditPeer').forEach(b => {
       b.onclick = (e) => {
         e.stopPropagation();
         const name = b.dataset.name;
         sfx('click');
+        const meta = getPeerMeta(name);
+        $('#editPeerOriginalName').value = name;
+        $('#editPeerTitle').textContent = `Cihazı Özelleştir`;
+        $('#editPeerSubtitle').textContent = `${name} için görünen isim ve not belirleyin`;
+        $('#editPeerAliasInp').value = meta.alias || '';
+        $('#editPeerNoteInp').value = meta.note || '';
+        $('#diagEditPeer').showModal();
+      };
+    });
+
+    $$('.btnDel').forEach(b => {
+      b.onclick = (e) => {
+        e.stopPropagation();
+        const name = b.dataset.name;
+        const pub = b.dataset.pub || '';
+        sfx('click');
         confirmAction(`${name} Silinsin mi?`, 'Bu cihazın WireGuard erişimi kalıcı olarak iptal edilir.', () => {
-          // 1. ANINDA LİSTEDEN DÜŞÜR (0ms Anında Tepki)
+          // 1. Silinen cihazı kara listeye ekle (Asla geri gelemez)
+          const deleted = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
+          if (!deleted.includes(name)) deleted.push(name);
+          ls.setItem('mfk_deleted_peers', JSON.stringify(deleted));
+
+          // 2. Anında yerel listeden kaldır (0ms Anında Tepki)
           cachedPeerList = (cachedPeerList || []).filter(p => p.name !== name);
           ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
           try {
             const keys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
             delete keys[name];
             ls.setItem('mfk_peer_keys', JSON.stringify(keys));
+            const meta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
+            delete meta[name];
+            ls.setItem('mfk_peer_meta', JSON.stringify(meta));
           } catch(e){}
-          renderPeers(cachedPeerList);
+          renderPeers();
           sfx('ok');
 
-          // 2. Arka planda sunucu tünelini kalıcı olarak kaldır
+          // 3. Arka planda sunucu tünelini kalıcı olarak kaldır (hem ad hem public key iletilir)
           setLock(true);
           logStream(`🗑️ ${name} sunucudan siliniyor...`, 'cmd');
-          runWorkflowAction({ action: 'remove-peer', name }, `${name} Siliniyor`)
+          runWorkflowAction({ action: 'remove-peer', name, pubkey: pub }, `${name} Siliniyor`)
             .then(() => {
               logStream(`✓ ${name} sunucudan kalıcı olarak kaldırıldı.`, 'ok');
             })
@@ -4795,6 +5150,72 @@
       };
       reader.readAsText(file);
     };
+
+    
+    // Filtre Temizleme Fonksiyonu
+    window.resetPeerFilters = function() {
+      currentPeerFilter = 'all';
+      currentPeerSearch = '';
+      if ($('#peerSearchInp')) $('#peerSearchInp').value = '';
+      if ($('#btnClearSearch')) $('#btnClearSearch').style.display = 'none';
+      $$('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'all'));
+      currentPeerPage = 1;
+      renderPeers();
+    };
+
+    if ($('#peerSearchInp')) {
+      $('#peerSearchInp').oninput = (e) => {
+        currentPeerSearch = e.target.value.trim();
+        if ($('#btnClearSearch')) $('#btnClearSearch').style.display = currentPeerSearch ? 'inline' : 'none';
+        currentPeerPage = 1;
+        renderPeers();
+      };
+    }
+
+    if ($('#btnClearSearch')) {
+      $('#btnClearSearch').onclick = () => {
+        $('#peerSearchInp').value = '';
+        currentPeerSearch = '';
+        $('#btnClearSearch').style.display = 'none';
+        currentPeerPage = 1;
+        renderPeers();
+      };
+    }
+
+    $$('.filter-chip').forEach(chip => {
+      chip.onclick = () => {
+        sfx('click');
+        $$('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentPeerFilter = chip.dataset.filter || 'all';
+        currentPeerPage = 1;
+        renderPeers();
+      };
+    });
+
+    if ($('#btnSavePeerAlias')) {
+      $('#btnSavePeerAlias').onclick = () => {
+        const name = $('#editPeerOriginalName').value;
+        const alias = $('#editPeerAliasInp').value;
+        const note = $('#editPeerNoteInp').value;
+        savePeerMeta(name, alias, note);
+        sfx('ok');
+        $('#diagEditPeer').close();
+        renderPeers();
+        logStream(`✓ ${name} cihazı özelleştirildi: ${alias || name}`, 'ok');
+      };
+    }
+
+    if ($('#btnResetPeerAlias')) {
+      $('#btnResetPeerAlias').onclick = () => {
+        const name = $('#editPeerOriginalName').value;
+        savePeerMeta(name, '', '');
+        sfx('click');
+        $('#diagEditPeer').close();
+        renderPeers();
+        logStream(`✓ ${name} özel adı sıfırlandı.`, 'cmd');
+      };
+    }
 
     $('#btnRefreshPeers').onclick = loadPeers;
     $('#btnClearTerminal').onclick = () => { $('#streamBox').innerHTML = ''; };
