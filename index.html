@@ -2957,35 +2957,33 @@
       </div>
     </div>
 
-    <!-- SAĞ TARAF: AYARLAR & ÇIKIŞ BUTONLARI VE ALTINDA DÜĞÜM BİLGİ ROZETİ -->
-    <div class="header-right-zone" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
-      <div class="header-actions" style="display:flex;gap:10px;align-items:center;">
-        <!-- AYARLAR BUTONU -->
-        <button class="btn btn-settings-cyber btn-sm" id="btnOpenSettings" title="Sistem, Düğüm &amp; Protokol Ayarları" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-          <span class="btn-text">Ayarlar</span>
-        </button>
-
-        <!-- ÇIKIŞ BUTONU -->
-        <button class="btn btn-rose btn-sm" id="btnQuickLock" title="Oturumu Sonlandır ve Çık" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-          <span class="btn-text">Çıkış</span>
-        </button>
-      </div>
-
-      <!-- Aktif Düğüm & Sunucu Değiştirici Rozeti (Ayarlar & Çıkış'ın Altında) -->
-      <div class="node-switcher-pill" id="activeNodeBadge" title="Aktif Sunucu Düğümünü Değiştir" style="margin-top:0;">
+    <!-- SAĞ TARAF: DÜĞÜM ROZETİ, AYARLAR VE ÇIKIŞ BUTONU (TEK SATIR) -->
+    <div class="header-actions" style="display:flex;gap:12px;align-items:center;flex-shrink:0;">
+      <!-- Aktif Düğüm & Sunucu Değiştirici Rozeti (Ayarlar'ın Solunda) -->
+      <div class="node-switcher-pill" id="activeNodeBadge" title="Aktif Sunucu Düğümünü Değiştir" style="margin:0;">
         <span class="node-status-dot"></span>
         <span id="activeNodeLabel">HEL-01 • 46.224.62.213</span>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="node-arrow-icon"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
+
+      <!-- AYARLAR BUTONU -->
+      <button class="btn btn-settings-cyber btn-sm" id="btnOpenSettings" title="Sistem, Düğüm &amp; Protokol Ayarları" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span class="btn-text">Ayarlar</span>
+      </button>
+
+      <!-- ÇIKIŞ BUTONU -->
+      <button class="btn btn-rose btn-sm" id="btnQuickLock" title="Oturumu Sonlandır ve Çık" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span class="btn-text">Çıkış</span>
+      </button>
     </div>
   </header>
 
