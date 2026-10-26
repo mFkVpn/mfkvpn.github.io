@@ -2347,7 +2347,176 @@
         padding: 12px !important;
       }
     }
-  </style>
+  
+    /* =========================================================================
+       DİNAMİK FARE TAKİP IŞIĞI (Radial Spotlight Border & Surface)
+       ========================================================================= */
+    .spotlight-card {
+      position: relative;
+    }
+
+    .spotlight-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(
+        380px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+        rgba(56, 189, 248, 0.08),
+        transparent 65%
+      );
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1;
+    }
+
+    .spotlight-card:hover::before {
+      opacity: 1;
+    }
+
+    .spotlight-card::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: radial-gradient(
+        280px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+        rgba(56, 189, 248, 0.4),
+        transparent 60%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 2;
+    }
+
+    .spotlight-card:hover::after {
+      opacity: 1;
+    }
+
+    /* =========================================================================
+       ÇİFT NEON HALKA GÖSTERGESİ (Radial Ring Gauges)
+       ========================================================================= */
+    .dual-ring-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .dual-ring-svg {
+      transform: rotate(-90deg);
+      filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.4));
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.06);
+    }
+
+    .ring-fg {
+      fill: none;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ring-fg-rx {
+      stroke: #06b6d4;
+      filter: drop-shadow(0 0 5px #06b6d4);
+    }
+
+    .ring-fg-tx {
+      stroke: #a855f7;
+      filter: drop-shadow(0 0 5px #a855f7);
+    }
+
+    .dual-ring-center {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      color: #38bdf8;
+      pointer-events: none;
+    }
+
+    /* Detay Akordeon Trafik Gösterge Kartı */
+    .device-traffic-gauge-box {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(56, 189, 248, 0.16);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-top: 4px;
+    }
+
+    .gauge-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .gauge-legend-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .gauge-legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 11.5px;
+    }
+
+    .gauge-legend-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .gauge-legend-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .gauge-legend-dot.rx {
+      background: #06b6d4;
+      box-shadow: 0 0 8px #06b6d4;
+    }
+
+    .gauge-legend-dot.tx {
+      background: #a855f7;
+      box-shadow: 0 0 8px #a855f7;
+    }
+
+    .gauge-legend-val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+</style>
 </head>
 <body class="is-online">
 
@@ -2431,7 +2600,7 @@
   </header>
 
   <!-- ELİT SİBER KOKPİT ÇUBUĞU (Yenilikçi & Sade Tasarım) -->
-  <div class="panel core-hud">
+  <div class="panel core-hud spotlight-card">
     <div class="core-hud-top">
       <div class="core-hud-status">
         <div class="status-orb" id="statusOrb"></div>
@@ -2512,22 +2681,22 @@
 
   <!-- HIZLI MİMARİ BİLGİ ŞERİDİ (Kompakt Taktik Piller - Tek Satır & Tıklanabilir Detay) -->
   <div class="tactical-strip">
-    <div class="strip-pill" id="pillPort" role="button" tabindex="0" title="Sıfır Açık Port mimari detayları için tıklayın">
+    <div class="strip-pill spotlight-card" id="pillPort" role="button" tabindex="0" title="Sıfır Açık Port mimari detayları için tıklayın">
       <span class="strip-pill-dot" style="background:#fbbf24;box-shadow:0 0 8px #fbbf24;"></span>
       <span><b>Sıfır Açık Port</b></span>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.45;margin-left:2px;"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
-    <div class="strip-pill" id="pillCrypto" role="button" tabindex="0" title="X25519 Kriptografi detayları için tıklayın">
+    <div class="strip-pill spotlight-card" id="pillCrypto" role="button" tabindex="0" title="X25519 Kriptografi detayları için tıklayın">
       <span class="strip-pill-dot" style="background:#06b6d4;box-shadow:0 0 8px #06b6d4;"></span>
       <span><b>Sıfır Bilgi X25519</b></span>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.45;margin-left:2px;"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
-    <div class="strip-pill" id="pillStealth" role="button" tabindex="0" title="Hetzner altyapı detayları için tıklayın">
+    <div class="strip-pill spotlight-card" id="pillStealth" role="button" tabindex="0" title="Hetzner altyapı detayları için tıklayın">
       <span class="strip-pill-dot" style="background:#34d399;box-shadow:0 0 8px #34d399;"></span>
       <span><b>Hetzner Stealth</b></span>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.45;margin-left:2px;"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
-    <div class="strip-pill" id="pillVpnLeak" role="button" tabindex="0" title="Mevcut cihazınızın VPN koruma durumunu incelemek için tıklayın">
+    <div class="strip-pill spotlight-card" id="pillVpnLeak" role="button" tabindex="0" title="Mevcut cihazınızın VPN koruma durumunu incelemek için tıklayın">
       <span class="strip-pill-dot" id="dotVpnLeak" style="background:#64748b;box-shadow:0 0 8px #64748b;"></span>
       <span id="txtVpnLeak"><b>Tünel:</b> Test Ediliyor...</span>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.45;margin-left:2px;"><polyline points="9 18 15 12 9 6"/></svg>
@@ -2538,7 +2707,7 @@
   <div class="cockpit-grid">
     
     <!-- CİHAZ YÖNETİMİ -->
-    <div class="panel" style="display:flex;flex-direction:column;justify-content:space-between;height:100%;">
+    <div class="panel spotlight-card" style="display:flex;flex-direction:column;justify-content:space-between;height:100%;">
       <div>
         <div class="panel-head">
           <div class="panel-label">
@@ -2577,7 +2746,7 @@
     </div>
 
     <!-- GİTOPS LOG PANELİ (Sekmeli) -->
-    <div class="panel" style="display:flex;flex-direction:column;">
+    <div class="panel spotlight-card" style="display:flex;flex-direction:column;">
       <div class="panel-head">
         <div class="panel-label">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
@@ -3239,6 +3408,61 @@
 
   const escapeHtml = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+  // Çift Neon Halka Göstergesi (Radial Ring Gauges: Download / Upload)
+  function getRadialRingSvg(rx = 0, tx = 0, size = 36) {
+    const isLarge = size >= 60;
+    const viewBox = isLarge ? '0 0 68 68' : '0 0 36 36';
+    const cx = isLarge ? 34 : 18;
+    const cy = isLarge ? 34 : 18;
+    const rOut = isLarge ? 28 : 14.5;
+    const rIn = isLarge ? 19 : 10;
+    const strokeW = isLarge ? 4.8 : 2.6;
+    const cOut = 2 * Math.PI * rOut;
+    const cIn = 2 * Math.PI * rIn;
+
+    const maxRef = 1024 * 1024 * 1024; // 1 GB referans ölçeği
+    const rxPct = Math.min(1, Math.max(0.06, Math.log10(Math.max(1, rx)) / Math.log10(maxRef)));
+    const txPct = Math.min(1, Math.max(0.05, Math.log10(Math.max(1, tx)) / Math.log10(maxRef)));
+
+    const offOut = cOut * (1 - rxPct);
+    const offIn = cIn * (1 - txPct);
+
+    return `
+      <div class="dual-ring-wrap" style="width:${size}px;height:${size}px;" title="Ağ Trafiği: ↓ ${formatBytes(rx)} | ↑ ${formatBytes(tx)}">
+        <svg class="dual-ring-svg" width="${size}" height="${size}" viewBox="${viewBox}">
+          <circle cx="${cx}" cy="${cy}" r="${rOut}" class="ring-bg" stroke-width="${strokeW}" />
+          <circle cx="${cx}" cy="${cy}" r="${rIn}" class="ring-bg" stroke-width="${strokeW}" />
+          <circle cx="${cx}" cy="${cy}" r="${rOut}" class="ring-fg ring-fg-rx" stroke-width="${strokeW}"
+            stroke-dasharray="${cOut.toFixed(1)}" stroke-dashoffset="${offOut.toFixed(1)}" />
+          <circle cx="${cx}" cy="${cy}" r="${rIn}" class="ring-fg ring-fg-tx" stroke-width="${strokeW}"
+            stroke-dasharray="${cIn.toFixed(1)}" stroke-dashoffset="${offIn.toFixed(1)}" />
+        </svg>
+        <div class="dual-ring-center">
+          <svg width="${isLarge ? 14 : 9}" height="${isLarge ? 14 : 9}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><polyline points="17 14 12 9 7 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
+        </div>
+      </div>
+    `;
+  }
+
+  // Dinamik Fare Takip Neon Işığı (Mouse Spotlight Controller - 60 FPS Passive)
+  (function initSpotlightController() {
+    let ticking = false;
+    document.addEventListener('pointermove', e => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const card = e.target.closest('.spotlight-card');
+        if (card) {
+          const rect = card.getBoundingClientRect();
+          card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+          card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        }
+        ticking = false;
+      });
+    }, { passive: true });
+  })();
+
+
   const formatRunDate = ts => {
     if (!ts) return { day: 'Bilinmiyor', time: '', full: 'Tarih Yok', rel: 'bilinmiyor' };
     const d = new Date(ts);
@@ -3496,7 +3720,7 @@
           : `<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`);
 
       return `
-        <div class="device-card ${live ? 'online' : ''} ${isPc ? 'is-pc' : (isTab ? 'is-tab' : 'is-mobile')}" id="card_${globalIdx}">
+        <div class="device-card spotlight-card ${live ? 'online' : ''} ${isPc ? 'is-pc' : (isTab ? 'is-tab' : 'is-mobile')}" id="card_${globalIdx}">
           <div class="device-card-main" data-card-idx="${globalIdx}" title="Detayları genişletmek/daraltmak için tıklayın">
             <div class="device-idx-badge">${globalIdx + 1}</div>
             <div class="device-crest">
@@ -3513,9 +3737,12 @@
                     ? '<span class="peer-status-tag tag-idle"><span class="tag-dot"></span>BEKLEMEDE</span>' 
                     : '<span class="peer-status-tag tag-offline"><span class="tag-dot"></span>BAĞLANTI YOK</span>')}
               </div>
-              <div class="device-sub">
-                <span>${live ? '⚡ Sinyal: ' + formatRel(p.hs * 1000) : (p.hs ? 'Son: ' + formatRel(p.hs * 1000) : 'Bağlantı yok')}</span>
-                <span>↓ ${formatBytes(p.rx||0)}  ↑ ${formatBytes(p.tx||0)}</span>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+                ${getRadialRingSvg(p.rx || 0, p.tx || 0, 34)}
+                <div class="device-sub" style="margin-top:0;">
+                  <span>${live ? '⚡ Sinyal: ' + formatRel(p.hs * 1000) : (p.hs ? 'Son: ' + formatRel(p.hs * 1000) : 'Bağlantı yok')}</span>
+                  <span style="font-family:var(--font-mono);color:#cbd5e1;font-size:11px;">↓ ${formatBytes(p.rx||0)} &bull; ↑ ${formatBytes(p.tx||0)}</span>
+                </div>
               </div>
             </div>
             <div style="display:flex;gap:6px;align-items:center;" onclick="event.stopPropagation()">
@@ -3535,6 +3762,27 @@
 
           <!-- GENİŞLETİLEBİLİR DETAY AKORDEONU -->
           <div class="device-card-detail" id="cardDetail_${globalIdx}" style="display:none;">
+            <!-- Büyük Çift Neon Halka Trafik Paneli -->
+            <div class="device-traffic-gauge-box spotlight-card">
+              ${getRadialRingSvg(p.rx || 0, p.tx || 0, 68)}
+              <div class="gauge-legend">
+                <div class="gauge-legend-title">Bant Genişliği &amp; Trafik Ayrımı</div>
+                <div class="gauge-legend-item">
+                  <div class="gauge-legend-label">
+                    <span class="gauge-legend-dot rx"></span>
+                    <span>İndirilen Veri (Download / RX)</span>
+                  </div>
+                  <span class="gauge-legend-val" style="color:#38bdf8;">↓ ${formatBytes(p.rx || 0)}</span>
+                </div>
+                <div class="gauge-legend-item">
+                  <div class="gauge-legend-label">
+                    <span class="gauge-legend-dot tx"></span>
+                    <span>Gönderilen Veri (Upload / TX)</span>
+                  </div>
+                  <span class="gauge-legend-val" style="color:#c084fc;">↑ ${formatBytes(p.tx || 0)}</span>
+                </div>
+              </div>
+            </div>
             <div class="peer-detail-grid">
               <div class="peer-detail-item" style="grid-column: 1 / -1;">
                 <span class="detail-label">
@@ -3883,7 +4131,7 @@
     });
 
     feed.innerHTML = dayGroups.map(g => `
-      <div class="day-group">
+      <div class="day-group spotlight-card">
         <div class="day-group-header ${g.isToday ? 'is-today' : ''}">
           <div class="day-group-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
