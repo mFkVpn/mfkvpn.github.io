@@ -4943,12 +4943,24 @@
     return { title, shortTitle: `${dayNum} ${monthLong}`, isToday, isYesterday };
   }
 
-  // Tüm operasyonları takvim günlerine göre grupla (Tam Günlük Defter Mimarisi)
+  // Tüm operasyonları takvim günlerine göre grupla (Hangi günde isek DAİMA en başta 1. sırada)
   function groupAllRunsByDay(runs) {
     const dayMap = {};
-    const dayOrder = [];
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
-    runs.forEach(r => {
+    // 1. Bugün (hangi günde isek) DAİMA oluşturulur ve en başta garanti edilir
+    const todayInfo = formatDayGroupHeader(now.toISOString());
+    dayMap[todayKey] = {
+      dateKey: todayKey,
+      title: todayInfo.title,
+      shortTitle: todayInfo.shortTitle,
+      isToday: true,
+      runs: []
+    };
+
+    // 2. Operasyonları günlerine göre sepetlere dağıt
+    (runs || []).forEach(r => {
       const d = new Date(r.created_at || Date.now());
       const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       if (!dayMap[dateKey]) {
@@ -4957,15 +4969,26 @@
           dateKey,
           title: headerInfo.title,
           shortTitle: headerInfo.shortTitle,
-          isToday: headerInfo.isToday,
+          isToday: (dateKey === todayKey),
           runs: []
         };
-        dayOrder.push(dateKey);
       }
       dayMap[dateKey].runs.push(r);
     });
 
-    return dayOrder.map(key => dayMap[key]);
+    // 3. Günleri sırala: Hangi günde isek (Bugün) DAİMA 1. SIRADA (en başta), ardından dün ve önceki günler
+    const sortedGroups = Object.values(dayMap).sort((a, b) => {
+      if (a.dateKey === todayKey) return -1;
+      if (b.dateKey === todayKey) return 1;
+      return b.dateKey.localeCompare(a.dateKey);
+    });
+
+    // Her günün içindeki operasyonları da en yeniden en eskiye sırala
+    sortedGroups.forEach(g => {
+      g.runs.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+    });
+
+    return sortedGroups;
   }
 
   function renderRuns() {
@@ -5002,7 +5025,7 @@
             </div>
           </div>
           <div class="day-group-body" style="max-height:460px;overflow-y:auto;">
-            ${g.runs.map((x, idx) => {
+            ${g.runs.length ? g.runs.map((x, idx) => {
               const num = idx + 1; // O günün 1'den başlayan işlem sırası
               const dateInfo = formatRunDate(x.created_at);
 
@@ -5047,7 +5070,11 @@
                   </div>
                 </a>
               `;
-            }).join('')}
+            }).join('') : `
+              <div style="text-align:center;padding:24px 16px;color:#64748b;font-size:12.5px;">
+                Bu tarihe ait henüz bir operasyon kaydı bulunmuyor.
+              </div>
+            `}
           </div>
         </div>
       `;
