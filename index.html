@@ -4510,15 +4510,17 @@
 
     updateNodeBadge();
     
-    // Uçuşan Siber Parçacık Ağı (Ambient Floating Cyber Particle Mesh)
+    // Uçuşan Siber Parçacık Ağı (Ambient Floating Cyber Particle Mesh + Elektrik & Şimşek Arkı)
     (function initCyberParticles() {
       const cvs = document.getElementById('cyberParticles');
       if (!cvs) return;
       const c = cvs.getContext('2d');
       let w, h;
       let pts = [];
+      let arcs = []; // Aktif elektrik arkları / şimşekler
       const isMob = window.innerWidth < 768;
-      const count = isMob ? 24 : 54;
+      // Parçacık sayısı %250 arttırıldı (Desktop: 54 -> 145, Mobile: 24 -> 60)
+      const count = isMob ? 60 : 145;
       const colors = ['rgba(56, 189, 248, ', 'rgba(168, 85, 247, ', 'rgba(52, 211, 153, '];
 
       function resize() {
@@ -4538,20 +4540,26 @@
           this.r = Math.random() * 2 + 1;
           this.alpha = Math.random() * 0.35 + 0.25;
           this.color = colors[Math.floor(Math.random() * colors.length)];
+          this.flash = 0; // Elektriklenme / şimşek parlaması
         }
         update() {
           this.x += this.vx;
           this.y += this.vy;
+          if (this.flash > 0) this.flash -= 0.08;
           if (this.x < -20 || this.x > w + 20 || this.y < -20 || this.y > h + 20) {
             this.init(false);
           }
         }
         draw() {
           c.beginPath();
-          c.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-          c.fillStyle = this.color + this.alpha + ')';
-          c.shadowBlur = this.r * 3;
-          c.shadowColor = this.color + '0.8)';
+          const curR = this.r + (this.flash > 0 ? this.flash * 2.5 : 0);
+          c.arc(this.x, this.y, curR, 0, Math.PI * 2);
+          const a = Math.min(1, this.alpha + (this.flash > 0 ? this.flash * 0.7 : 0));
+          c.fillStyle = (this.flash > 0.2) ? `rgba(255, 255, 255, ${a})` : (this.color + a + ')');
+          if (this.flash > 0.1) {
+            c.shadowBlur = curR * 4;
+            c.shadowColor = '#38bdf8';
+          }
           c.fill();
           c.shadowBlur = 0;
         }
@@ -4559,29 +4567,106 @@
 
       for (let i = 0; i < count; i++) pts.push(new Dot());
 
-      const maxDist = isMob ? 80 : 120;
+      // Şimşek / Elektrik Çizim Fonksiyonu (Zigzag & Kırılmalı Işık Hattı)
+      function drawLightning(x1, y1, x2, y2, alpha) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const dist = Math.hypot(dx, dy);
+        if (dist === 0) return;
+        const steps = Math.max(3, Math.floor(dist / 12));
+        const normalX = -dy / dist;
+        const normalY = dx / dist;
+
+        c.beginPath();
+        c.moveTo(x1, y1);
+        for (let s = 1; s < steps; s++) {
+          const t = s / steps;
+          // Zikzak kırılma sapması (Elektriksel kıvılcım)
+          const jitter = (Math.random() - 0.5) * Math.min(16, dist * 0.32);
+          const nx = x1 + dx * t + normalX * jitter;
+          const ny = y1 + dy * t + normalY * jitter;
+          c.lineTo(nx, ny);
+        }
+        c.lineTo(x2, y2);
+
+        // Dış neon mavi hale (Glow)
+        c.save();
+        c.shadowBlur = 12;
+        c.shadowColor = '#38bdf8';
+        c.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.85})`;
+        c.lineWidth = 1.8;
+        c.stroke();
+
+        // İç parlak beyaz çekirdek (Core lightning)
+        c.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.95})`;
+        c.lineWidth = 0.9;
+        c.stroke();
+        c.restore();
+      }
+
+      const maxDist = isMob ? 75 : 110;
+      const arcTriggerDist = isMob ? 52 : 68; // Yan yana gelince elektriklenme eşiği
+
       function loop() {
         c.clearRect(0, 0, w, h);
+
+        // 1. Noktaları güncelle ve çiz
+        for (let i = 0; i < pts.length; i++) {
+          pts[i].update();
+          pts[i].draw();
+        }
+
+        // 2. Normal ağ çizgileri ve yakın noktalarda şimşek tetikleme
         for (let i = 0; i < pts.length; i++) {
           const p1 = pts[i];
-          p1.update();
-          p1.draw();
           for (let j = i + 1; j < pts.length; j++) {
             const p2 = pts[j];
             const dx = p1.x - p2.x;
             const dy = p1.y - p2.y;
-            const d = Math.sqrt(dx * dx + dy * dy);
+            const d = Math.hypot(dx, dy);
+
             if (d < maxDist) {
-              const a = (1 - d / maxDist) * 0.16;
+              const a = (1 - d / maxDist) * 0.14;
               c.beginPath();
               c.moveTo(p1.x, p1.y);
               c.lineTo(p2.x, p2.y);
               c.strokeStyle = `rgba(56, 189, 248, ${a})`;
-              c.lineWidth = 0.75;
+              c.lineWidth = 0.65;
               c.stroke();
+
+              // Elektriklenme & Şimşek Çakması:
+              // Yakın mesafedeki noktalarda şimşek arkı başlat
+              if (d < arcTriggerDist && arcs.length < 8) {
+                const chance = (d < 35) ? 0.08 : 0.025;
+                if (Math.random() < chance) {
+                  const exists = arcs.some(arc => (arc.p1 === p1 && arc.p2 === p2) || (arc.p1 === p2 && arc.p2 === p1));
+                  if (!exists) {
+                    arcs.push({
+                      p1, p2,
+                      life: Math.floor(Math.random() * 5 + 4),
+                      maxLife: 8,
+                      alpha: Math.random() * 0.4 + 0.6
+                    });
+                    p1.flash = 1.0;
+                    p2.flash = 1.0;
+                  }
+                }
+              }
             }
           }
         }
+
+        // 3. Aktif elektrik arklarını / şimşekleri çiz ve ömürlerini güncelle
+        for (let k = arcs.length - 1; k >= 0; k--) {
+          const arc = arcs[k];
+          const curAlpha = (arc.life / arc.maxLife) * arc.alpha;
+          drawLightning(arc.p1.x, arc.p1.y, arc.p2.x, arc.p2.y, curAlpha);
+          arc.life--;
+          if (arc.life <= 0) {
+            arcs.splice(k, 1);
+          }
+        }
+
         requestAnimationFrame(loop);
       }
       requestAnimationFrame(loop);
