@@ -1031,6 +1031,8 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      flex: 1;
+      min-width: 0;
     }
 
     .btn-copy-mini {
@@ -1262,7 +1264,7 @@
       grid-template-columns: repeat(4, 1fr) !important;
       gap: 8px !important;
       align-items: center !important;
-      min-width: 320px;
+      min-width: 0 !important;
     }
     .panel-action-group .btn {
       width: 100% !important;
@@ -2221,6 +2223,61 @@
         gap: 3px !important;
       }
 
+      /* Peer Filter HUD Mobilde Taşmasız Yatay Akış */
+      .peer-filter-hud {
+        padding: 10px 12px !important;
+        gap: 8px !important;
+      }
+      .filter-chip {
+        flex-shrink: 0 !important;
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+      }
+
+      /* Detay Akordeon & Çift Neon Halka Trafik Paneli (Mobilde Tam Oturan Ölçüler) */
+      .device-card-detail {
+        padding: 12px 10px !important;
+        gap: 10px !important;
+      }
+      .device-traffic-gauge-box {
+        gap: 12px !important;
+        padding: 10px 12px !important;
+      }
+      .gauge-legend-title {
+        font-size: 10px !important;
+      }
+      .gauge-legend-item {
+        font-size: 10.5px !important;
+        gap: 6px !important;
+      }
+      .peer-detail-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+
+      /* Günlük Operasyon Defteri Başlığı ve Sayfalama Düğmeleri */
+      .day-group-header {
+        padding: 8px 10px !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+      }
+      .day-group-title {
+        font-size: 11px !important;
+      }
+      .pagination-controls {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+      }
+
+      /* Dialog Buton Grupları Mobilde Tam Genişlik */
+      .dialog-foot > div {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+      }
+
+
       .device-grid {
         padding: 12px 10px !important;
         gap: 10px !important;
@@ -2634,6 +2691,7 @@
       transition: all 0.18s ease;
       white-space: nowrap;
       user-select: none;
+      flex-shrink: 0;
     }
 
     .filter-chip:hover {
@@ -2914,20 +2972,20 @@
           <div class="panel-action-group">
             <button class="btn btn-sm" id="btnExportBackup" title="Cihaz Listesini İndir (Yedek)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              <span>Yedekle</span>
+              <span class="lbl-full">Yedekle</span><span class="lbl-short">Yedek</span>
             </button>
             <button class="btn btn-sm" id="btnImportBackup" title="Yedekten Cihaz Yükle">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>Yükle</span>
+              <span class="lbl-full">Yükle</span><span class="lbl-short">Yükle</span>
             </button>
             <input type="file" id="fileImportBackup" accept=".json" style="display:none;">
             <button class="btn btn-sm" id="btnRefreshPeers" title="Cihaz Bağlantılarını Yenile">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              <span>Yenile</span>
+              <span class="lbl-full">Yenile</span><span class="lbl-short">Yenile</span>
             </button>
             <button class="btn btn-gold btn-sm" id="btnAddPeer" style="background:linear-gradient(135deg, #06b6d4, #a855f7);color:#fff;border:none;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>+ Yeni Cihaz</span>
+              <span class="lbl-full">+ Yeni Cihaz</span><span class="lbl-short">+ Ekle</span>
             </button>
           </div>
         </div>
