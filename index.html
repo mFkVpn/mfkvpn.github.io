@@ -2231,23 +2231,23 @@
         font-size: 17px !important;
       }
 
-      /* 4 Ana Buton: Mobilde Tam Yan Yana (Taşmasız Grid) */
+      /* 3 Ana Buton: Mobilde Tam Yan Yana (Taşmasız 3 Sütun Grid) */
       .core-actions {
         width: 100% !important;
         display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 5px !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
         padding-bottom: 0 !important;
         overflow-x: visible !important;
       }
 
       .core-actions .btn {
         width: 100% !important;
-        padding: 8px 2px !important;
-        font-size: 11px !important;
+        padding: 9px 3px !important;
+        font-size: 11.5px !important;
         white-space: nowrap !important;
         justify-content: center !important;
-        gap: 3px !important;
+        gap: 4px !important;
       }
 
       .core-actions .btn svg {
@@ -2569,7 +2569,8 @@
       .core-actions {
         width: 100% !important;
         display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
       }
     }
 
@@ -3176,20 +3177,16 @@
       </div>
 
       <div class="core-actions">
-        <button class="btn btn-emerald" data-action="start">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span>Başlat</span>
-        </button>
-        <button class="btn btn-rose" data-action="stop">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-          <span>Durdur</span>
-        </button>
-        <button class="btn btn-gold" data-action="restart">
+        <button class="btn btn-gold" data-action="restart" id="btnCoreRestart" title="WireGuard Servisini Yeniden Başlat">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
           <span class="lbl-full">Yeniden Başlat</span>
           <span class="lbl-short">Yeniden</span>
         </button>
-        <button class="btn btn-cyan" data-action="status">
+        <button class="btn btn-rose" data-action="stop" id="btnCoreStop" title="Tüm VPN Tünellerini ve Servisi Durdur">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          <span>Durdur</span>
+        </button>
+        <button class="btn btn-cyan" data-action="status" id="btnCoreStatus" title="Sunucu Sağlık ve Tünel Durumunu Sorgula">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
           <span>Tara</span>
         </button>
@@ -4404,12 +4401,13 @@
   function renderPeers(list) {
     if (list) cachedPeerList = list;
     
-    // Silinmiş cihazları kalıcı kara listeden süz (Canlı veya trafik almış cihazlar asla gizlenmez)
+    // Silinmiş cihazları kalıcı kara listeden süz (Kesin engelleme: Silinen cihaz asla geri dönemez)
     const deletedPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
-    const allPeers = (cachedPeerList || []).filter(p => {
-      if ((p.rx && p.rx > 0) || (p.tx && p.tx > 0) || (p.hs && p.hs > 0)) return true;
-      return !deletedPeers.includes(p.name);
-    });
+    if (!deletedPeers.includes('MOB-mfk')) deletedPeers.push('MOB-mfk');
+    if (!deletedPeers.includes('Mevcut-Cihaz')) deletedPeers.push('Mevcut-Cihaz');
+    try { ls.setItem('mfk_deleted_peers', JSON.stringify(deletedPeers)); } catch(e){}
+
+    const allPeers = (cachedPeerList || []).filter(p => !deletedPeers.includes(p.name));
     
     const box = $('#peerContainer');
     if ($('#countLabel')) $('#countLabel').textContent = `${allPeers.length} Kayıtlı`;
@@ -4539,7 +4537,7 @@
             <div class="device-info" style="min-width:0;flex:1;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;">
               <!-- 1. Cihaz Adı, Düzenle Kalemi & Temiz Durum Rozeti -->
               <div class="device-title-wrap" style="display:inline-flex;align-items:center;gap:7px;min-width:0;flex-shrink:0;">
-                <b class="peer-title-text" style="font-size:13.5px;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;" title="${escapeHtml(meta.alias || p.name)}">${meta.alias ? escapeHtml(meta.alias) : escapeHtml(p.name)}</b>
+                <b class="peer-title-text" style="font-size:13.5px;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;" title="${escapeHtml((meta.alias || '').replace(/\s*\([^)]*\)/g, '').trim() || p.name)}">${escapeHtml((meta.alias || '').replace(/\s*\([^)]*\)/g, '').trim() || p.name)}</b>
                 <button type="button" class="btn-edit-alias btnEditPeer" data-name="${p.name}" title="Özel İsim ve Not Düzenle" onclick="event.stopPropagation()" style="opacity:0.65;padding:2px;display:inline-flex;align-items:center;background:none;border:none;color:#94a3b8;cursor:pointer;">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 </button>
@@ -4889,9 +4887,11 @@
         }
       });
 
-      cachedPeerList = merged;
-      ls.setItem('mfk_peer_cache', JSON.stringify(merged));
-      renderPeers(merged);
+      const dPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
+      const filteredMerged = merged.filter(p => !dPeers.includes(p.name));
+      cachedPeerList = filteredMerged;
+      ls.setItem('mfk_peer_cache', JSON.stringify(filteredMerged));
+      renderPeers(filteredMerged);
 
       const activeCnt = merged.filter(p => p.hs && (Date.now()/1000 - p.hs < 180)).length;
       if (!silent) {
@@ -5285,11 +5285,31 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Oturum Kontrolü
+    // Kalıcı Kara Liste & Önbellek Temizliği (MOB-mfk ve Mevcut-Cihaz kesinlikle silinmiş kalır)
     try {
       const dPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
-      const filtered = dPeers.filter(d => !/iphone|MOB-mFk/i.test(d));
-      ls.setItem('mfk_deleted_peers', JSON.stringify(filtered));
+      if (!dPeers.includes('MOB-mfk')) dPeers.push('MOB-mfk');
+      if (!dPeers.includes('Mevcut-Cihaz')) dPeers.push('Mevcut-Cihaz');
+      ls.setItem('mfk_deleted_peers', JSON.stringify(dPeers));
+
+      let pCache = JSON.parse(ls.getItem('mfk_peer_cache') || '[]');
+      pCache = pCache.filter(p => p.name !== 'MOB-mfk' && p.name !== 'Mevcut-Cihaz');
+      ls.setItem('mfk_peer_cache', JSON.stringify(pCache));
+
+      let pKeys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
+      delete pKeys['MOB-mfk'];
+      delete pKeys['Mevcut-Cihaz'];
+      ls.setItem('mfk_peer_keys', JSON.stringify(pKeys));
+
+      let pMeta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
+      delete pMeta['MOB-mfk'];
+      delete pMeta['Mevcut-Cihaz'];
+      Object.keys(pMeta).forEach(k => {
+        if (pMeta[k] && pMeta[k].alias) {
+          pMeta[k].alias = pMeta[k].alias.replace(/\s*\([^)]*\)/g, '').trim();
+        }
+      });
+      ls.setItem('mfk_peer_meta', JSON.stringify(pMeta));
     } catch(e){}
     const savedPin = sessionStorage.getItem('mfk_pin_session');
     const savedCustom = ls.getItem('mfk_custom_token');
