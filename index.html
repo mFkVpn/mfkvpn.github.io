@@ -1147,14 +1147,15 @@
     .peer-status-tag {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 10.5px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      font-family: var(--font-mono);
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      font-family: var(--font-main) !important;
       vertical-align: middle;
+      -webkit-font-smoothing: antialiased;
     }
     .peer-status-tag .tag-dot {
       width: 6px;
@@ -1309,36 +1310,93 @@
       border-bottom: 1px solid rgba(6, 182, 212, 0.22);
     }
 
+    .day-group {
+      background: rgba(10, 16, 30, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.2s ease;
+    }
+    .day-group:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .day-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+    .day-group-header:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .day-group-header.is-today {
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.14) 0%, rgba(168, 85, 247, 0.08) 100%);
+      border-bottom: 1px solid rgba(6, 182, 212, 0.22);
+    }
+    .day-group-header.is-today:hover {
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.2) 0%, rgba(168, 85, 247, 0.12) 100%);
+    }
+
     .day-group-title {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 11.5px;
+      gap: 10px;
+      font-family: var(--font-main) !important;
+      font-size: 13px;
       font-weight: 700;
+      letter-spacing: -0.01em;
       color: #38bdf8;
-      letter-spacing: 0.3px;
+      -webkit-font-smoothing: antialiased;
     }
 
     .day-live-badge {
-      font-size: 9.5px;
+      font-size: 10.5px;
+      font-family: var(--font-main) !important;
       font-weight: 700;
       color: #34d399;
       background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 1px 6px;
-      border-radius: 4px;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 2px 8px;
+      border-radius: 6px;
       text-transform: uppercase;
+      letter-spacing: 0.02em;
     }
 
     .day-count-badge {
-      font-family: var(--font-mono);
-      font-size: 10.5px;
+      font-family: var(--font-main) !important;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 3px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .day-chevron-arrow {
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-block;
       color: #94a3b8;
-      background: rgba(255, 255, 255, 0.04);
-      padding: 2px 8px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .day-group.collapsed .day-chevron-arrow {
+      transform: rotate(-90deg);
+    }
+    .day-group.collapsed .day-group-body {
+      display: none !important;
+    }
+    .day-group.collapsed .day-group-header {
+      border-bottom: none;
     }
 
     .day-group-body {
@@ -4290,33 +4348,32 @@
 
       return `
         <div class="device-card spotlight-card ${live ? 'online' : ''} ${isPc ? 'is-pc' : (isTab ? 'is-tab' : 'is-mobile')}" id="card_${globalIdx}">
-          <div class="device-card-main" data-card-idx="${globalIdx}" title="Detayları genişletmek/daraltmak için tıklayın">
+          <div class="device-card-main" data-card-idx="${globalIdx}" title="Detayları genişletmek/daraltmak için tıklayın" style="cursor:pointer;">
             <div class="device-idx-badge">${globalIdx + 1}</div>
             <div class="device-crest">
               ${iconSvg}
               <span class="status-light ${live ? 'pulsing' : ''}" title="${live ? 'Aktif Tünel (Sinyal Alınıyor)' : 'Bağlantı Yok'}"></span>
             </div>
-            <div class="device-info">
-              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <b>${meta.alias ? escapeHtml(meta.alias) : escapeHtml(p.name)}</b>
-                ${meta.alias ? `<span class="alias-real-name">(${escapeHtml(p.name)})</span>` : ''}
+            <div class="device-info" style="min-width:0;flex:1;">
+              <!-- 1. Satır: Cihaz Adı, Düzenle Kalemi & Temiz Durum Rozeti -->
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <b style="font-size:14px;letter-spacing:-0.01em;">${meta.alias ? escapeHtml(meta.alias) : escapeHtml(p.name)}</b>
+                ${meta.alias ? `<span class="alias-real-name" style="font-size:11px;color:#64748b;">(${escapeHtml(p.name)})</span>` : ''}
                 <button type="button" class="btn-edit-alias btnEditPeer" data-name="${p.name}" title="Özel İsim ve Not Düzenle" onclick="event.stopPropagation()">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 </button>
-                <span class="ip-tag">${p.ip || '10.13.13.x'}</span>
                 ${live 
-                  ? '<span class="peer-status-tag tag-active"><span class="tag-dot"></span>AKTİF</span>' 
+                  ? '<span class="peer-status-tag tag-active"><span class="tag-dot"></span>Aktif</span>' 
                   : (p.hs 
-                    ? '<span class="peer-status-tag tag-idle"><span class="tag-dot"></span>BEKLEMEDE</span>' 
-                    : '<span class="peer-status-tag tag-offline"><span class="tag-dot"></span>BAĞLANTI YOK</span>')}
+                    ? '<span class="peer-status-tag tag-idle"><span class="tag-dot"></span>Beklemede</span>' 
+                    : '<span class="peer-status-tag tag-offline"><span class="tag-dot"></span>Bağlantı Yok</span>')}
               </div>
-              ${meta.note ? `<div class="peer-note-badge">📝 ${escapeHtml(meta.note)}</div>` : ''}
-              <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-                ${getRadialRingSvg(p.rx || 0, p.tx || 0, 34)}
-                <div class="device-sub" style="margin-top:0;">
-                  <span>${live ? '⚡ Sinyal: ' + formatRel(p.hs * 1000) : (p.hs ? 'Son: ' + formatRel(p.hs * 1000) : 'Bağlantı yok')}</span>
-                  <span style="font-family:var(--font-mono);color:#cbd5e1;font-size:11px;">↓ ${formatBytes(p.rx||0)} &bull; ↑ ${formatBytes(p.tx||0)}</span>
-                </div>
+              
+              <!-- 2. Satır: Yalnızca Gönderme ve Alma Verileri (Sade & Şık) -->
+              <div class="device-sub" style="margin-top:4px;display:flex;align-items:center;gap:8px;font-size:11.5px;font-family:var(--font-mono);">
+                <span style="color:#38bdf8;font-weight:600;">↓ ${formatBytes(p.rx||0)}</span>
+                <span style="color:rgba(255,255,255,0.2);">•</span>
+                <span style="color:#c084fc;font-weight:600;">↑ ${formatBytes(p.tx||0)}</span>
               </div>
             </div>
             <div style="display:flex;gap:6px;align-items:center;" onclick="event.stopPropagation()">
@@ -4382,6 +4439,11 @@
               <div class="peer-detail-item">
                 <span class="detail-label">Tünel İçi IP Adresi</span>
                 <span class="detail-val-mono" style="color:#38bdf8;">${p.ip || '10.13.13.x'}/32</span>
+              </div>
+
+              <div class="peer-detail-item">
+                <span class="detail-label">Son Sinyal (Handshake)</span>
+                <span class="detail-val-mono" style="color:${live ? '#34d399' : '#94a3b8'};">${live ? '⚡ Aktif Tünel (Canlı)' : (p.hs ? formatRel(p.hs * 1000) : 'Henüz bağlanmadı')}</span>
               </div>
 
               <div class="peer-detail-item">
@@ -4739,111 +4801,89 @@
       return;
     }
 
-    // 1. Tüm operasyonları gün gün grupla
+    // Tüm operasyonları gün gün grupla (1. Sırada Bugün, 2. Sırada Dün, 3. Sırada Önceki Günler...)
     const dayGroups = groupAllRunsByDay(cachedRunsList);
-    const totalDayPages = dayGroups.length;
 
-    if (currentRunsPage > totalDayPages) currentRunsPage = totalDayPages;
-    if (currentRunsPage < 1) currentRunsPage = 1;
-
-    // Aktif gün grubu (Sayfa 1 = BUGÜN, Sayfa 2 = DÜN, Sayfa 3 = ÖNCEKİ GÜN)
-    const currentDay = dayGroups[currentRunsPage - 1];
-
-    if (!currentDay) return;
-
-    // 1. Sırada O Günün Tarihi, O Gün Yapılan Her Şey O Günün Kartı İçerisinde
-    feed.innerHTML = `
-      <div class="day-group spotlight-card">
-        <div class="day-group-header ${currentDay.isToday ? 'is-today' : ''}">
-          <div class="day-group-title">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>${currentDay.title}</span>
-            ${currentDay.isToday ? '<span class="day-live-badge">Güncel</span>' : ''}
+    // Her gün alt alta akordeon olarak listelenir: 1. Gün (Bugün) açık, diğer günler kapalıdır ve tıklayınca açılır
+    feed.innerHTML = dayGroups.map((g, gIdx) => {
+      const isFirst = (gIdx === 0);
+      return `
+        <div class="day-group spotlight-card ${isFirst ? '' : 'collapsed'}" id="dayGroup_${gIdx}" style="margin-bottom:12px;">
+          <div class="day-group-header ${g.isToday ? 'is-today' : ''}" data-day-idx="${gIdx}" title="Detayları açmak/kapatmak için tıklayın">
+            <div class="day-group-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>${g.title}</span>
+              ${g.isToday ? '<span class="day-live-badge">Güncel</span>' : ''}
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="day-count-badge">${g.runs.length} Operasyon Kaydı</span>
+              <svg class="day-chevron-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
           </div>
-          <span class="day-count-badge">${currentDay.runs.length} Operasyon Kaydı</span>
-        </div>
-        <div class="day-group-body" style="max-height:460px;overflow-y:auto;">
-          ${currentDay.runs.map((x, idx) => {
-            const num = idx + 1; // O günün 1'den başlayan işlem sırası
-            const dateInfo = formatRunDate(x.created_at);
+          <div class="day-group-body" style="max-height:460px;overflow-y:auto;">
+            ${g.runs.map((x, idx) => {
+              const num = idx + 1; // O günün 1'den başlayan işlem sırası
+              const dateInfo = formatRunDate(x.created_at);
 
-            let statusClass = 'feed-badge-success';
-            let statusText = '✓ Başarılı';
-            const statusVal = x.conclusion || x.status || '';
-            if (statusVal === 'in_progress' || statusVal === 'queued') {
-              statusClass = 'feed-badge-pending';
-              statusText = '⏳ Sürüyor';
-            } else if (statusVal === 'failure') {
-              statusClass = 'feed-badge-failure';
-              statusText = '✕ Başarısız';
-            } else if (statusVal === 'cancelled') {
-              statusClass = 'feed-badge-cancelled';
-              statusText = '⊘ İptal';
-            }
+              let statusClass = 'feed-badge-success';
+              let statusText = '✓ Başarılı';
+              const statusVal = x.conclusion || x.status || '';
+              if (statusVal === 'in_progress' || statusVal === 'queued') {
+                statusClass = 'feed-badge-pending';
+                statusText = '⏳ Sürüyor';
+              } else if (statusVal === 'failure') {
+                statusClass = 'feed-badge-failure';
+                statusText = '✕ Başarısız';
+              } else if (statusVal === 'cancelled') {
+                statusClass = 'feed-badge-cancelled';
+                statusText = '⊘ İptal';
+              }
 
-            const title = x.display_title || x.title || 'VPN Operasyonu';
-            const runIdStr = x.run_number ? `#${x.run_number}` : (x.id ? `#${String(x.id).slice(-4)}` : `#${num}`);
+              const title = x.display_title || x.title || 'VPN Operasyonu';
+              const runIdStr = x.run_number ? `#${x.run_number}` : (x.id ? `#${String(x.id).slice(-4)}` : `#${num}`);
 
-            return `
-              <a class="feed-row" href="${x.html_url || '#'}" target="_blank" rel="noopener" title="GitHub Actions detayını aç">
-                <div class="feed-row-left">
-                  <span class="feed-num">#${num}</span>
-                  <div class="feed-dot ${x.conclusion || x.status || 'success'}"></div>
-                  <div class="feed-details">
-                    <div class="feed-title-line">
-                      <span class="feed-title">${escapeHtml(title)}</span>
-                      <span class="feed-run-id">${runIdStr}</span>
-                    </div>
-                    <div class="feed-meta-line">
-                      <span class="feed-badge ${statusClass}">${statusText}</span>
-                      <span class="feed-rel-time">${dateInfo.rel}</span>
+              return `
+                <a class="feed-row" href="${x.html_url || '#'}" target="_blank" rel="noopener" title="GitHub Actions detayını aç">
+                  <div class="feed-row-left">
+                    <span class="feed-num">#${num}</span>
+                    <div class="feed-dot ${x.conclusion || x.status || 'success'}"></div>
+                    <div class="feed-details">
+                      <div class="feed-title-line">
+                        <span class="feed-title">${escapeHtml(title)}</span>
+                        <span class="feed-run-id">${runIdStr}</span>
+                      </div>
+                      <div class="feed-meta-line">
+                        <span class="feed-badge ${statusClass}">${statusText}</span>
+                        <span class="feed-rel-time">${dateInfo.rel}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="feed-row-right">
-                  <div class="feed-time-badge">
-                    <span>${dateInfo.time || '12:00'}</span>
+                  <div class="feed-row-right">
+                    <div class="feed-time-badge">
+                      <span>${dateInfo.time || '12:00'}</span>
+                    </div>
+                    <svg class="feed-ext-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   </div>
-                  <svg class="feed-ext-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                </div>
-              </a>
-            `;
-          }).join('')}
+                </a>
+              `;
+            }).join('')}
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }).join('');
 
-    // Gün Bazlı Sayfalama Çubuğu Kontrolü
+    // Gün kartı başlığına tıklandığında akordeon açma/kapatma
+    $$('.day-group-header').forEach(hdr => {
+      hdr.onclick = () => {
+        sfx('click');
+        const idx = hdr.dataset.dayIdx;
+        const grp = $(`#dayGroup_${idx}`);
+        if (grp) grp.classList.toggle('collapsed');
+      };
+    });
+
     const pagBar = $('#runsPaginationBar');
-    if (pagBar) {
-      if (totalDayPages > 1) {
-        pagBar.style.display = 'flex';
-        $('#runsPageInfoText').textContent = `Gün ${currentRunsPage} / ${totalDayPages} • ${currentDay.shortTitle} (${currentDay.runs.length} İşlem)`;
-
-        let btnsHtml = `
-          <button class="page-btn" id="btnRunsPrev" ${currentRunsPage <= 1 ? 'disabled' : ''} title="Daha Yeni Güne Geç">◀</button>
-        `;
-        dayGroups.forEach((g, gIdx) => {
-          const pageNum = gIdx + 1;
-          btnsHtml += `<button class="page-btn ${pageNum === currentRunsPage ? 'active' : ''}" data-runspage="${pageNum}" style="padding:0 10px;font-size:11px;" title="${g.title}">${g.shortTitle}</button>`;
-        });
-        btnsHtml += `
-          <button class="page-btn" id="btnRunsNext" ${currentRunsPage >= totalDayPages ? 'disabled' : ''} title="Daha Eski Güne Geç">▶</button>
-        `;
-        $('#runsPageBtnContainer').innerHTML = btnsHtml;
-
-        if ($('#btnRunsPrev')) $('#btnRunsPrev').onclick = () => { currentRunsPage--; renderRuns(); };
-        if ($('#btnRunsNext')) $('#btnRunsNext').onclick = () => { currentRunsPage++; renderRuns(); };
-        $$('.page-btn[data-runspage]').forEach(b => {
-          b.onclick = () => {
-            currentRunsPage = parseInt(b.dataset.runspage, 10);
-            renderRuns();
-          };
-        });
-      } else {
-        pagBar.style.display = 'none';
-      }
-    }
+    if (pagBar) pagBar.style.display = 'none';
   }
 
   const b64 = u => btoa(String.fromCharCode(...u));
