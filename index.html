@@ -2228,10 +2228,28 @@
         padding: 10px 12px !important;
         gap: 8px !important;
       }
+      .peer-filter-pills {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 4px !important;
+      }
       .filter-chip {
-        flex-shrink: 0 !important;
-        padding: 4px 10px !important;
-        font-size: 11px !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 6px 2px !important;
+        font-size: 10.5px !important;
+        gap: 3px !important;
+      }
+      .filter-chip svg {
+        width: 11px !important;
+        height: 11px !important;
+      }
+      .chip-badge {
+        min-width: 15px !important;
+        height: 15px !important;
+        padding: 0 3px !important;
+        font-size: 9.5px !important;
       }
 
       /* Detay Akordeon & Çift Neon Halka Trafik Paneli (Mobilde Tam Oturan Ölçüler) */
@@ -2663,17 +2681,13 @@
       color: #fb7185;
     }
 
+    /* Cihaz Filtre Çipleri: Sağdan Sola %100 Genişlikte 5 Eşit Sütun */
     .peer-filter-pills {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .peer-filter-pills::-webkit-scrollbar {
-      display: none;
+      width: 100% !important;
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 8px !important;
+      box-sizing: border-box !important;
     }
 
     
@@ -2701,10 +2715,12 @@
 
     /* Modern Sans-Serif Siber Filtre Çipleri */
     .filter-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 6px 14px;
+      width: 100% !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 7px !important;
+      padding: 7px 8px !important;
       background: rgba(255, 255, 255, 0.035);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 20px;
@@ -2717,7 +2733,7 @@
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
       user-select: none;
-      flex-shrink: 0;
+      box-sizing: border-box !important;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -2870,47 +2886,48 @@
 <!-- ANA KOKPİT -->
 <div class="cockpit">
 
-    <header>
+      <header>
     <div class="brand-identity">
       <!-- BÜYÜTÜLMÜŞ SİBER LOGO & NEON ARMA -->
       <div class="brand-crest-box" style="width:104px;height:104px;border-radius:24px;display:flex;align-items:center;justify-content:center;background:transparent;flex-shrink:0;">
         <img src="mFk_icon.png" alt="mFkVpN" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 32px rgba(6,182,212,0.85)) drop-shadow(0 0 16px rgba(168,85,247,0.5));transition:transform 0.3s ease;">
       </div>
       <div class="brand-titles">
-        <h1 style="font-family:var(--font-display);font-size:38px;font-weight:900;letter-spacing:-0.02em;line-height:1;margin-bottom:8px;display:inline-flex;align-items:baseline;">
+        <h1 style="font-family:var(--font-display);font-size:38px;font-weight:900;letter-spacing:-0.02em;line-height:1;margin:0;display:inline-flex;align-items:baseline;">
           <span style="color:#ffffff;">mFk</span><span style="background:linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;margin-left:1px;filter:drop-shadow(0 0 14px rgba(56,189,248,0.4));">VpN</span>
         </h1>
-        <div class="brand-meta" style="margin-top:2px;">
-          <!-- Aktif Düğüm & Sunucu Değiştirici Rozeti -->
-          <div class="node-switcher-pill" id="activeNodeBadge" title="Aktif Sunucu Düğümünü Değiştir">
-            <span class="node-status-dot"></span>
-            <span id="activeNodeLabel">HEL-01 • 46.224.62.213</span>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="node-arrow-icon"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-        </div>
       </div>
     </div>
 
-    <!-- SAĞ TARAF: YALNIZCA AYARLAR VE ÇIKIŞ BUTONLARI -->
-    <div class="header-actions" style="display:flex;gap:10px;align-items:center;">
-      <!-- AYARLAR BUTONU (Token, Dahili VPN, Düğümleri İçeren Siber Merkez) -->
-      <button class="btn btn-settings-cyber btn-sm" id="btnOpenSettings" title="Sistem, Düğüm &amp; Protokol Ayarları" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-        <span class="btn-text">Ayarlar</span>
-      </button>
+    <!-- SAĞ TARAF: AYARLAR & ÇIKIŞ BUTONLARI VE ALTINDA DÜĞÜM BİLGİ ROZETİ -->
+    <div class="header-right-zone" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+      <div class="header-actions" style="display:flex;gap:10px;align-items:center;">
+        <!-- AYARLAR BUTONU -->
+        <button class="btn btn-settings-cyber btn-sm" id="btnOpenSettings" title="Sistem, Düğüm &amp; Protokol Ayarları" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span class="btn-text">Ayarlar</span>
+        </button>
 
-      <!-- ÇIKIŞ BUTONU -->
-      <button class="btn btn-rose btn-sm" id="btnQuickLock" title="Oturumu Sonlandır ve Çık" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-        <span class="btn-text">Çıkış</span>
-      </button>
+        <!-- ÇIKIŞ BUTONU -->
+        <button class="btn btn-rose btn-sm" id="btnQuickLock" title="Oturumu Sonlandır ve Çık" style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-weight:700;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span class="btn-text">Çıkış</span>
+        </button>
+      </div>
+
+      <!-- Aktif Düğüm & Sunucu Değiştirici Rozeti (Ayarlar & Çıkış'ın Altında) -->
+      <div class="node-switcher-pill" id="activeNodeBadge" title="Aktif Sunucu Düğümünü Değiştir" style="margin-top:0;">
+        <span class="node-status-dot"></span>
+        <span id="activeNodeLabel">HEL-01 • 46.224.62.213</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="node-arrow-icon"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
     </div>
   </header>
 
@@ -3029,7 +3046,6 @@
             <div class="panel-label">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
               Yetkili mFk Cihazları
-              <small id="countLabel" style="color:var(--ink-dim);font-weight:500;font-size:12px;margin-left:6px;">0 Kayıtlı</small>
             </div>
             <span id="filterActiveBadge" style="font-size:11px;font-family:var(--font-mono);color:#34d399;display:none;"></span>
           </div>
@@ -3076,7 +3092,7 @@
             </button>
             <button type="button" class="filter-chip" data-filter="offline">
               <span class="chip-dot off"></span>
-              <span>Beklemede</span>
+              <span class="lbl-full">Beklemede</span><span class="lbl-short">Bekle.</span>
               <span class="chip-badge" id="cntOffline">0</span>
             </button>
             <button type="button" class="filter-chip" data-filter="pc">
@@ -4156,7 +4172,7 @@
     const allPeers = (cachedPeerList || []).filter(p => !deletedPeers.includes(p.name));
     
     const box = $('#peerContainer');
-    $('#countLabel').textContent = `${allPeers.length} Kayıtlı`;
+    if ($('#countLabel')) $('#countLabel').textContent = `${allPeers.length} Kayıtlı`;
 
     // Filtreleme Sayaçlarını Güncelle
     const onlinePeers = allPeers.filter(p => p.hs && (Date.now() / 1000 - p.hs < 180));
