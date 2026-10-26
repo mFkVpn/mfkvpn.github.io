@@ -637,8 +637,8 @@
 
     .core-telemetry-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
       padding-top: 16px;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
@@ -647,13 +647,15 @@
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 10px;
-      padding: 12px 14px;
+      padding: 10px 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      gap: 4px;
+      gap: 5px;
+      min-width: 0;
+      overflow: hidden;
       transition: all 0.2s ease;
     }
 
@@ -663,26 +665,42 @@
     }
 
     .telem-cell-lbl {
-      font-size: 11px;
+      font-size: 10.5px;
       color: #94a3b8;
-      font-weight: 500;
-      letter-spacing: 0.02em;
+      font-weight: 600;
+      letter-spacing: 0.03em;
       text-transform: uppercase;
       font-family: var(--font-main);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
     }
 
     .telem-cell-val {
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 13.5px;
+      font-weight: 700;
       color: #f8fafc;
       font-family: var(--font-main);
       font-feature-settings: 'tnum', 'cv11';
       text-align: center;
       letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      display: block;
+    }
+
+    #valTraffic {
+      font-size: 12px !important;
+      letter-spacing: -0.02em !important;
+      font-family: var(--font-mono);
+      white-space: nowrap !important;
     }
 
     /* MODERN TAKTİK MİNİ PİLLERİ (Sayfayı boğmayan kompakt rozetler) */
@@ -1672,7 +1690,15 @@
       }
 
       .telem-cell-val {
-        font-size: 12.5px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        width: 100% !important;
+      }
+
+      #valTraffic {
+        font-size: 11px !important;
       }
 
       /* Taktik Piller */
@@ -2771,9 +2797,11 @@
     return res;
   }
 
-  async function runWorkflowAction(inputs, label) {
-    sfx('click');
-    logStream(`➜ [GİTOPS] ${label} tetikleniyor... [${activeNode.name}]`, 'cmd');
+  async function runWorkflowAction(inputs, label, silent = false) {
+    if (!silent) {
+      sfx('click');
+      logStream(`➜ [GİTOPS] ${label} tetikleniyor... [${activeNode.name}]`, 'cmd');
+    }
     
     // Dispatch öncesi en son run ID'sini kaydet (saat farkından etkilenmemek için)
     let lastRunId = 0;
@@ -2799,9 +2827,9 @@
     }
     if (!target) throw new Error('İşlem zaman aşımına uğradı.');
 
-    logStream(`● Runner atandı (ID: #${target.id})...`, '');
+    if (!silent) logStream(`● Runner atandı (ID: #${target.id})...`, '');
     for (let i = 0; i < 45 && target.status !== 'completed'; i++) {
-      await wait(2400);
+      await wait(2000);
       target = await (await ghReq(`/actions/runs/${target.id}`)).json();
     }
     if (target.conclusion !== 'success') throw new Error(`İşlem başarısız: ${target.conclusion}`);
@@ -2867,6 +2895,26 @@
     allPeers.forEach(p => { totRx += (p.rx || 0); totTx += (p.tx || 0); });
     const trafEl = $('#valTraffic');
     if (trafEl) trafEl.textContent = `↓ ${formatBytes(totRx)} / ↑ ${formatBytes(totTx)}`;
+
+    // Canlı Aktif Cihaz Sayısı ve Son Sinyal Zamanını Telemetri Çubuğuna Yansıt
+    const activePeers = allPeers.filter(p => p.hs && (Date.now() / 1000 - p.hs < 180));
+    const activeCount = activePeers.length;
+    if ($('#valPeers')) {
+      $('#valPeers').textContent = `${activeCount} Aktif Tünel`;
+      $('#valPeers').style.color = activeCount > 0 ? '#34d399' : '#f8fafc';
+    }
+
+    let latestHs = 0;
+    allPeers.forEach(p => { if (p.hs && p.hs > latestHs) latestHs = p.hs; });
+    if ($('#valLastAction')) {
+      if (latestHs > 0) {
+        $('#valLastAction').textContent = formatRel(latestHs * 1000);
+        $('#valLastAction').style.color = (Date.now() / 1000 - latestHs < 180) ? '#34d399' : '#94a3b8';
+      } else {
+        $('#valLastAction').textContent = '—';
+        $('#valLastAction').style.color = '#94a3b8';
+      }
+    }
 
     if (!allPeers.length) {
       box.innerHTML = `<div style="text-align:center;padding:30px;color:var(--ink-dim)">Yetkili cihaz yok.</div>`;
@@ -3022,33 +3070,40 @@
         const name = b.dataset.name;
         sfx('click');
         confirmAction(`${name} Silinsin mi?`, 'Bu cihazın WireGuard erişimi kalıcı olarak iptal edilir.', () => {
+          // 1. ANINDA LİSTEDEN DÜŞÜR (0ms Anında Tepki)
+          cachedPeerList = (cachedPeerList || []).filter(p => p.name !== name);
+          ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
+          try {
+            const keys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
+            delete keys[name];
+            ls.setItem('mfk_peer_keys', JSON.stringify(keys));
+          } catch(e){}
+          renderPeers(cachedPeerList);
+          sfx('ok');
+
+          // 2. Arka planda sunucu tünelini kalıcı olarak kaldır
           setLock(true);
-          logStream(`🗑️ ${name} siliniyor...`, 'cmd');
+          logStream(`🗑️ ${name} sunucudan siliniyor...`, 'cmd');
           runWorkflowAction({ action: 'remove-peer', name }, `${name} Siliniyor`)
             .then(() => {
-              logStream(`✓ ${name} başarıyla silindi.`, 'ok');
-              // Önbellekten ve yerel anahtar deposundan da temizle
-              cachedPeerList = (cachedPeerList || []).filter(p => p.name !== name);
-              ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
-              try {
-                const keys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
-                delete keys[name];
-                ls.setItem('mfk_peer_keys', JSON.stringify(keys));
-              } catch(e){}
-              renderPeers(cachedPeerList);
+              logStream(`✓ ${name} sunucudan kalıcı olarak kaldırıldı.`, 'ok');
             })
-            .catch(err => { logStream(`[HATA] ${name} silinemedi: ${err.message}`, 'err'); })
+            .catch(err => { 
+              logStream(`[HATA] ${name} silinirken sunucu hatası: ${err.message}`, 'err'); 
+            })
             .finally(() => setLock(false));
         });
       };
     });
   }
 
-  async function loadPeers() {
-    setLock(true);
-    logStream('⚡ Cihaz bağlantı durumları kontrol ediliyor...', 'cmd');
+  async function loadPeers(silent = false) {
+    if (!silent) {
+      setLock(true);
+      logStream('⚡ Cihaz bağlantı durumları kontrol ediliyor...', 'cmd');
+    }
     try {
-      const logs = await runWorkflowAction({ action: 'list-peers' }, 'Cihazlar Alınıyor');
+      const logs = await runWorkflowAction({ action: 'list-peers' }, 'Cihazlar Alınıyor', silent);
       const peers = logs.filter(l => l.startsWith('peer=')).map(l => {
         const [name, pub, ip, hs, rx, tx] = l.slice(5).split('|');
         return { name, pub, ip, hs: Number(hs)||0, rx: Number(rx)||0, tx: Number(tx)||0 };
@@ -3056,11 +3111,13 @@
       ls.setItem('mfk_peer_cache', JSON.stringify(peers));
       renderPeers(peers);
       const activeCnt = peers.filter(p => p.hs && (Date.now()/1000 - p.hs < 180)).length;
-      logStream(`✓ ${peers.length} cihaz listelendi • ${activeCnt} aktif tünel`, 'ok');
+      if (!silent) {
+        logStream(`✓ ${peers.length} cihaz listelendi • ${activeCnt} aktif tünel`, 'ok');
+      }
     } catch(e) {
       renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
     }
-    setLock(false);
+    if (!silent) setLock(false);
   }
 
   async function loadRuns() {
@@ -3166,8 +3223,9 @@
     runWorkflowAction({ action: 'add-peer', name, pubkey: keys.pub }, `${name} Sunucuya Ekleniyor`)
       .then(logs => {
         logStream(`✓ ${name} sunucuya başarıyla işlendi ve aktif edildi!`, 'ok');
-        // Sunucuya işlendikten sonra canlı listeyi ve el sıkışma durumunu güncelle
-        setTimeout(() => loadPeers(), 4000);
+        // Sunucuya işlendikten sonra canlı listeyi ve el sıkışma durumunu sessizce güncelle
+        setTimeout(() => loadPeers(true), 3000);
+        setTimeout(() => loadPeers(true), 12000);
       })
       .catch(err => {
         logStream(`[BİLGİ] Sunucu senkronu: ${err.message}`, 'warn');
@@ -3453,53 +3511,19 @@
     $('#btnClearTerminal').onclick = () => { $('#streamBox').innerHTML = ''; };
     $('#btnConfNo').onclick = () => $('#diagConfirm').close();
 
-    // Otomatik Periyodik Cihaz Durumu Yenileme (60 saniyede bir)
+    // Otomatik Periyodik Cihaz Durumu Yenileme (25 saniyede bir, sekme açıksa)
     setInterval(() => {
-      if (!activeToken || isLocked) return;
+      if (!activeToken || isLocked || document.hidden) return;
       if (!$('#lockGate').classList.contains('cleared')) return;
-      // Sessizce arka planda çek - setLock çağırmaz, log kutusunu kirletmez
-      (async () => {
-        try {
-          let lastRunId = 0;
-          try {
-            const initRuns = await (await ghReq(`/actions/workflows/${WORKFLOW}/runs?event=workflow_dispatch&per_page=1`)).json();
-            lastRunId = initRuns.workflow_runs?.[0]?.id || 0;
-          } catch(e){}
-          const t0 = Date.now() - 45000;
+      loadPeers(true);
+    }, 25000);
 
-          const dispatch = await ghReq(`/actions/workflows/${WORKFLOW}/dispatches`, {
-            method: 'POST',
-            body: JSON.stringify({ ref: 'main', inputs: { action: 'list-peers' } })
-          });
-          if (!dispatch.ok) return;
-
-          let target = null;
-          for (let i = 0; i < 16 && !target; i++) {
-            await wait(2000);
-            const d = await (await ghReq(`/actions/workflows/${WORKFLOW}/runs?event=workflow_dispatch&per_page=5`)).json();
-            target = (d.workflow_runs || []).find(r => (lastRunId && r.id > lastRunId) || new Date(r.created_at).getTime() >= t0);
-          }
-          if (!target) return;
-          for (let i = 0; i < 40 && target.status !== 'completed'; i++) {
-            await wait(2000);
-            target = await (await ghReq(`/actions/runs/${target.id}`)).json();
-          }
-          if (target.conclusion !== 'success') return;
-          const j = await (await ghReq(`/actions/runs/${target.id}/jobs`)).json();
-          if (!j.jobs || !j.jobs[0]) return;
-          const raw = await (await ghReq(`/actions/jobs/${j.jobs[0].id}/logs`)).text();
-          const lines = raw.split('\n').map(l => l.replace(/^\S+Z\s/, '').trim());
-          const peers = lines.filter(l => l.startsWith('peer=')).map(l => {
-            const [name, pub, ip, hs, rx, tx] = l.slice(5).split('|');
-            return { name, pub, ip, hs: Number(hs)||0, rx: Number(rx)||0, tx: Number(tx)||0 };
-          });
-          if (peers.length > 0) {
-            ls.setItem('mfk_peer_cache', JSON.stringify(peers));
-            renderPeers(peers);
-          }
-        } catch(e) {}
-      })();
-    }, 60000);
+    // Sekmeye geri dönüldüğünde ANINDA canlı durumu sorgula (gecikmeyi sıfırlar)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && activeToken && !isLocked && $('#lockGate').classList.contains('cleared')) {
+        loadPeers(true);
+      }
+    });
 
     // Düğüm modal
     ['#btnNodes', '#activeNodeBadge'].forEach(sel => {
