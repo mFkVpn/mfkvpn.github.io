@@ -2216,51 +2216,95 @@
 
       /* Kokpit Çubuğu ve Aksiyonlar */
       .core-hud {
-        padding: 14px 12px !important;
+        padding: 12px 12px !important;
         border-radius: 16px !important;
-        gap: 12px !important;
+        gap: 10px !important;
       }
 
       .core-hud-top {
         flex-direction: column !important;
         align-items: stretch !important;
-        gap: 12px !important;
-      }
-
-      .core-hud-status {
-        display: flex !important;
-        align-items: flex-start !important;
         gap: 10px !important;
       }
 
+      /* Tünel Kısmı: Mobilde Kusursuz TEK SATIR */
+      .core-hud-status {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+
       .status-orb {
-        width: 13px !important;
-        height: 13px !important;
-        margin-top: 4px !important;
+        width: 11px !important;
+        height: 11px !important;
+        margin: 0 !important;
         flex-shrink: 0 !important;
       }
 
       .core-hud-text {
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
         min-width: 0 !important;
         flex: 1 1 auto !important;
+        overflow: hidden !important;
       }
 
       .core-hud-text h2 {
-        font-size: 16px !important;
-        line-height: 1.3 !important;
-        letter-spacing: -0.01em !important;
+        font-size: 14.5px !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.015em !important;
         margin: 0 !important;
+        white-space: nowrap !important;
+        font-weight: 700 !important;
+        color: #fff !important;
+        display: inline-flex !important;
+        align-items: center !important;
       }
 
       .core-hud-text .sub {
-        font-size: 11px !important;
-        flex-wrap: wrap !important;
-        gap: 4px 6px !important;
-        line-height: 1.35 !important;
-        margin-top: 4px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
       }
 
-      /* 3 Ana Buton: Mobilde Tam Yan Yana (Taşmasız 3 Sütun Grid) */
+      #pillText {
+        font-size: 9.5px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.04em !important;
+        padding: 2.5px 7px !important;
+        border-radius: 6px !important;
+        background: rgba(16, 185, 129, 0.12) !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        color: #34d399 !important;
+        white-space: nowrap !important;
+        line-height: 1 !important;
+      }
+
+      body.is-offline #pillText {
+        background: rgba(244, 63, 94, 0.12) !important;
+        border-color: rgba(244, 63, 94, 0.35) !important;
+        color: #fb7185 !important;
+      }
+
+      body.is-working #pillText {
+        background: rgba(245, 158, 11, 0.12) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+        color: #fbbf24 !important;
+      }
+
+      .hud-sub-sep, .hud-sub-host {
+        display: none !important;
+      }
+
+      /* 3 Ana Buton: Mobilde Tam Yan Yana */
       .core-actions {
         width: 100% !important;
         display: grid !important;
@@ -2273,7 +2317,7 @@
 
       .core-actions .btn {
         width: 100% !important;
-        padding: 9px 4px !important;
+        padding: 8px 4px !important;
         font-size: 11.5px !important;
         min-height: 38px !important;
         white-space: nowrap !important;
@@ -2289,33 +2333,46 @@
         flex-shrink: 0 !important;
       }
 
-      /* Telemetri Grid (Mobilde Kusursuz 2 Sütun + Canlı Trafik Alt Satırda Geniş) */
+      /* Telemetri Grid (Kusursuz 2 Sütun + Canlı Trafik Alt Satırda Geniş) */
       .core-telemetry-row {
+        display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 6px !important;
-        padding-top: 12px !important;
+        padding-top: 10px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
       }
 
-      .core-telemetry-row .telem-cell:nth-child(1) { order: 1; grid-column: auto !important; }
-      .core-telemetry-row .telem-cell:nth-child(2) { order: 2; grid-column: auto !important; }
-      .core-telemetry-row .telem-cell:nth-child(3) { order: 3; grid-column: auto !important; }
-      .core-telemetry-row .telem-cell:nth-child(5) { order: 4; grid-column: auto !important; }
-      .core-telemetry-row .telem-cell:nth-child(4) {
-        order: 5;
+      .core-telemetry-row .telem-cell {
+        grid-column: auto !important;
+      }
+
+      .core-telemetry-row .telem-cell:last-child {
         grid-column: span 2 !important;
       }
 
       .telem-cell {
-        padding: 8px 8px !important;
+        padding: 6px 8px !important;
         border-radius: 9px !important;
-        min-height: 52px !important;
+        min-height: 44px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 2px !important;
+        background: rgba(255, 255, 255, 0.025) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
       }
 
       .telem-cell-lbl {
-        font-size: 9.5px !important;
+        font-size: 9px !important;
         gap: 4px !important;
         color: #94a3b8 !important;
         white-space: nowrap !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.03em !important;
+        text-transform: uppercase !important;
+        display: flex !important;
+        align-items: center !important;
       }
 
       .telem-cell-lbl svg {
@@ -2325,16 +2382,19 @@
       }
 
       .telem-cell-val {
-        font-size: 12px !important;
-        font-weight: 600 !important;
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         width: 100% !important;
+        text-align: center !important;
+        line-height: 1.2 !important;
       }
 
       #valTraffic {
         font-size: 11.5px !important;
+        letter-spacing: 0.01em !important;
       }
 
       /* Taktik Piller - Mobilde 2x2 Eşit Dağılım */
@@ -2716,14 +2776,15 @@
       .gauge-legend { width: 100% !important; }
       /* Ekstra Dar Ekran Kokpit Uyumu */
       .core-hud-text h2 {
-        font-size: 15px !important;
+        font-size: 13.5px !important;
       }
-      .core-hud-text .sub {
-        font-size: 10.5px !important;
+      #pillText {
+        font-size: 8.5px !important;
+        padding: 2px 5px !important;
       }
       .core-actions .btn {
         font-size: 10.5px !important;
-        padding: 8px 2px !important;
+        padding: 7px 2px !important;
       }
       .telem-cell-val {
         font-size: 11px !important;
@@ -3235,8 +3296,8 @@
           <h2 id="hudTitle">VPN Tüneli Çalışıyor</h2>
           <div class="sub">
             <span id="pillText" style="color:#34d399;font-weight:700;">SAVUNMA KALKANI AKTİF</span>
-            <span>•</span>
-            <span style="color:#94a3b8;">Hetzner Korumalı Tünel</span>
+            <span class="hud-sub-sep">•</span>
+            <span class="hud-sub-host" style="color:#94a3b8;">Hetzner Korumalı Tünel</span>
           </div>
         </div>
       </div>
@@ -3286,18 +3347,18 @@
 
       <div class="telem-cell">
         <span class="telem-cell-lbl">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Canlı Trafik
-        </span>
-        <span class="telem-cell-val" id="valTraffic" style="color:#38bdf8;">↓ 0 B / ↑ 0 B</span>
-      </div>
-
-      <div class="telem-cell">
-        <span class="telem-cell-lbl">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           Saldırı Yüzeyi
         </span>
         <span class="telem-cell-val" style="color:#34d399;">0 Port (Sıfır İzin)</span>
+      </div>
+
+      <div class="telem-cell">
+        <span class="telem-cell-lbl">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Canlı Trafik
+        </span>
+        <span class="telem-cell-val" id="valTraffic" style="color:#38bdf8;">↓ 0 B / ↑ 0 B</span>
       </div>
     </div>
   </div>
