@@ -2216,19 +2216,48 @@
 
       /* Kokpit Çubuğu ve Aksiyonlar */
       .core-hud {
-        padding: 16px 14px !important;
+        padding: 14px 12px !important;
         border-radius: 16px !important;
-        gap: 14px !important;
+        gap: 12px !important;
       }
 
       .core-hud-top {
-        flex-direction: column;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+
+      .core-hud-status {
+        display: flex !important;
         align-items: flex-start !important;
-        gap: 14px !important;
+        gap: 10px !important;
+      }
+
+      .status-orb {
+        width: 13px !important;
+        height: 13px !important;
+        margin-top: 4px !important;
+        flex-shrink: 0 !important;
+      }
+
+      .core-hud-text {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
       }
 
       .core-hud-text h2 {
-        font-size: 17px !important;
+        font-size: 16px !important;
+        line-height: 1.3 !important;
+        letter-spacing: -0.01em !important;
+        margin: 0 !important;
+      }
+
+      .core-hud-text .sub {
+        font-size: 11px !important;
+        flex-wrap: wrap !important;
+        gap: 4px 6px !important;
+        line-height: 1.35 !important;
+        margin-top: 4px !important;
       }
 
       /* 3 Ana Buton: Mobilde Tam Yan Yana (Taşmasız 3 Sütun Grid) */
@@ -2239,43 +2268,65 @@
         gap: 6px !important;
         padding-bottom: 0 !important;
         overflow-x: visible !important;
+        margin: 0 !important;
       }
 
       .core-actions .btn {
         width: 100% !important;
-        padding: 9px 3px !important;
+        padding: 9px 4px !important;
         font-size: 11.5px !important;
+        min-height: 38px !important;
         white-space: nowrap !important;
         justify-content: center !important;
+        align-items: center !important;
+        display: flex !important;
         gap: 4px !important;
       }
 
       .core-actions .btn svg {
         width: 13px !important;
         height: 13px !important;
-        flex-shrink: 0;
+        flex-shrink: 0 !important;
       }
 
-      /* Telemetri Grid (Mobilde 2 sütun tertemiz) */
+      /* Telemetri Grid (Mobilde Kusursuz 2 Sütun + Canlı Trafik Alt Satırda Geniş) */
       .core-telemetry-row {
         grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
+        gap: 6px !important;
+        padding-top: 12px !important;
       }
 
-      .core-telemetry-row .telem-cell:last-child {
-        grid-column: span 2;
+      .core-telemetry-row .telem-cell:nth-child(1) { order: 1; grid-column: auto !important; }
+      .core-telemetry-row .telem-cell:nth-child(2) { order: 2; grid-column: auto !important; }
+      .core-telemetry-row .telem-cell:nth-child(3) { order: 3; grid-column: auto !important; }
+      .core-telemetry-row .telem-cell:nth-child(5) { order: 4; grid-column: auto !important; }
+      .core-telemetry-row .telem-cell:nth-child(4) {
+        order: 5;
+        grid-column: span 2 !important;
       }
 
       .telem-cell {
-        padding: 8px 10px !important;
+        padding: 8px 8px !important;
+        border-radius: 9px !important;
+        min-height: 52px !important;
       }
 
       .telem-cell-lbl {
         font-size: 9.5px !important;
+        gap: 4px !important;
+        color: #94a3b8 !important;
+        white-space: nowrap !important;
+      }
+
+      .telem-cell-lbl svg {
+        width: 11px !important;
+        height: 11px !important;
+        flex-shrink: 0 !important;
       }
 
       .telem-cell-val {
         font-size: 12px !important;
+        font-weight: 600 !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -2283,7 +2334,7 @@
       }
 
       #valTraffic {
-        font-size: 11px !important;
+        font-size: 11.5px !important;
       }
 
       /* Taktik Piller - Mobilde 2x2 Eşit Dağılım */
@@ -2596,10 +2647,7 @@
         height: 42px !important;
         border-radius: 11px !important;
       }
-      /* Telemetri Canlı Trafik Tam Genişlik */
-      .core-telemetry-row .telem-cell:nth-child(4) {
-        grid-column: span 2 !important;
-      }
+
       /* Mobil Konsol Padding & Boyutları */
       .stream-box {
         padding: 12px 14px !important;
@@ -2666,6 +2714,20 @@
         gap: 12px !important;
       }
       .gauge-legend { width: 100% !important; }
+      /* Ekstra Dar Ekran Kokpit Uyumu */
+      .core-hud-text h2 {
+        font-size: 15px !important;
+      }
+      .core-hud-text .sub {
+        font-size: 10.5px !important;
+      }
+      .core-actions .btn {
+        font-size: 10.5px !important;
+        padding: 8px 2px !important;
+      }
+      .telem-cell-val {
+        font-size: 11px !important;
+      }
     }
   
     /* =========================================================================
