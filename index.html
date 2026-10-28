@@ -4065,39 +4065,61 @@
   /* PROPRIETARY AND CONFIDENTIAL • COPYRIGHT © 2026 mFk Games. All Rights Reserved. */
   console.log("%c[mFk CYBERSHIELD] Güvenli Savunma Hattı Devrede.", "color:#fbbf24;font-size:16px;font-weight:bold;");
   
-  // Güvenlik: Sağ tık ve kaynak inceleme caydırıcısı
-  document.addEventListener('contextmenu', e => e.preventDefault());
+  // Güvenlik: Sağ tık caydırıcısı (form alanlarında yapıştırmaya engel olmayacak şekilde)
+  document.addEventListener('contextmenu', e => {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) {
+      return;
+    }
+    e.preventDefault();
+  });
   document.addEventListener('keydown', e => {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+      return;
+    }
     if ((e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'i' || e.key === 'j')) || e.key === 'F12') {
       e.preventDefault();
     }
   });
 
-  // Siber Ses Sentezleyici (Web Audio API - harici dosyasız)
+  // Siber Ses Sentezleyici (Web Audio API - Singleton & Bellek Sızıntısı Korumalı)
+  let _audioCtx = null;
   function sfx(kind) {
     try {
-      const actx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = actx.createOscillator();
-      const gain = actx.createGain();
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!_audioCtx) {
+        _audioCtx = new AudioCtx();
+      }
+      if (_audioCtx.state === 'suspended') {
+        _audioCtx.resume();
+      }
+      const osc = _audioCtx.createOscillator();
+      const gain = _audioCtx.createGain();
       osc.connect(gain);
-      gain.connect(actx.destination);
+      gain.connect(_audioCtx.destination);
       if (kind === 'unlock') {
-        osc.frequency.setValueAtTime(440, actx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, actx.currentTime + 0.16);
-        gain.gain.setValueAtTime(0.12, actx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.22);
-        osc.start(); osc.stop(actx.currentTime + 0.22);
+        osc.frequency.setValueAtTime(440, _audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, _audioCtx.currentTime + 0.16);
+        gain.gain.setValueAtTime(0.12, _audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, _audioCtx.currentTime + 0.22);
+        osc.start(); osc.stop(_audioCtx.currentTime + 0.22);
       } else if (kind === 'click') {
-        osc.frequency.setValueAtTime(900, actx.currentTime);
-        gain.gain.setValueAtTime(0.05, actx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.06);
-        osc.start(); osc.stop(actx.currentTime + 0.06);
+        osc.frequency.setValueAtTime(900, _audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, _audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, _audioCtx.currentTime + 0.06);
+        osc.start(); osc.stop(_audioCtx.currentTime + 0.06);
       } else if (kind === 'err') {
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(140, actx.currentTime);
-        gain.gain.setValueAtTime(0.18, actx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.25);
-        osc.start(); osc.stop(actx.currentTime + 0.25);
+        osc.frequency.setValueAtTime(140, _audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.18, _audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, _audioCtx.currentTime + 0.25);
+        osc.start(); osc.stop(_audioCtx.currentTime + 0.25);
+      } else if (kind === 'ok') {
+        osc.frequency.setValueAtTime(523.25, _audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(659.25, _audioCtx.currentTime + 0.12); // E5
+        gain.gain.setValueAtTime(0.1, _audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, _audioCtx.currentTime + 0.18);
+        osc.start(); osc.stop(_audioCtx.currentTime + 0.18);
       }
     } catch(e){}
   }
@@ -4109,6 +4131,24 @@
   const REPO = 'mFkVpn/mfkvpn.github.io';
   const WORKFLOW = 'vpn-control.yml';
 
+  // Güvenli JSON Ayrıştırıcı (LocalStorage hasar görse dahi çökme yaşanmaz)
+  function safeJsonParse(raw, fallback) {
+    if (!raw || typeof raw !== 'string') return fallback;
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed !== null && parsed !== undefined ? parsed : fallback;
+    } catch(e) {
+      return fallback;
+    }
+  }
+
+  const escapeHtml = s => String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
   const _VAULT_KEY = '554d64542e183d15e099d4fbb1bd8d95435171180f6236f993dedcaa868fbb566367465e0c78dbe0';
   let activeToken = '';
 
@@ -4119,11 +4159,9 @@
     { name: 'AMS-01', country: '🇳🇱 Hollanda', ip: '188.166.45.88', port: '22', ping: 45, isDefault: false }
   ];
   function getNodes() {
-    try {
-      const stored = JSON.parse(ls.getItem('mfk_nodes') || 'null');
-      if (stored && Array.isArray(stored) && stored.length) return stored;
-      return DEFAULT_NODES;
-    } catch(e) { return DEFAULT_NODES; }
+    const stored = safeJsonParse(ls.getItem('mfk_nodes'), null);
+    if (stored && Array.isArray(stored) && stored.length) return stored;
+    return DEFAULT_NODES;
   }
   function saveNodes(nodes) { ls.setItem('mfk_nodes', JSON.stringify(nodes)); }
   let activeNode = (() => {
@@ -4161,7 +4199,10 @@
     const nodes = getNodes();
     sel.innerHTML = nodes.map((n, i) => {
       const selected = (n.ip === activeNode.ip && n.port === activeNode.port) ? 'selected' : '';
-      return `<option value="${i}" ${selected}>${n.country || '🌐'} ${n.name} (${n.ip})</option>`;
+      const cStr = escapeHtml(n.country || '🌐');
+      const nStr = escapeHtml(n.name || '');
+      const ipStr = escapeHtml(n.ip || '');
+      return `<option value="${i}" ${selected}>${cStr} ${nStr} (${ipStr})</option>`;
     }).join('');
   }
 
@@ -4170,15 +4211,21 @@
     const box = $('#nodeList');
     box.innerHTML = nodes.map((n, i) => {
       const isActive = (n.ip === activeNode.ip && n.port === activeNode.port);
+      const flag = escapeHtml((n.country || '🌐').split(' ')[0]);
+      const countryText = escapeHtml(n.country ? n.country.split(' ').slice(1).join(' ') : '');
+      const nameText = escapeHtml(n.name || '');
+      const ipText = escapeHtml(n.ip || '');
+      const portText = escapeHtml(String(n.port || 22));
+      const pingVal = Number(n.ping) || 40;
       return `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,${isActive?'0.08':'0.02'});border:1px solid ${isActive?'rgba(56,189,248,0.4)':'rgba(255,255,255,0.06)'};">
-        <span style="font-size:20px;line-height:1;">${(n.country || '🌐').split(' ')[0]}</span>
+        <span style="font-size:20px;line-height:1;">${flag}</span>
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:6px;">
-            <b style="color:${isActive?'#38bdf8':'#f8fafc'};font-size:13.5px;">${n.name}</b>
-            <span style="font-size:11px;color:#94a3b8;">${n.country ? n.country.split(' ').slice(1).join(' ') : ''}</span>
+            <b style="color:${isActive?'#38bdf8':'#f8fafc'};font-size:13.5px;">${nameText}</b>
+            <span style="font-size:11px;color:#94a3b8;">${countryText}</span>
           </div>
           <div style="font-family:var(--font-mono);font-size:11px;color:#64748b;margin-top:2px;">
-            ${n.ip}:${n.port||22} • <span style="color:#10b981;">⚡ ${n.ping || 40} ms</span>
+            ${ipText}:${portText} • <span style="color:#10b981;">⚡ ${pingVal} ms</span>
           </div>
         </div>
         ${isActive ? '<span style="font-size:11px;font-weight:700;color:#38bdf8;padding:4px 8px;background:rgba(56,189,248,0.12);border-radius:6px;font-family:var(--font-mono);">AKTİF</span>' :
@@ -4240,8 +4287,9 @@
         alert('IP Rotasyonu başarıyla uygulandı! Tünel yeni parametrelerle taze.');
       } catch(e) {
         logStream(`[HATA] Rotasyon başarısız: ${e.message}`, 'err');
+      } finally {
+        setLock(false);
       }
-      setLock(false);
     });
   }
 
@@ -4249,6 +4297,9 @@
   // KRİPTOGRAFİK BULUT EŞZAMANLAMA (Zero-Knowledge AES-GCM Private Key Sync)
   // =========================================================================
   async function getCryptoKey(pin, salt) {
+    if (!window.crypto || !window.crypto.subtle) {
+      throw new Error('WebCrypto API bu ortamda desteklenmiyor.');
+    }
     const enc = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
       'raw', enc.encode(pin), { name: 'PBKDF2' }, false, ['deriveKey']
@@ -4316,16 +4367,16 @@
           if (ghResp.ok) {
             const ghJson = await ghResp.json();
             const decoded = decodeURIComponent(escape(atob(ghJson.content.replace(/\s/g, ''))));
-            remoteData = JSON.parse(decoded);
+            remoteData = safeJsonParse(decoded, null);
           }
         } catch(e) {}
       }
 
       if (!remoteData || !Array.isArray(remoteData.peers)) return;
 
-      const deletedPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
-      const meta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
-      const keys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
+      const deletedPeers = safeJsonParse(ls.getItem('mfk_deleted_peers'), []);
+      const meta = safeJsonParse(ls.getItem('mfk_peer_meta'), {});
+      const keys = safeJsonParse(ls.getItem('mfk_peer_keys'), {});
       const pin = sessionStorage.getItem('mfk_pin_session') || ls.getItem('mfk_pin_persistent') || '';
 
       const mergedList = [];
@@ -4436,6 +4487,7 @@
   }
 
   function unpackToken(hex, pin) {
+    if (!hex || !pin || typeof pin !== 'string' || pin.length === 0) return '';
     let res = '';
     for (let i = 0; i < hex.length; i += 2) {
       const b = parseInt(hex.substr(i, 2), 16);
@@ -4451,11 +4503,9 @@
 
   const MOCK_PEERS = [
     { name: 'PC-PCmFk', alias: 'PC-PCmFk', ip: '10.13.13.5', hs: Math.floor(Date.now() / 1000) - 300, rx: 105695684, tx: 30266288 },
-    { name: 'MOB-mFk-iphone', alias: 'mFk-iphone', ip: '10.13.13.5', hs: Math.floor(Date.now() / 1000) - 120, rx: 2452, tx: 2716 },
+    { name: 'MOB-mFk-iphone', alias: 'mFk-iphone', ip: '10.13.13.4', hs: Math.floor(Date.now() / 1000) - 120, rx: 2452, tx: 2716 },
     { name: 'MOB-Songul', alias: 'Songül', ip: '10.13.13.6', hs: Math.floor(Date.now() / 1000) - 100, rx: 2041940, tx: 29488780 }
   ];
-
-  const escapeHtml = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
   // Çift Neon Halka Göstergesi (Radial Ring Gauges: Download / Upload)
   function getRadialRingSvg(rx = 0, tx = 0, size = 36) {
@@ -4690,7 +4740,7 @@
       const out = logs.filter(l => /^(state=|peers=|wireguard|denied)/.test(l)).join('\n');
       logStream(`✓ Yanıt:\n${out || 'Tamamlandı.'}`, 'ok');
 
-      let s = JSON.parse(ls.getItem('mfk_core_state') || '{}');
+      let s = safeJsonParse(ls.getItem('mfk_core_state'), {});
       const st = /state=(\w+)/.exec(out);
       const pe = /peers=(\d+)/.exec(out);
       if (st) s.state = st[1];
@@ -4703,9 +4753,10 @@
       sfx('err');
       logStream(`[HATA] ${err.message}`, 'err');
       setHudState('offline', 'Bağlantı Hatası');
+    } finally {
+      setLock(false);
+      loadRuns();
     }
-    setLock(false);
-    loadRuns();
   }
 
   let currentPeerPage = 1;
@@ -4738,7 +4789,7 @@
     if (list) cachedPeerList = list;
     
     // Silinmiş cihazları kalıcı kara listeden süz (Kesin engelleme: Silinen cihaz asla geri dönemez)
-    const deletedPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
+    const deletedPeers = safeJsonParse(ls.getItem('mfk_deleted_peers'), []);
     if (!deletedPeers.includes('MOB-mfk')) deletedPeers.push('MOB-mfk');
     if (!deletedPeers.includes('Mevcut-Cihaz')) deletedPeers.push('Mevcut-Cihaz');
     try { ls.setItem('mfk_deleted_peers', JSON.stringify(deletedPeers)); } catch(e){}
@@ -4855,6 +4906,10 @@
       const isPc = p.name.startsWith('PC-') || /mac|rig|titan|pc|desktop|laptop/i.test(p.name);
       const isTab = p.name.startsWith('TAB-') || /ipad|tablet/i.test(p.name);
       const meta = getPeerMeta(p.name);
+      const safePeerName = escapeHtml(p.name);
+      const safePeerPub = escapeHtml(p.pub || '');
+      const safePeerIp = escapeHtml(p.ip || '10.13.13.x');
+      const safeTitle = escapeHtml((meta.alias || '').replace(/\s*\([^)]*\)/g, '').trim() || p.name);
       
       const iconSvg = isPc 
         ? `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
@@ -4873,8 +4928,8 @@
             <div class="device-info" style="min-width:0;flex:1;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;">
               <!-- 1. Cihaz Adı, Düzenle Kalemi & Temiz Durum Rozeti -->
               <div class="device-title-wrap" style="display:inline-flex;align-items:center;gap:7px;min-width:0;flex-shrink:0;">
-                <b class="peer-title-text" style="font-size:13.5px;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;" title="${escapeHtml((meta.alias || '').replace(/\s*\([^)]*\)/g, '').trim() || p.name)}">${escapeHtml((meta.alias || '').replace(/\s*\([^)]*\)/g, '').trim() || p.name)}</b>
-                <button type="button" class="btn-edit-alias btnEditPeer" data-name="${p.name}" title="Özel İsim ve Not Düzenle" onclick="event.stopPropagation()" style="opacity:0.65;padding:2px;display:inline-flex;align-items:center;background:none;border:none;color:#94a3b8;cursor:pointer;">
+                <b class="peer-title-text" style="font-size:13.5px;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;" title="${safeTitle}">${safeTitle}</b>
+                <button type="button" class="btn-edit-alias btnEditPeer" data-name="${safePeerName}" title="Özel İsim ve Not Düzenle" onclick="event.stopPropagation()" style="opacity:0.65;padding:2px;display:inline-flex;align-items:center;background:none;border:none;color:#94a3b8;cursor:pointer;">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 </button>
                 ${live 
@@ -4935,8 +4990,8 @@
                   X25519 Genel Anahtar (Public Key)
                 </span>
                 <div class="detail-key-box">
-                  <code>${p.pub || 'Anahtar bulunamadı'}</code>
-                  <button type="button" class="btn-copy-mini btnCopyText" data-copy="${p.pub || ''}" title="Genel Anahtarı Kopyala">
+                  <code>${safePeerPub || 'Anahtar bulunamadı'}</code>
+                  <button type="button" class="btn-copy-mini btnCopyText" data-copy="${safePeerPub}" title="Genel Anahtarı Kopyala">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     <span>Kopyala</span>
                   </button>
@@ -4945,7 +5000,7 @@
 
               <div class="peer-detail-item">
                 <span class="detail-label">Tünel İçi IP Adresi</span>
-                <span class="detail-val-mono" style="color:#38bdf8;">${p.ip || '10.13.13.x'}/32</span>
+                <span class="detail-val-mono" style="color:#38bdf8;">${safePeerIp}/32</span>
               </div>
 
               <div class="peer-detail-item">
@@ -4980,15 +5035,15 @@
             </div>
 
             <div class="detail-quick-actions">
-              <button type="button" class="btn btn-sm btnQrView" data-name="${p.name}" data-ip="${p.ip||''}" data-pub="${p.pub||''}" style="background:linear-gradient(135deg, #0ea5e9, #8b5cf6);color:#fff;border:none;">
+              <button type="button" class="btn btn-sm btnQrView" data-name="${safePeerName}" data-ip="${safePeerIp}" data-pub="${safePeerPub}" style="background:linear-gradient(135deg, #0ea5e9, #8b5cf6);color:#fff;border:none;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 <span>QR &amp; Tünel Bilgisi</span>
               </button>
-              <button type="button" class="btn btn-sm btn-glass btnQuickConf" data-name="${p.name}" data-ip="${p.ip||''}" data-pub="${p.pub||''}">
+              <button type="button" class="btn btn-sm btn-glass btnQuickConf" data-name="${safePeerName}" data-ip="${safePeerIp}" data-pub="${safePeerPub}">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Hızlı .conf İndir</span>
               </button>
-              <button type="button" class="btn btn-sm btnDel" data-name="${p.name}" data-pub="${p.pub||''}" style="background:rgba(244,63,94,0.14);border:1px solid rgba(244,63,94,0.35);color:#fb7185;padding:7px 14px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-left:auto;" title="${escapeHtml(p.name)} erişimini kalıcı olarak sil">
+              <button type="button" class="btn btn-sm btnDel" data-name="${safePeerName}" data-pub="${safePeerPub}" style="background:rgba(244,63,94,0.14);border:1px solid rgba(244,63,94,0.35);color:#fb7185;padding:7px 14px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-left:auto;" title="${safePeerName} erişimini kalıcı olarak sil">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
                 <span>Cihazı Sil</span>
               </button>
@@ -5451,118 +5506,152 @@
     return (str || '').replace(/[İıŞşĞğÜüÖöÇç]/g, ch => map[ch] || ch);
   }
 
+  let isPeerSubmitting = false;
   async function submitNewPeer() {
-    const rawName = ($('#peerNameInp').value || '').trim();
-    const devType = $('#peerTypeSel') ? $('#peerTypeSel').value : 'phone';
-    const typePrefix = devType === 'pc' ? 'PC' : (devType === 'tablet' ? 'TAB' : 'MOB');
-
-    // Türkçe karakterleri ve özel sembolleri WireGuard ile %100 uyumlu güvenli ASCII koda dönüştür
-    let cleanAscii = transliterateTurkish(rawName)
-      .replace(/[^A-Za-z0-9_-]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^[-_]+|[-_]+$/g, '');
-
-    let name;
-    if (!cleanAscii) {
-      name = `${typePrefix}-${Date.now().toString(36)}`;
-    } else if (cleanAscii.startsWith('PC-') || cleanAscii.startsWith('MOB-') || cleanAscii.startsWith('TAB-')) {
-      name = cleanAscii;
-    } else {
-      name = `${typePrefix}-${cleanAscii}`;
+    if (isPeerSubmitting || isLocked) return;
+    const submitBtn = $('#btnSubmitPeer');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Hazırlanıyor...';
     }
+    isPeerSubmitting = true;
 
-    if (name.length > 30) {
-      name = name.slice(0, 30).replace(/[-_]+$/, '');
-    }
+    try {
+      const rawName = ($('#peerNameInp').value || '').trim();
+      const devType = $('#peerTypeSel') ? $('#peerTypeSel').value : 'phone';
+      const typePrefix = devType === 'pc' ? 'PC' : (devType === 'tablet' ? 'TAB' : 'MOB');
 
-    if (!/^[A-Za-z0-9_-]{1,32}$/.test(name)) {
-      name = `${typePrefix}-${Date.now().toString(36)}`;
-    }
-    
-    // Hedef düğümü belirle
-    const nodeIdx = $('#peerNodeSel') ? parseInt($('#peerNodeSel').value, 10) : 0;
-    const nodes = getNodes();
-    const targetNode = nodes[nodeIdx] || activeNode;
+      // Türkçe karakterleri ve özel sembolleri WireGuard ile %100 uyumlu güvenli ASCII koda dönüştür
+      let cleanAscii = transliterateTurkish(rawName)
+        .replace(/[^A-Za-z0-9_-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^[-_]+|[-_]+$/g, '');
 
-    let keys;
-    try { 
-      keys = await makeX25519(); 
-    } catch(e) { 
-      return alert('Kriptografik anahtar üretilemedi: ' + e.message); 
-    }
-    
-    // IP Hesabı: Mevcut en yüksek okteti bularak benzersiz IP ata
-    let maxOctet = 3;
-    (cachedPeerList || []).forEach(p => {
-      if (p.ip) {
-        const m = p.ip.match(/10\.13\.13\.(\d+)/);
-        if (m) {
-          const o = parseInt(m[1], 10);
-          if (o > maxOctet) maxOctet = o;
-        }
+      let name;
+      if (!cleanAscii) {
+        name = `${typePrefix}-${Date.now().toString(36)}`;
+      } else if (cleanAscii.startsWith('PC-') || cleanAscii.startsWith('MOB-') || cleanAscii.startsWith('TAB-')) {
+        name = cleanAscii;
+      } else {
+        name = `${typePrefix}-${cleanAscii}`;
       }
-    });
-    const assignedIp = `10.13.13.${maxOctet + 1}`;
-    const spub = '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=';
-    const targetIp = (targetNode && targetNode.ip) ? targetNode.ip : '46.224.62.213';
-    const ep = `${targetIp}:51820`;
-    const dns = ($('#peerDnsSel') && $('#peerDnsSel').value) ? $('#peerDnsSel').value : '1.1.1.1, 1.0.0.1';
 
-    // 1. PrivateKey'i HEMEN tarayıcıda yerel sakla (Sıfır-Bilgi, asla kaybolmaz)
-    const peerKeys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
-    peerKeys[name] = keys.priv;
-    ls.setItem('mfk_peer_keys', JSON.stringify(peerKeys));
+      if (name.length > 30) {
+        name = name.slice(0, 30).replace(/[-_]+$/, '');
+      }
 
-    // 2. Eksiksiz konfigürasyonu hemen oluştur
-    currentConf = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${assignedIp}/32\nDNS = ${dns}\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
-    currentConfName = name;
+      // Windows yasaklı dosya adları koruması (CON, NUL, AUX, PRN vb.)
+      const FORBIDDEN_FILENAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+      if (FORBIDDEN_FILENAMES.test(name)) {
+        name = `${typePrefix}-${name}`;
+      }
 
-    // 3. QR Kodu ve butonları anında hazırla
-    if (window.qrcode) {
-      const q = qrcode(0, 'M');
-      q.addData(currentConf);
-      q.make();
-      $('#qrTarget').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
-    }
-    if ($('#btnOpenWireguardApp')) {
-      $('#btnOpenWireguardApp').href = `wireguard://tunnel?conf=${encodeURIComponent(currentConf)}`;
-    }
+      if (!/^[A-Za-z0-9_-]{1,32}$/.test(name)) {
+        name = `${typePrefix}-${Date.now().toString(36)}`;
+      }
+      
+      // Hedef düğümü belirle
+      const nodeIdx = $('#peerNodeSel') ? parseInt($('#peerNodeSel').value, 10) : 0;
+      const nodes = getNodes();
+      const targetNode = nodes[nodeIdx] || activeNode;
 
-    // 4. Cihaz listesine hemen ekle ve yansıt
-    const delList = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
-    const cleanDelList = delList.filter(d => d !== name && d !== rawName && !name.toLowerCase().includes(d.toLowerCase()));
-    ls.setItem('mfk_deleted_peers', JSON.stringify(cleanDelList));
-    if (rawName) {
-      savePeerMeta(name, rawName, '');
-    }
-    const newPeerItem = { name, pub: keys.pub, ip: assignedIp, hs: 0, rx: 0, tx: 0 };
-    cachedPeerList = [newPeerItem, ...(cachedPeerList || []).filter(p => p.name !== name)];
-    ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
-    renderPeers(cachedPeerList);
-    savePeersToRepo(); // Anında PC/Mobil/Tablet bulutuna kaydet
-
-    // 5. SONUÇ EKRANINI ANINDA AÇ (0 GECİKME!)
-    $('#resTitle').textContent = `"${rawName || name}" Hazır!`;
-    $('#stepForm').hidden = true;
-    if ($('#stepLoading')) $('#stepLoading').hidden = true;
-    $('#stepResult').hidden = false;
-    if (!$('#diagPeer').open) {
-      $('#diagPeer').showModal();
-    }
-    sfx('ok');
-
-    // 6. Arka planda sunucuya kaydet (kullanıcıyı asla bekletmez veya ekranı kapatmaz)
-    logStream(`⚡ ${name} için sunucu tüneli kaydediliyor...`, 'info');
-    runWorkflowAction({ action: 'add-peer', name, pubkey: keys.pub }, `${name} Sunucuya Ekleniyor`)
-      .then(logs => {
-        logStream(`✓ ${name} sunucuya başarıyla işlendi ve aktif edildi!`, 'ok');
-        // Sunucuya işlendikten sonra canlı listeyi ve el sıkışma durumunu sessizce güncelle
-        setTimeout(() => loadPeers(true), 3000);
-        setTimeout(() => loadPeers(true), 12000);
-      })
-      .catch(err => {
-        logStream(`[BİLGİ] Sunucu senkronu: ${err.message}`, 'warn');
+      let keys;
+      try { 
+        keys = await makeX25519(); 
+      } catch(e) { 
+        sfx('err');
+        return alert('Kriptografik anahtar üretilemedi: ' + e.message); 
+      }
+      
+      // IP Hesabı: Çakışmasız, 2..254 arası İLK BOŞ okteti bul
+      const usedOctets = new Set();
+      (cachedPeerList || []).forEach(p => {
+        if (p.ip) {
+          const m = p.ip.match(/10\.13\.13\.(\d+)/);
+          if (m) usedOctets.add(parseInt(m[1], 10));
+        }
       });
+      let targetOctet = 2;
+      while (targetOctet <= 254 && usedOctets.has(targetOctet)) {
+        targetOctet++;
+      }
+      if (targetOctet > 254) {
+        sfx('err');
+        return alert('Maksimum tünel kapasitesine (253 cihaz) ulaşıldı! Lütfen kullanmadığınız bir cihazı silin.');
+      }
+      const assignedIp = `10.13.13.${targetOctet}`;
+      const spub = '/pQiCtq/1xEnsgH9qEWpqhRxei39Rqg296MRcWx1+j0=';
+      const targetIp = (targetNode && targetNode.ip) ? targetNode.ip : '46.224.62.213';
+      const ep = `${targetIp}:51820`;
+      const dns = ($('#peerDnsSel') && $('#peerDnsSel').value) ? $('#peerDnsSel').value : '1.1.1.1, 1.0.0.1';
+
+      // 1. PrivateKey'i HEMEN tarayıcıda yerel sakla (Sıfır-Bilgi, asla kaybolmaz)
+      const peerKeys = safeJsonParse(ls.getItem('mfk_peer_keys'), {});
+      peerKeys[name] = keys.priv;
+      ls.setItem('mfk_peer_keys', JSON.stringify(peerKeys));
+
+      // 2. Eksiksiz konfigürasyonu hemen oluştur
+      currentConf = `[Interface]\nPrivateKey = ${keys.priv}\nAddress = ${assignedIp}/32\nDNS = ${dns}\n\n[Peer]\nPublicKey = ${spub}\nAllowedIPs = 0.0.0.0/0\nEndpoint = ${ep}\nPersistentKeepalive = 25\n`;
+      currentConfName = name;
+
+      // 3. QR Kodu ve butonları anında hazırla
+      if (window.qrcode) {
+        try {
+          const q = qrcode(0, 'M');
+          q.addData(currentConf);
+          q.make();
+          $('#qrTarget').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+        } catch(qe) {
+          $('#qrTarget').innerHTML = '<div style="padding:16px;color:#f59e0b;font-size:12px;">QR kod oluşturulamadı. Aşağıdaki butonlarla konfigürasyonu indirebilirsiniz.</div>';
+        }
+      } else {
+        $('#qrTarget').innerHTML = '<div style="padding:16px;color:#94a3b8;font-size:12px;">QR kod oluşturucu hazır değil. Aşağıdaki "Konfigürasyonu İndir" butonunu kullanabilirsiniz.</div>';
+      }
+      if ($('#btnOpenWireguardApp')) {
+        $('#btnOpenWireguardApp').href = `wireguard://tunnel?conf=${encodeURIComponent(currentConf)}`;
+      }
+
+      // 4. Cihaz listesine hemen ekle ve yansıt
+      const delList = safeJsonParse(ls.getItem('mfk_deleted_peers'), []);
+      const cleanDelList = delList.filter(d => d !== name && d !== rawName && !name.toLowerCase().includes(d.toLowerCase()));
+      ls.setItem('mfk_deleted_peers', JSON.stringify(cleanDelList));
+      if (rawName) {
+        savePeerMeta(name, rawName, '');
+      }
+      const newPeerItem = { name, pub: keys.pub, ip: assignedIp, hs: 0, rx: 0, tx: 0 };
+      cachedPeerList = [newPeerItem, ...(cachedPeerList || []).filter(p => p.name !== name)];
+      ls.setItem('mfk_peer_cache', JSON.stringify(cachedPeerList));
+      renderPeers(cachedPeerList);
+      savePeersToRepo(); // Anında PC/Mobil/Tablet bulutuna kaydet
+
+      // 5. SONUÇ EKRANINI ANINDA AÇ (0 GECİKME!)
+      $('#resTitle').textContent = `"${rawName || name}" Hazır!`;
+      $('#stepForm').hidden = true;
+      if ($('#stepLoading')) $('#stepLoading').hidden = true;
+      $('#stepResult').hidden = false;
+      if (!$('#diagPeer').open) {
+        $('#diagPeer').showModal();
+      }
+      sfx('ok');
+
+      // 6. Arka planda sunucuya kaydet (IP adresi de senkronize olarak sunucuya iletilir)
+      logStream(`⚡ ${name} için sunucu tüneli kaydediliyor... [IP: ${assignedIp}]`, 'info');
+      runWorkflowAction({ action: 'add-peer', name, pubkey: keys.pub, ip: assignedIp }, `${name} Sunucuya Ekleniyor`)
+        .then(logs => {
+          logStream(`✓ ${name} sunucuya başarıyla işlendi ve aktif edildi!`, 'ok');
+          setTimeout(() => loadPeers(true), 3000);
+          setTimeout(() => loadPeers(true), 12000);
+        })
+        .catch(err => {
+          logStream(`[BİLGİ] Sunucu senkronu: ${err.message}`, 'warn');
+        });
+    } finally {
+      isPeerSubmitting = false;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Tüneli Oluştur';
+      }
+    }
   }
 
   function confirmAction(title, desc, onYes) {
@@ -5603,7 +5692,18 @@
 
   // Kilit Açma
   function unlockGate() {
-    const pin = $('#gatePin').value.trim();
+    const pin = ($('#gatePin').value || '').trim();
+    if (!pin) {
+      sfx('err');
+      const c = $('#gateCard');
+      if (c) {
+        c.classList.add('error-shake');
+        setTimeout(() => c.classList.remove('error-shake'), 450);
+      }
+      $('#gatePin').focus();
+      return;
+    }
+
     // 1. Doğrudan token girilmişse
     if (pin.startsWith('ghp_') || pin.startsWith('github_pat_')) {
       activeToken = pin;
@@ -5614,7 +5714,7 @@
       logStream('✓ Yeni GitHub Token başarıyla kaydedildi ve oturum açıldı.', 'ok');
       checkTokenStatus();
       loadRuns();
-      renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
+      renderPeers(safeJsonParse(ls.getItem('mfk_peer_cache'), MOCK_PEERS));
       // Arka planda canlı peer verilerini çek (bağlantı durumunu göstermek için)
       setTimeout(() => loadPeers(true), 1200);
       return;
@@ -5647,21 +5747,21 @@
   document.addEventListener('DOMContentLoaded', () => {
     // Kalıcı Kara Liste & Önbellek Temizliği (MOB-mfk ve Mevcut-Cihaz kesinlikle silinmiş kalır)
     try {
-      const dPeers = JSON.parse(ls.getItem('mfk_deleted_peers') || '[]');
+      const dPeers = safeJsonParse(ls.getItem('mfk_deleted_peers'), []);
       if (!dPeers.includes('MOB-mfk')) dPeers.push('MOB-mfk');
       if (!dPeers.includes('Mevcut-Cihaz')) dPeers.push('Mevcut-Cihaz');
       ls.setItem('mfk_deleted_peers', JSON.stringify(dPeers));
 
-      let pCache = JSON.parse(ls.getItem('mfk_peer_cache') || '[]');
+      let pCache = safeJsonParse(ls.getItem('mfk_peer_cache'), []);
       pCache = pCache.filter(p => p.name !== 'MOB-mfk' && p.name !== 'Mevcut-Cihaz');
       ls.setItem('mfk_peer_cache', JSON.stringify(pCache));
 
-      let pKeys = JSON.parse(ls.getItem('mfk_peer_keys') || '{}');
+      let pKeys = safeJsonParse(ls.getItem('mfk_peer_keys'), {});
       delete pKeys['MOB-mfk'];
       delete pKeys['Mevcut-Cihaz'];
       ls.setItem('mfk_peer_keys', JSON.stringify(pKeys));
 
-      let pMeta = JSON.parse(ls.getItem('mfk_peer_meta') || '{}');
+      let pMeta = safeJsonParse(ls.getItem('mfk_peer_meta'), {});
       delete pMeta['MOB-mfk'];
       delete pMeta['Mevcut-Cihaz'];
       Object.keys(pMeta).forEach(k => {
@@ -5678,7 +5778,7 @@
       if (savedPin) {
         $('#lockGate').classList.add('cleared');
         loadRuns();
-        renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
+        renderPeers(safeJsonParse(ls.getItem('mfk_peer_cache'), MOCK_PEERS));
         syncPeersFromJson(true);
         setTimeout(() => loadPeers(true), 1200);
       }
@@ -5687,23 +5787,25 @@
       activeToken = unpackToken(_VAULT_KEY, savedPin);
       $('#lockGate').classList.add('cleared');
       loadRuns();
-      renderPeers(JSON.parse(ls.getItem('mfk_peer_cache') || JSON.stringify(MOCK_PEERS)));
+      renderPeers(safeJsonParse(ls.getItem('mfk_peer_cache'), MOCK_PEERS));
       // Arka planda canlı bağlantı durumunu güncelle (2s sonra)
       setTimeout(() => loadPeers(true), 1200);
       checkTokenStatus();
     }
 
     // Tüm Diyaloglar İçin Arka Plana Tıklayınca Otomatik Kapanma
-    // ONAY diyaloğu hariç — butonlar tıklanmadan kapanmamalı
+    // ONAY diyaloğu hariç — metin seçimi sırasında yanlışlıkla kapanmayı önler
     $$('dialog').forEach(d => {
-      if (d.id === 'diagConfirm') return; // Onay kutusunu hariç tut
+      if (d.id === 'diagConfirm') return;
+      let startedOnBackdrop = false;
+      d.addEventListener('mousedown', e => {
+        startedOnBackdrop = (e.target === d);
+      });
       d.addEventListener('click', e => {
-        const rect = d.getBoundingClientRect();
-        const isIn = (
-          rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
-          rect.left <= e.clientX && e.clientX <= rect.left + rect.width
-        );
-        if (!isIn) d.close();
+        if (startedOnBackdrop && e.target === d) {
+          d.close();
+        }
+        startedOnBackdrop = false;
       });
     });
 
@@ -5748,6 +5850,7 @@
       $('#lockGate').classList.remove('cleared');
       $('#gatePin').value = '';
       $('#gatePin').focus();
+      if (window.startGateStars) window.startGateStars();
     };
     function updateSettingsSummary() {
       const nodeEl = $('#settingsActiveNodeSummary');
@@ -6242,17 +6345,19 @@
     if ($('#btnRotateIp')) $('#btnRotateIp').onclick = rotateServerIp;
 
     $('#btnAddNode').onclick = () => {
-      const country = ($('#inpNodeCountry') ? $('#inpNodeCountry').value : '🌐 Özel Düğüm').trim();
+      const rawCountry = ($('#inpNodeCountry') ? $('#inpNodeCountry').value : '🌐 Özel Düğüm').trim();
+      const country = rawCountry.slice(0, 40).replace(/[<>"'&]/g, '') || '🌐 Özel Düğüm';
       const name = ($('#inpNodeName').value || '').trim();
       const ip = ($('#inpNodeIp').value || '').trim();
       const port = ($('#inpNodePort').value || '22').trim();
+      const portNum = parseInt(port, 10);
       const isIpOrDomain = /^(\d{1,3}(\.\d{1,3}){3}|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/.test(ip);
-      if (!/^[A-Za-z0-9_-]{1,20}$/.test(name) || !isIpOrDomain) {
-        sfx('err'); return alert('Lütfen geçerli bir takma ad ve IP adresi ya da DDNS alan adı girin.');
+      if (!/^[A-Za-z0-9_-]{1,20}$/.test(name) || !isIpOrDomain || isNaN(portNum) || portNum < 1 || portNum > 65535) {
+        sfx('err'); return alert('Lütfen geçerli bir takma ad, geçerli bir IP/alan adı ve 1-65535 arası port girin.');
       }
       const nodes = getNodes();
-      if (nodes.find(n => n.ip === ip && n.port === port)) { sfx('err'); return alert('Bu düğüm zaten ekli.'); }
-      nodes.push({ name, country, ip, port, ping: 35 + Math.floor(Math.random() * 25), isDefault: false });
+      if (nodes.find(n => n.ip === ip && String(n.port) === String(portNum))) { sfx('err'); return alert('Bu düğüm zaten ekli.'); }
+      nodes.push({ name, country, ip, port: String(portNum), ping: 35 + Math.floor(Math.random() * 25), isDefault: false });
       saveNodes(nodes);
       $('#inpNodeName').value = ''; $('#inpNodeIp').value = ''; $('#inpNodePort').value = '22';
       renderNodeList();
@@ -6297,8 +6402,18 @@
         color: Math.random() > 0.4 ? 'rgba(56, 189, 248, ' : (Math.random() > 0.5 ? 'rgba(168, 85, 247, ' : 'rgba(255, 255, 255, ')
       }));
 
+      let isStarsRunning = false;
+      window.startGateStars = function() {
+        if (isStarsRunning) return;
+        isStarsRunning = true;
+        requestAnimationFrame(renderStars);
+      };
+
       function renderStars() {
-        if ($('#lockGate').classList.contains('cleared')) return;
+        if ($('#lockGate').classList.contains('cleared')) {
+          isStarsRunning = false;
+          return;
+        }
         ctx.clearRect(0, 0, w, h);
 
         stars.forEach(s => {
@@ -6322,7 +6437,7 @@
 
         requestAnimationFrame(renderStars);
       }
-      requestAnimationFrame(renderStars);
+      window.startGateStars();
     })();
 
     // Otomatik Oturum Kapatma (15 Dakika Hareketsizlik Güvenliği)
@@ -6337,6 +6452,7 @@
           activeToken = '';
           $('#lockGate').classList.remove('cleared');
           $('#gatePin').value = '';
+          if (window.startGateStars) window.startGateStars();
           logStream('⚠️ Hareketsizlik nedeniyle oturum güvenliğe alındı.', 'cmd');
         }, IDLE_TIMEOUT_MS);
       }

@@ -129,7 +129,7 @@ case "${1:-}" in
     if [ -f "$PEERS_FILE" ]; then
       while IFS='|' read -r name pub ip; do
         [ -z "$name" ] && continue
-        DUMP=$(wg show $WG_IF dump 2>/dev/null | grep "$pub" || true)
+        DUMP=$(wg show $WG_IF dump 2>/dev/null | grep -F "$pub" | head -n1 || true)
         if [ -n "$DUMP" ]; then
           HS=$(echo "$DUMP" | awk '{print $5}')
           RX=$(echo "$DUMP" | awk '{print $6}')
@@ -146,30 +146,61 @@ case "${1:-}" in
   add-peer)
     NAME="${2:-}"
     PUBKEY="${3:-}"
+    SPEC_IP="${4:-}"
     if [ -z "$NAME" ] || [ -z "$PUBKEY" ]; then
       echo "error=missing name or pubkey" >&2
       exit 2
     fi
     mkdir -p "$(dirname "$PEERS_FILE")"
     touch "$PEERS_FILE"
+
+    # Eski kayıt varsa temizle
+    sed -i "/^$NAME|/d" "$PEERS_FILE"
     
-    # 10.13.13.X IP Dağıtımı
-    COUNT=$(wc -l < "$PEERS_FILE" 2>/dev/null || echo 0)
-    OCTET=$((COUNT + 2))
-    NEW_IP="10.13.13.${OCTET}"
+    # 10.13.13.X IP Dağıtımı (Çakışma korumalı & En küçük boş IP seçici)
+    if [ -n "$SPEC_IP" ] && [[ "$SPEC_IP" =~ ^10\.13\.13\.([2-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-4])$ ]]; then
+      NEW_IP="$SPEC_IP"
+    else
+      USED_OCTETS=$(grep -oE "10\.13\.13\.[0-9]+" "$PEERS_FILE" 2>/dev/null | cut -d'.' -f4 | sort -n || true)
+      NEW_OCTET=2
+      while [ "$NEW_OCTET" -le 254 ]; do
+        if ! echo "$USED_OCTETS" | grep -qx "$NEW_OCTET"; then
+          break
+        fi
+        NEW_OCTET=$((NEW_OCTET + 1))
+      done
+      if [ "$NEW_OCTET" -gt 254 ]; then
+        echo "error=ip pool exhausted (max 253 peers)" >&2
+        exit 3
+      fi
+      NEW_IP="10.13.13.${NEW_OCTET}"
+    fi
     
     # WireGuard'a ekle
     wg set $WG_IF peer "$PUBKEY" allowed-ips "${NEW_IP}/32"
     echo "$NAME|$PUBKEY|$NEW_IP" >> "$PEERS_FILE"
     
-    # wg0.conf kalıcı kayıt
-    cat >> /etc/wireguard/wg0.conf << PCONF
+    # wg0.conf kalıcı kayıt (varsa eskiyi temizleyip yenisini ekle)
+    if [ -f /etc/wireguard/wg0.conf ]; then
+      python3 -c "
+import sys, re
+pub = sys.argv[1]
+with open('/etc/wireguard/wg0.conf', 'r') as f:
+    text = f.read()
+pattern = r'(?ms)\n*#\s*Peer:\s*.*?\n\[Peer\]\s*\n(?:(?!\[Peer\]|\[Interface\]).)*?PublicKey\s*=\s*' + re.escape(pub) + r'.*?(?=\n\[|\Z)'
+text = re.sub(pattern, '', text)
+with open('/etc/wireguard/wg0.conf', 'w') as f:
+    f.write(text.strip() + '\n')
+" "$PUBKEY" 2>/dev/null || true
+
+      cat >> /etc/wireguard/wg0.conf << PCONF
 
 # Peer: $NAME
 [Peer]
 PublicKey = $PUBKEY
 AllowedIPs = ${NEW_IP}/32
 PCONF
+    fi
     
     SERVER_PUB=$(cat /etc/wireguard/server.pub)
     PUB_IP=$(curl -s -4 ifconfig.me || ip route get 1.1.1.1 | awk '{print $7}')
@@ -178,12 +209,28 @@ PCONF
     ;;
   remove-peer)
     NAME="${2:-}"
+    PUBKEY="${3:-}"
+    if [ -z "$PUBKEY" ] && [ -f "$PEERS_FILE" ]; then
+      PUBKEY=$(grep -F "$NAME|" "$PEERS_FILE" | cut -d'|' -f2 | head -n1 || true)
+    fi
+    if [ -n "$PUBKEY" ]; then
+      wg set $WG_IF peer "$PUBKEY" remove 2>/dev/null || true
+    fi
     if [ -f "$PEERS_FILE" ]; then
-      PUBKEY=$(grep "^$NAME|" "$PEERS_FILE" | cut -d'|' -f2 || true)
-      if [ -n "$PUBKEY" ]; then
-        wg set $WG_IF peer "$PUBKEY" remove 2>/dev/null || true
-        sed -i "/^$NAME|/d" "$PEERS_FILE"
-      fi
+      sed -i "/^$NAME|/d" "$PEERS_FILE"
+    fi
+    # wg0.conf dosyasından da kalıcı olarak sil (Rebootta geri gelmesini önle)
+    if [ -f /etc/wireguard/wg0.conf ] && [ -n "$PUBKEY" ]; then
+      python3 -c "
+import sys, re
+pub = sys.argv[1]
+with open('/etc/wireguard/wg0.conf', 'r') as f:
+    text = f.read()
+pattern = r'(?ms)\n*#\s*Peer:\s*.*?\n\[Peer\]\s*\n(?:(?!\[Peer\]|\[Interface\]).)*?PublicKey\s*=\s*' + re.escape(pub) + r'.*?(?=\n\[|\Z)'
+text = re.sub(pattern, '', text)
+with open('/etc/wireguard/wg0.conf', 'w') as f:
+    f.write(text.strip() + '\n')
+" "$PUBKEY" 2>/dev/null || true
     fi
     echo "removed=$NAME"
     ;;

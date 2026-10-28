@@ -1,6 +1,14 @@
 # mFkVpN Windows Yerleşik IKEv2 Kurulum ve Bağlantı Aracı
 $ErrorActionPreference = "Stop"
 
+# Yönetici Yetkisi Kontrolü ve Otomatik Yükseltme
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Warning "Bu kurulum betiği Yönetici (Administrator) yetkisi gerektirir."
+    Write-Host "Yönetici izni talep ediliyor..." -ForegroundColor Yellow
+    Start-Process powershell.exe -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"") -Verb RunAs
+    exit
+}
+
 $VpnName = "mFkVpN"
 $Server = "46.224.62.213.sslip.io"
 

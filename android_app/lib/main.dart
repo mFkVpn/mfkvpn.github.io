@@ -90,6 +90,7 @@ class _VpnDashboardScreenState extends State<VpnDashboardScreen>
   ServerNode _selectedNode = kDefaultNodes[0];
   String _selectedProtocol = 'IKEv2'; // 'IKEv2' or 'WireGuard'
 
+  Timer? _connectTimer;
   Timer? _statTimer;
   int _connectedSeconds = 0;
   double _rxMegaBytes = 0.0;
@@ -108,6 +109,7 @@ class _VpnDashboardScreenState extends State<VpnDashboardScreen>
 
   @override
   void dispose() {
+    _connectTimer?.cancel();
     _statTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
@@ -117,10 +119,11 @@ class _VpnDashboardScreenState extends State<VpnDashboardScreen>
     HapticFeedback.mediumImpact();
     if (_vpnState == VpnState.connected) {
       // Disconnect
+      _connectTimer?.cancel();
+      _statTimer?.cancel();
       setState(() {
         _vpnState = VpnState.disconnected;
       });
-      _statTimer?.cancel();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           backgroundColor: Color(0xFFF43F5E),
@@ -131,14 +134,33 @@ class _VpnDashboardScreenState extends State<VpnDashboardScreen>
           duration: Duration(seconds: 2),
         ),
       );
+    } else if (_vpnState == VpnState.connecting) {
+      // İptal et (spam veya bağlantı vazgeçme durumunda)
+      _connectTimer?.cancel();
+      setState(() {
+        _vpnState = VpnState.disconnected;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Color(0xFFF59E0B),
+          content: Text(
+            'Bağlantı isteği iptal edildi.',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          duration: Duration(seconds: 1),
+        ),
+      );
     } else if (_vpnState == VpnState.disconnected) {
       // Connect
+      _connectTimer?.cancel();
+      _statTimer?.cancel();
       setState(() {
         _vpnState = VpnState.connecting;
       });
 
-      Timer(const Duration(milliseconds: 1400), () {
-        if (!mounted) return;
+      _connectTimer = Timer(const Duration(milliseconds: 1400), () {
+        if (!mounted || _vpnState != VpnState.connecting) return;
+        _statTimer?.cancel();
         setState(() {
           _vpnState = VpnState.connected;
           _connectedSeconds = 0;
@@ -147,7 +169,10 @@ class _VpnDashboardScreenState extends State<VpnDashboardScreen>
         });
 
         _statTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          if (!mounted) return;
+          if (!mounted || _vpnState != VpnState.connected) {
+            timer.cancel();
+            return;
+          }
           setState(() {
             _connectedSeconds++;
             _rxMegaBytes += 0.05 + (Random().nextDouble() * 0.15);
@@ -170,8 +195,8 @@ class _VpnDashboardScreenState extends State<VpnDashboardScreen>
   }
 
   String _formatDuration(int seconds) {
-    final m = (seconds ~/ 60).toString().padLeft(2, '0');
     final s = (seconds % 60).toString().padLeft(2, '0');
+    final m = ((seconds % 3600) ~/ 60).toString().padLeft(2, '0');
     final h = (seconds ~/ 3600).toString().padLeft(2, '0');
     return h == '00' ? '$m:$s' : '$h:$m:$s';
   }
@@ -363,7 +388,7 @@ class _VpnDashboardScreenState extends State<VpnDashboardScreen>
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF38BDF8),
                         ),
-                        onChanged: isConnected
+                        onChanged: _vpnState != VpnState.disconnected
                             ? null
                             : (val) {
                                 if (val != null) {
@@ -384,7 +409,7 @@ class _VpnDashboardScreenState extends State<VpnDashboardScreen>
 
               // SUNUCU KARTI (DÜĞÜM SEÇİCİ)
               InkWell(
-                onTap: isConnected ? null : _showServerPicker,
+                onTap: _vpnState != VpnState.disconnected ? null : _showServerPicker,
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

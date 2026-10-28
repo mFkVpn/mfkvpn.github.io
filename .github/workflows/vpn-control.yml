@@ -27,6 +27,11 @@ on:
         type: string
         required: false
         default: ""
+      ip:
+        description: "İstemci IP Adresi (opsiyonel, örn: 10.13.13.5)"
+        type: string
+        required: false
+        default: ""
       host:
         description: "Hedef Düğüm IP (boşsa varsayılan HOST kullanılır)"
         type: string
@@ -58,6 +63,7 @@ jobs:
           ACTION: ${{ inputs.action }}
           PEER_NAME: ${{ inputs.name }}
           PEER_PUBKEY: ${{ inputs.pubkey }}
+          PEER_IP: ${{ inputs.ip }}
         run: |
           set -euo pipefail
           install -d -m 700 ~/.ssh
@@ -110,6 +116,13 @@ jobs:
             fi
           fi
 
+          if [ -n "$PEER_IP" ]; then
+            if ! [[ "$PEER_IP" =~ ^10\.13\.13\.([2-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-4])$ ]]; then
+              echo "Hata: Geçersiz peer IP formatı." >&2
+              exit 1
+            fi
+          fi
+
           # Güvenli komut inşası
           COMMAND="$ACTION"
           if [ -n "$PEER_NAME" ]; then
@@ -117,6 +130,9 @@ jobs:
           fi
           if [ -n "$PEER_PUBKEY" ]; then
             COMMAND="$COMMAND $PEER_PUBKEY"
+          fi
+          if [ -n "$PEER_IP" ]; then
+            COMMAND="$COMMAND $PEER_IP"
           fi
 
           ssh -i ~/.ssh/id_vpn \

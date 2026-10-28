@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 chcp 65001 >nul
 title mFkVpN - Baglanti Kesici
 echo [mFkVpN] Guvenli Baglanti Kesiliyor...
