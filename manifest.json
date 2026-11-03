@@ -1,0 +1,21 @@
+{
+  "name": "mFkVpN Cybershield",
+  "short_name": "mFkVpN",
+  "description": "mFkGames GitOps WireGuard Stealth VPN Control Panel",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#020408",
+  "theme_color": "#060c1d",
+  "icons": [
+    {
+      "src": "mFk_icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "mFk_icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

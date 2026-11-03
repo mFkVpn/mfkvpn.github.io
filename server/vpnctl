@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# mFkVpN sunucu yönetim betiği (tek kaynak).
+# Hem doğrudan wg-quick kurulumunda hem de "wireguard" adlı Docker konteynerinde çalışır.
+#
+# SSH üzerinden kısıtlı kullanım (authorized_keys):
+#   command="/usr/local/bin/vpnctl --ssh",no-pty,no-port-forwarding,no-agent-forwarding,no-X11-forwarding ssh-ed25519 AAAA...
+set -euo pipefail
+umask 077
+
+WG_IF="${WG_IF:-wg0}"
+CONTAINER="${WG_CONTAINER:-wireguard}"
+PEERS_FILE="${PEERS_FILE:-/etc/wireguard/peers.map}"
+LOCK_FILE="${VPNCTL_LOCK:-/run/lock/vpnctl.lock}"
+SUBNET_PREFIX="10.13.13"
+
+# --ssh: authorized_keys "command=" ile çağrıldığında istenen komutu güvenli biçimde ayrıştır.
+# read -a kelimelere böler; glob ya da komut genişletmesi yapılmaz.
+if [ "${1:-}" = "--ssh" ]; then
+  read -r -a ARGS <<< "${SSH_ORIGINAL_COMMAND:-}"
+  set -- "${ARGS[@]}"
+fi
+
+die() { echo "error=$*" >&2; exit 2; }
+
+valid_name() { [[ "$1" =~ ^[A-Za-z0-9_-]{1,32}$ ]]; }
+valid_pub()  { [[ "$1" =~ ^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=$ ]]; }
+valid_ip()   { [[ "$1" =~ ^10\.13\.13\.([2-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-4])$ ]]; }
+
+if docker inspect "$CONTAINER" >/dev/null 2>&1; then
+  MODE="docker"
+else
+  MODE="native"
+fi
+
+wgc() {
+  if [ "$MODE" = "docker" ]; then
+    docker exec "$CONTAINER" wg "$@"
+  else
+    wg "$@"
+  fi
+}
+
+# Çalışan yapılandırmayı kalıcı dosyaya yaz (reboot sonrası peer'lar geri gelsin / silinenler gelmesin).
+persist() {
+  if [ "$MODE" = "docker" ]; then
+    docker exec "$CONTAINER" sh -c "wg-quick save /config/wg_confs/$WG_IF.conf 2>/dev/null || wg-quick save $WG_IF" >/dev/null 2>&1 \
+      || echo "warn=persist failed (docker)" >&2
+  elif [ -f "/etc/wireguard/$WG_IF.conf" ]; then
+    wg-quick save "$WG_IF" >/dev/null 2>&1 || echo "warn=persist failed" >&2
+  fi
+}
+
+svc() {
+  if [ "$MODE" = "docker" ]; then
+    docker "$1" "$CONTAINER" >/dev/null
+  else
+    systemctl "$1" "wg-quick@$WG_IF"
+  fi
+}
+
+is_running() {
+  if [ "$MODE" = "docker" ]; then
+    [ "$(docker inspect -f '{{.State.Status}}' "$CONTAINER" 2>/dev/null)" = "running" ]
+  else
+    systemctl is-active --quiet "wg-quick@$WG_IF"
+  fi
+}
+
+public_endpoint() {
+  local ip port
+  if [ -s /etc/wireguard/endpoint ]; then
+    cat /etc/wireguard/endpoint
+    return
+  fi
+  ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for (i=1;i<NF;i++) if ($i=="src") {print $(i+1); exit}}')
+  port=$(wgc show "$WG_IF" listen-port 2>/dev/null || echo 51820)
+  echo "${ip:-0.0.0.0}:${port:-51820}"
+}
+
+# peers.map: ad|pubkey|ip  (tam eşleşme için awk kullanılır; grep alt dize hatası yok)
+map_field_by_name() { awk -F'|' -v n="$1" -v f="$2" '$1==n {print $f; exit}' "$PEERS_FILE"; }
+map_drop() {
+  # $1=ad, $2=pubkey: ikisinden biriyle eşleşen tüm satırları kaldır
+  local tmp
+  tmp=$(mktemp "${PEERS_FILE}.XXXX")
+  awk -F'|' -v n="$1" -v p="$2" '!($1==n || (p!="" && $2==p))' "$PEERS_FILE" > "$tmp"
+  mv "$tmp" "$PEERS_FILE"
+}
+
+used_ips() {
+  {
+    cut -d'|' -f3 "$PEERS_FILE"
+    wgc show "$WG_IF" allowed-ips 2>/dev/null | grep -oE "${SUBNET_PREFIX//./\\.}\.[0-9]+" || true
+  } | sort -u
+}
+
+mkdir -p "$(dirname "$PEERS_FILE")"
+touch "$PEERS_FILE"
+chmod 600 "$PEERS_FILE"
+
+ACTION="${1:-}"
+case "$ACTION" in
+  add-peer|remove-peer)
+    mkdir -p "$(dirname "$LOCK_FILE")"
+    exec 9>"$LOCK_FILE"
+    flock -w 30 9 || die "busy"
+    ;;
+esac
+
+case "$ACTION" in
+  start)
+    svc start
+    echo "state=running started=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    ;;
+  stop)
+    svc stop
+    echo "state=exited"
+    ;;
+  restart)
+    svc restart
+    echo "state=running started=$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    ;;
+  status)
+    if is_running; then echo "state=running"; else echo "state=exited"; fi
+    echo "peers=$(wgc show "$WG_IF" peers 2>/dev/null | wc -l)"
+    ;;
+  list-peers)
+    DUMP=$(wgc show "$WG_IF" dump 2>/dev/null | tail -n +2 || true)
+    while IFS='|' read -r name pub ip; do
+      [ -z "$name" ] && continue
+      LINE=$(awk -v p="$pub" '$1==p {print; exit}' <<< "$DUMP")
+      if [ -n "$LINE" ]; then
+        read -r _ _ _ _ HS RX TX _ <<< "$LINE"
+      else
+        HS=0; RX=0; TX=0
+      fi
+      echo "peer=$name|$pub|$ip|$HS|$RX|$TX"
+    done < "$PEERS_FILE"
+    ;;
+  add-peer)
+    NAME="${2:-}"; PUBKEY="${3:-}"; SPEC_IP="${4:-}"
+    valid_name "$NAME" || die "invalid name"
+    valid_pub "$PUBKEY" || die "invalid pubkey"
+    [ -z "$SPEC_IP" ] || valid_ip "$SPEC_IP" || die "invalid ip"
+
+    # Aynı ada ait eski anahtar varsa WireGuard'dan da kaldır
+    OLD_PUB=$(map_field_by_name "$NAME" 2)
+    if [ -n "$OLD_PUB" ] && [ "$OLD_PUB" != "$PUBKEY" ]; then
+      wgc set "$WG_IF" peer "$OLD_PUB" remove 2>/dev/null || true
+    fi
+    map_drop "$NAME" "$PUBKEY"
+    wgc set "$WG_IF" peer "$PUBKEY" remove 2>/dev/null || true
+
+    USED=$(used_ips)
+    if [ -n "$SPEC_IP" ] && ! grep -qxF "$SPEC_IP" <<< "$USED"; then
+      NEW_IP="$SPEC_IP"
+    else
+      NEW_IP=""
+      for o in $(seq 2 254); do
+        if ! grep -qxF "$SUBNET_PREFIX.$o" <<< "$USED"; then NEW_IP="$SUBNET_PREFIX.$o"; break; fi
+      done
+      [ -n "$NEW_IP" ] || { echo "error=ip pool exhausted (max 253 peers)" >&2; exit 3; }
+    fi
+
+    wgc set "$WG_IF" peer "$PUBKEY" allowed-ips "${NEW_IP}/32"
+    echo "$NAME|$PUBKEY|$NEW_IP" >> "$PEERS_FILE"
+    persist
+
+    SERVER_PUB=$(wgc show "$WG_IF" public-key)
+    echo "added=$NAME|$NEW_IP|$SERVER_PUB|$(public_endpoint)"
+    ;;
+  remove-peer)
+    NAME="${2:-}"; PUBKEY="${3:-}"
+    valid_name "$NAME" || die "invalid name"
+    [ -z "$PUBKEY" ] || valid_pub "$PUBKEY" || die "invalid pubkey"
+    MAP_PUB=$(map_field_by_name "$NAME" 2)
+    for p in $MAP_PUB $PUBKEY; do
+      wgc set "$WG_IF" peer "$p" remove 2>/dev/null || true
+    done
+    map_drop "$NAME" "$PUBKEY"
+    persist
+    echo "removed=$NAME"
+    ;;
+  cleanup)
+    echo "=== TEMİZLİK ÖNCESİ DİSK ==="
+    df -h /
+    journalctl --vacuum-time=7d 2>&1 || true
+    apt-get clean 2>&1 || true
+    # Sadece 7 günden eski geçici dosyalar (çalışan süreçlerin dosyalarına dokunma)
+    find /tmp /var/tmp -mindepth 1 -mtime +7 -delete 2>/dev/null || true
+    find /var/log -type f -name "*.log" -size +20M -exec truncate -s 2M {} + 2>/dev/null || true
+    echo "=== TEMİZLİK SONRASI DİSK ==="
+    df -h /
+    echo "state=cleaned"
+    echo "cleanup=success"
+    ;;
+  *)
+    echo "invalid action" >&2
+    exit 2
+    ;;
+esac

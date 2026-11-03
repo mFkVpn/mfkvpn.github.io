@@ -1,0 +1,45 @@
+name: VPN Auto Cleanup
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Her Pazar gecesi 03:00 UTC'de tam otomatik bakım
+  workflow_dispatch:       # İstenildiğinde manuel de tetiklenebilir
+
+permissions: {}
+
+concurrency:
+  group: vpn-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Vacuum VPS Logs & Prevent Bloat
+        env:
+          HOST: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_vpn
+          chmod 600 ~/.ssh/id_vpn
+          if [ -n "$SSH_HOST_KEY" ]; then
+            printf '%s\n' "$SSH_HOST_KEY" > ~/.ssh/known_hosts
+          else
+            echo "::warning::SSH_HOST_KEY secret tanımlı değil; host key doğrulanamıyor (MITM koruması yok)."
+            ssh-keyscan -p "$SSH_PORT" -H "$HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+
+          echo "🧹 [HAFTALIK OTOMATİK BAKIM] VPS temizleniyor..."
+          ssh -i ~/.ssh/id_vpn \
+              -p "$SSH_PORT" \
+              -o BatchMode=yes \
+              -o ConnectTimeout=10 \
+              -o StrictHostKeyChecking=yes \
+              "$USERNAME@$HOST" "cleanup"
+          echo "✅ Haftalık bakım ve log temizliği tamamlandı."

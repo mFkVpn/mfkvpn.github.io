@@ -1,0 +1,20 @@
+id_vpn
+id_vpn.pub
+*.key
+*.pem
+*.psk
+.env
+node_modules/
+package.json
+package-lock.json
+*.apk
+android_app/build/
+android_app/.dart_tool/
+
+# Android imza anahtarları
+android_app/android/key.properties
+*.jks
+*.keystore
+
+# Cihaz listesi kişisel veri içerir; herkese açık repoya konmaz
+peers.json
